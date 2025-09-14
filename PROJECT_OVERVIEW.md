@@ -536,7 +536,17 @@ flowchart LR
 
 ### Quick Start Guide
 
-The project includes comprehensive shell scripts that automate the entire lifecycle from setup through deployment and maintenance. Each script is designed with enterprise-grade features including error handling, logging, and safety mechanisms.
+The project includes comprehensive **cross-platform scripts** that automate the entire lifecycle from setup through deployment and maintenance. Each script is designed with enterprise-grade features including error handling, logging, and safety mechanisms.
+
+#### 🌐 Cross-Platform Support
+
+The project provides scripts for both **Unix/Linux** and **Windows** environments:
+
+- **Unix/Linux Scripts (.sh)**: Bash-compatible scripts for Linux, macOS, and WSL
+- **Windows Batch Scripts (.bat)**: Command Prompt compatible scripts
+- **Windows PowerShell Scripts (.ps1)**: Advanced PowerShell scripts with enhanced functionality
+
+All script examples below show Unix/Linux syntax. For Windows usage, refer to the [SCRIPTS_README.md](SCRIPTS_README.md) documentation.
 
 #### 1. Initial Project Setup
 

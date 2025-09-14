@@ -48,7 +48,41 @@ A modern, production-ready Python-based simulation of decentralized AI agents co
 - pip package manager
 - Virtual environment recommended
 
-### 1. Set up Virtual Environment
+### 🚀 Automated Setup (Recommended)
+
+The project includes **cross-platform automated setup scripts** that handle the entire installation process:
+
+#### Unix/Linux/macOS
+```bash
+# Complete automated setup
+./setup.sh --verbose --dev
+
+# What this does:
+# - Creates Python virtual environment
+# - Installs all dependencies
+# - Sets up configuration files
+# - Initializes database
+# - Runs health checks
+# - Installs development tools (with --dev)
+```
+
+#### Windows Command Prompt
+```cmd
+# Complete automated setup
+setup.bat /verbose /dev
+```
+
+#### Windows PowerShell
+```powershell
+# Complete automated setup
+.\setup.ps1 -Verbose -DevMode
+```
+
+### 📋 Manual Installation
+
+If you prefer manual setup or need to customize the installation:
+
+#### 1. Set up Virtual Environment
 A virtual environment (`.venv`) is required for dependency isolation.
 
 **Linux/macOS:**
@@ -63,13 +97,13 @@ python -m venv .venv
 .venv\Scripts\activate
 ```
 
-### 2. Install Dependencies
+#### 2. Install Dependencies
 Install all required packages from `requirements.txt`:
 ```bash
 pip install -r requirements.txt
 ```
 
-### 3. Configuration Setup
+#### 3. Configuration Setup
 The system will automatically create a default `config.yaml` if none exists. You can customize:
 ```bash
 # Edit the configuration file
@@ -80,7 +114,7 @@ export SIMULATION_DEFAULT_AGENTS=100
 export LOGGING_LEVEL=DEBUG
 ```
 
-### 4. Verify Installation
+#### 4. Verify Installation
 Run comprehensive verification:
 ```bash
 # Test core imports
@@ -316,6 +350,49 @@ export SIMULATION_DEFAULT_AGENTS=200
 
 ### Running the Simulation
 
+#### 🚀 Automated Scripts (Recommended)
+
+**Unix/Linux/macOS:**
+```bash
+# Basic simulation
+./run.sh
+
+# Launch web interface
+./run.sh ui
+
+# Custom parameters
+./run.sh cli --agents 100 --steps 50 --parallel
+
+# Test mode
+./run.sh test --verbose
+```
+
+**Windows Command Prompt:**
+```cmd
+# Basic simulation
+run.bat
+
+# Launch web interface
+run.bat ui
+
+# Custom parameters
+run.bat cli /agents 100 /steps 50 /parallel
+```
+
+**Windows PowerShell:**
+```powershell
+# Basic simulation
+.\run.ps1
+
+# Launch web interface
+.\run.ps1 ui
+
+# Custom parameters
+.\run.ps1 cli -Agents 100 -Steps 50 -Parallel
+```
+
+#### 📋 Direct Python Execution
+
 **Command Line Interface:**
 ```bash
 # Basic simulation
@@ -341,6 +418,8 @@ sim.run(steps=50)
 health = get_monitoring().get_system_health()
 print(f"System health: {health.status}")
 ```
+
+> 📚 **For comprehensive script documentation including testing, deployment, and maintenance**, see [SCRIPTS_README.md](SCRIPTS_README.md)
 
 ### Monitoring and Health Checks
 
