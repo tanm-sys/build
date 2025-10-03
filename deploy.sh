@@ -56,6 +56,26 @@ NC='\033[0m' # No Color
 # Utility Functions
 # =============================================================================
 
+# Input validation functions
+validate_config_file() {
+    local file="$1"
+
+    if [ -n "$file" ]; then
+        if [ ! -f "$file" ]; then
+            log "ERROR" "Configuration file not found: $file"
+            exit 1
+        fi
+
+        # Check if file is readable
+        if [ ! -r "$file" ]; then
+            log "ERROR" "Configuration file not readable: $file"
+            exit 1
+        fi
+
+        log "DEBUG" "Validated config file: $file"
+    fi
+}
+
 log() {
     local level="$1"
     shift
@@ -158,20 +178,40 @@ check_deployment_prerequisites() {
     local required_files=("config.yaml" "requirements.txt" "simulation.py" "database.py")
     for file in "${required_files[@]}"; do
         if [ ! -f "$PROJECT_ROOT/$file" ]; then
-            log "ERROR" "Required file not found: $file"
+            log "ERROR" "Required file not found: $PROJECT_ROOT/$file"
             exit 1
         fi
     done
     
-    # Check system resources
-    local available_memory=$(free -m | awk 'NR==2{printf "%.0f", $7}')
-    if [ "$available_memory" -lt 512 ]; then
-        log "WARN" "Low available memory: ${available_memory}MB (recommended: 512MB+)"
+    # Check system resources (platform-independent approach)
+    local available_memory_kb=0
+    local available_disk_kb=0
+
+    case "$(uname -s)" in
+        "Linux")
+            available_memory_kb=$(free -k | awk 'NR==2{print $7}')
+            available_disk_kb=$(df "$PROJECT_ROOT" | awk 'NR==2{print $4}')
+            ;;
+        "Darwin")  # macOS
+            available_memory_kb=$(vm_stat | awk '/Pages free/ {print $3}' | tr -d '.' | awk '{print $1 * 4096 / 1024}')
+            available_disk_kb=$(df "$PROJECT_ROOT" | awk 'NR==2{print $4}')
+            ;;
+        *)
+            log "WARN" "Cannot check system resources on this platform: $(uname -s)"
+            ;;
+    esac
+
+    if [ "$available_memory_kb" -gt 0 ]; then
+        local available_memory_mb=$((available_memory_kb / 1024))
+        if [ "$available_memory_mb" -lt 512 ]; then
+            log "WARN" "Low available memory: ${available_memory_mb}MB (recommended: 512MB+)"
+        fi
     fi
-    
-    local available_disk=$(df "$PROJECT_ROOT" | awk 'NR==2{print $4}')
-    if [ "$available_disk" -lt 1048576 ]; then  # 1GB in KB
-        log "WARN" "Low available disk space: ${available_disk}KB (recommended: 1GB+)"
+
+    if [ "$available_disk_kb" -gt 0 ]; then
+        if [ "$available_disk_kb" -lt 1048576 ]; then  # 1GB in KB
+            log "WARN" "Low available disk space: ${available_disk_kb}KB (recommended: 1GB+)"
+        fi
     fi
     
     log "INFO" "Prerequisites check completed"
@@ -220,10 +260,23 @@ setup_environment_config() {
     
     # Use custom config if specified
     if [ -n "$CUSTOM_CONFIG" ]; then
+        # Validation is already done in argument parsing, but double-check
         if [ ! -f "$CUSTOM_CONFIG" ]; then
             log "ERROR" "Custom configuration file not found: $CUSTOM_CONFIG"
             exit 1
         fi
+
+        # Check if file is readable
+        if [ ! -r "$CUSTOM_CONFIG" ]; then
+            log "ERROR" "Custom configuration file not readable: $CUSTOM_CONFIG"
+            exit 1
+        fi
+
+        # Validate that it's a valid config file by checking for basic structure
+        if ! grep -q "^[[:space:]]*environment:" "$CUSTOM_CONFIG" 2>/dev/null; then
+            log "WARN" "Custom configuration file may be invalid or missing environment section: $CUSTOM_CONFIG"
+        fi
+
         config_file="$CUSTOM_CONFIG"
         log "INFO" "Using custom configuration: $CUSTOM_CONFIG"
     fi
@@ -569,6 +622,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -c|--config)
             CUSTOM_CONFIG="$2"
+            validate_config_file "$CUSTOM_CONFIG"
             shift 2
             ;;
         -b|--backup)

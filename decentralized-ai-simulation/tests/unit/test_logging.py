@@ -5,7 +5,7 @@ import os
 import tempfile
 import logging
 from unittest.mock import patch
-from logging_setup import setup_logging, get_logger
+from src.utils.logging_setup import setup_logging, get_logger
 
 def test_logging_setup():
     """Test logging configuration with different log levels."""
@@ -21,7 +21,7 @@ def test_logging_setup():
     
     try:
         # Mock get_config to return our test values
-        with patch('logging_setup.get_config') as mock_get_config:
+        with patch('src.utils.logging_setup.get_config') as mock_get_config:
             mock_get_config.side_effect = lambda key, default=None: {
                 'logging.level': 'DEBUG',
                 'logging.file': log_file,
@@ -75,7 +75,7 @@ def test_log_level_filtering():
     
     try:
         # Mock get_config to return WARNING level only
-        with patch('logging_setup.get_config') as mock_get_config:
+        with patch('src.utils.logging_setup.get_config') as mock_get_config:
             mock_get_config.side_effect = lambda key, default=None: {
                 'logging.level': 'WARNING',
                 'logging.file': log_file,

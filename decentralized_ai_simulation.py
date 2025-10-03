@@ -8,8 +8,8 @@ import os
 import json
 import argparse
 import subprocess
-from logging_setup import get_logger
-from config_loader import get_config
+from src.utils.logging_setup import get_logger
+from src.config.config_loader import get_config
 
 logger = get_logger(__name__)
 

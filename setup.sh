@@ -42,6 +42,27 @@ NC='\033[0m' # No Color
 # Utility Functions
 # =============================================================================
 
+# Input validation functions
+validate_python_path() {
+    local python_cmd="$1"
+
+    if [ -n "$python_cmd" ]; then
+        if ! command -v "$python_cmd" &> /dev/null; then
+            log "ERROR" "Python executable not found: $python_cmd"
+            exit 1
+        fi
+
+        # Check Python version
+        local python_version=$($python_cmd --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1)
+        if [ "$python_version" -lt 3 ]; then
+            log "ERROR" "Python 3+ is required, found Python $python_version"
+            exit 1
+        fi
+
+        log "DEBUG" "Validated Python executable: $python_cmd (version $($python_cmd --version 2>&1 | cut -d' ' -f2))"
+    fi
+}
+
 log() {
     local level="$1"
     shift
@@ -170,7 +191,10 @@ install_dependencies() {
     # Install main dependencies
     if [ -f "$PROJECT_ROOT/requirements.txt" ]; then
         log "INFO" "Installing dependencies from requirements.txt..."
-        pip install -r "$PROJECT_ROOT/requirements.txt"
+        if ! pip install -r "$PROJECT_ROOT/requirements.txt"; then
+            log "ERROR" "Failed to install dependencies from requirements.txt"
+            exit 1
+        fi
     else
         log "ERROR" "requirements.txt not found in $PROJECT_ROOT"
         exit 1
@@ -393,6 +417,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -p|--python)
             PYTHON_CMD="$2"
+            validate_python_path "$PYTHON_CMD"
             shift 2
             ;;
         --skip-tests)

@@ -57,6 +57,91 @@ NC='\033[0m' # No Color
 # Utility Functions
 # =============================================================================
 
+# Input validation functions
+validate_numeric() {
+    local value="$1"
+    local param_name="$2"
+    local min_value="${3:-1}"
+
+    if [ -n "$value" ]; then
+        if ! [[ "$value" =~ ^[0-9]+$ ]]; then
+            log "ERROR" "Invalid $param_name: '$value' (must be a positive integer)"
+            exit 1
+        fi
+
+        if [ "$value" -lt "$min_value" ]; then
+            log "ERROR" "Invalid $param_name: '$value' (must be >= $min_value)"
+            exit 1
+        fi
+
+        log "DEBUG" "Validated $param_name: $value"
+    fi
+}
+
+validate_seed() {
+    local value="$1"
+
+    if [ -n "$value" ]; then
+        if ! [[ "$value" =~ ^-?[0-9]+$ ]]; then
+            log "ERROR" "Invalid seed: '$value' (must be an integer)"
+            exit 1
+        fi
+
+        log "DEBUG" "Validated seed: $value"
+    fi
+}
+
+validate_config_file() {
+    local file="$1"
+
+    if [ -n "$file" ]; then
+        if [ ! -f "$file" ]; then
+            log "ERROR" "Configuration file not found: $file"
+            exit 1
+        fi
+
+        # Check if file is readable
+        if [ ! -r "$file" ]; then
+            log "ERROR" "Configuration file not readable: $file"
+            exit 1
+        fi
+
+        log "DEBUG" "Validated config file: $file"
+    fi
+}
+
+validate_environment() {
+    local env="$1"
+
+    if [ -n "$env" ]; then
+        case "$env" in
+            development|staging|production|docker)
+                log "DEBUG" "Validated environment: $env"
+                ;;
+            *)
+                log "ERROR" "Invalid environment: '$env' (must be: development, staging, production, or docker)"
+                exit 1
+                ;;
+        esac
+    fi
+}
+
+validate_log_level() {
+    local level="$1"
+
+    if [ -n "$level" ]; then
+        case "$level" in
+            DEBUG|INFO|WARNING|ERROR)
+                log "DEBUG" "Validated log level: $level"
+                ;;
+            *)
+                log "ERROR" "Invalid log level: '$level' (must be: DEBUG, INFO, WARNING, or ERROR)"
+                exit 1
+                ;;
+        esac
+    fi
+}
+
 log() {
     local level="$1"
     shift
@@ -188,10 +273,10 @@ build_python_command() {
     # Build command based on mode
     case "$MODE" in
         "cli")
-            cmd_args+=("python" "decentralized_ai_simulation.py")
+            cmd_args+=("$PYTHON_CMD" "$PROJECT_ROOT/decentralized_ai_simulation.py")
             ;;
         "ui")
-            cmd_args+=("streamlit" "run" "streamlit_app.py")
+            cmd_args+=("streamlit" "run" "$PROJECT_ROOT/streamlit_app.py")
             ;;
         "test")
             cmd_args+=("python" "decentralized_ai_simulation.py")
@@ -238,10 +323,23 @@ build_python_command() {
     
     # Set config file if specified
     if [ -n "$CONFIG_FILE" ]; then
+        # Validation is already done in argument parsing, but double-check
         if [ ! -f "$CONFIG_FILE" ]; then
             log "ERROR" "Configuration file not found: $CONFIG_FILE"
             exit 1
         fi
+
+        # Check if file is readable
+        if [ ! -r "$CONFIG_FILE" ]; then
+            log "ERROR" "Configuration file not readable: $CONFIG_FILE"
+            exit 1
+        fi
+
+        # Validate that it's a valid config file by checking for basic structure
+        if ! grep -q "^[[:space:]]*environment:" "$CONFIG_FILE" 2>/dev/null; then
+            log "WARN" "Configuration file may be invalid or missing environment section: $CONFIG_FILE"
+        fi
+
         export CONFIG_FILE="$CONFIG_FILE"
         log "DEBUG" "Using config file: $CONFIG_FILE"
     fi
@@ -274,6 +372,8 @@ run_simulation() {
         if [ "$VERBOSE" = true ]; then
             exec $cmd
         else
+            # Execute command with better error handling
+            local exit_code=0
             $cmd 2>&1 | while IFS= read -r line; do
                 # Filter and format output
                 if [[ "$line" =~ ^\[.*\].*\[.*\] ]]; then
@@ -283,7 +383,14 @@ run_simulation() {
                 elif [[ "$line" =~ (completed|finished|started|initialized) ]]; then
                     log "INFO" "$line"
                 fi
-            done
+            done || exit_code=$?
+    
+            # Check if command failed
+            if [ $exit_code -ne 0 ]; then
+                log "ERROR" "Simulation command failed with exit code: $exit_code"
+                log "INFO" "Check the log file for details: $LOG_FILE"
+                exit $exit_code
+            fi
         fi
     fi
 }
@@ -367,10 +474,12 @@ while [[ $# -gt 0 ]]; do
             ;;
         -a|--agents)
             AGENTS="$2"
+            validate_numeric "$AGENTS" "agents" 1
             shift 2
             ;;
         -s|--steps)
             STEPS="$2"
+            validate_numeric "$STEPS" "steps" 1
             shift 2
             ;;
         -p|--parallel)
@@ -379,18 +488,22 @@ while [[ $# -gt 0 ]]; do
             ;;
         --seed)
             SEED="$2"
+            validate_seed "$SEED"
             shift 2
             ;;
         --config)
             CONFIG_FILE="$2"
+            validate_config_file "$CONFIG_FILE"
             shift 2
             ;;
         --env)
             ENVIRONMENT="$2"
+            validate_environment "$ENVIRONMENT"
             shift 2
             ;;
         --log-level)
             LOG_LEVEL="$2"
+            validate_log_level "$LOG_LEVEL"
             shift 2
             ;;
         *)

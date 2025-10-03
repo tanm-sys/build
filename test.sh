@@ -177,7 +177,7 @@ run_unit_tests() {
     
     log "TEST" "Running unit tests..."
     
-    local pytest_args=("python" "-m" "pytest" "tests/")
+    local pytest_args=("python" "-m" "pytest" "$PROJECT_ROOT/tests/")
     local coverage_args=()
     
     # Add verbose flag if requested
@@ -210,14 +210,16 @@ run_unit_tests() {
     
     log "DEBUG" "Running command: ${full_command[*]}"
     
-    # Run the tests
+    # Run the tests with better error handling
+    local exit_code=0
     if "${full_command[@]}"; then
         log "SUCCESS" "Unit tests passed"
         ((TESTS_PASSED++))
     else
-        log "ERROR" "Unit tests failed"
+        exit_code=$?
+        log "ERROR" "Unit tests failed with exit code: $exit_code"
         ((TESTS_FAILED++))
-        return 1
+        return $exit_code
     fi
 }
 
@@ -390,7 +392,7 @@ run_code_quality_checks() {
     
     # Run flake8 linting
     log "TEST" "Running flake8 linting..."
-    if python -m flake8 --max-line-length=88 --extend-ignore=E203,W503 *.py tests/; then
+    if python -m flake8 --max-line-length=88 --extend-ignore=E203,W503 "$PROJECT_ROOT"/*.py "$PROJECT_ROOT/tests/"; then
         log "SUCCESS" "Linting checks passed"
         ((TESTS_PASSED++))
     else

@@ -2,8 +2,8 @@ import sqlite3
 import json
 from typing import List, Dict, Any, Optional
 import threading
-from logging_setup import get_logger
-from config_loader import get_config
+from src.utils.logging_setup import get_logger
+from src.config.config_loader import get_config
 import time
 
 logger = get_logger(__name__)

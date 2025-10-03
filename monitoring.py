@@ -2,7 +2,7 @@
 import time
 from typing import Dict, Any, Optional
 from dataclasses import dataclass
-from logging_setup import get_logger
+from src.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

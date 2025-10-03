@@ -5,9 +5,9 @@ from agents import AnomalyAgent
 from database import DatabaseLedger
 import random
 import time
-from logging_setup import get_logger
-from config_loader import get_config
-from monitoring import get_monitoring
+from src.utils.logging_setup import get_logger
+from src.config.config_loader import get_config
+from src.utils.monitoring import get_monitoring
 
 logger = get_logger(__name__)
 

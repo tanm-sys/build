@@ -5,7 +5,7 @@ import os
 import tempfile
 import logging
 from unittest.mock import patch
-from logging_setup import setup_logging, get_logger
+from src.utils.logging_setup import setup_logging, get_logger
 
 def test_logging_setup():
     """Test logging configuration with different log levels."""

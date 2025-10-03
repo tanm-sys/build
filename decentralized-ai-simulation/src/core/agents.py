@@ -8,7 +8,7 @@ from typing import Any, Dict, List, Tuple, Optional, Union
 from dataclasses import dataclass, field
 from contextlib import contextmanager
 from functools import lru_cache
-from logging_setup import get_logger
+from ..utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

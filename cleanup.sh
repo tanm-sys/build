@@ -144,7 +144,19 @@ EOF
 get_file_size() {
     local file="$1"
     if [ -f "$file" ]; then
-        stat -f%z "$file" 2>/dev/null || stat -c%s "$file" 2>/dev/null || echo 0
+        # Platform-independent file size detection
+        case "$(uname -s)" in
+            "Linux")
+                stat -c%s "$file" 2>/dev/null || echo 0
+                ;;
+            "Darwin")  # macOS
+                stat -f%z "$file" 2>/dev/null || echo 0
+                ;;
+            *)
+                # Fallback: use ls if available, otherwise return 0
+                ls -l "$file" 2>/dev/null | awk '{print $5}' || echo 0
+                ;;
+        esac
     else
         echo 0
     fi
@@ -153,7 +165,19 @@ get_file_size() {
 get_dir_size() {
     local dir="$1"
     if [ -d "$dir" ]; then
-        du -sb "$dir" 2>/dev/null | cut -f1 || echo 0
+        # Platform-independent directory size detection
+        case "$(uname -s)" in
+            "Linux")
+                du -sb "$dir" 2>/dev/null | cut -f1 || echo 0
+                ;;
+            "Darwin")  # macOS
+                du -sk "$dir" 2>/dev/null | cut -f1 || echo 0
+                ;;
+            *)
+                # Fallback: use find and stat if available, otherwise return 0
+                find "$dir" -type f -exec stat -c%s {} \; 2>/dev/null | awk '{sum += $1} END {print sum}' || echo 0
+                ;;
+        esac
     else
         echo 0
     fi
@@ -285,11 +309,17 @@ clean_cache_files() {
     done
     
     # Find and remove all __pycache__ directories
-    find "$PROJECT_ROOT" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
-    
+    if ! find "$PROJECT_ROOT" -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null; then
+        log "DEBUG" "No __pycache__ directories found or error during cleanup"
+    fi
+
     # Python compiled files
-    find "$PROJECT_ROOT" -name "*.pyc" -type f -delete 2>/dev/null || true
-    find "$PROJECT_ROOT" -name "*.pyo" -type f -delete 2>/dev/null || true
+    if ! find "$PROJECT_ROOT" -name "*.pyc" -type f -delete 2>/dev/null; then
+        log "DEBUG" "No .pyc files found or error during cleanup"
+    fi
+    if ! find "$PROJECT_ROOT" -name "*.pyo" -type f -delete 2>/dev/null; then
+        log "DEBUG" "No .pyo files found or error during cleanup"
+    fi
     
     log "SUCCESS" "Cache cleanup completed"
 }

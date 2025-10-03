@@ -4,8 +4,8 @@ from typing import List, Dict, Any, Optional, Generator, ContextManager
 import threading
 from contextlib import contextmanager
 from dataclasses import dataclass
-from logging_setup import get_logger
-from config_loader import get_config
+from ..utils.logging_setup import get_logger
+from ..config.config_loader import get_config
 import time
 from functools import lru_cache
 
