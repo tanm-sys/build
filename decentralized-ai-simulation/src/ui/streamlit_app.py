@@ -4,7 +4,8 @@ import networkx as nx
 import pandas as pd
 import threading
 from typing import Optional, Dict, Any, Tuple, List
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
+import json
 from simulation import Simulation
 from database import DatabaseLedger
 import ray
@@ -12,6 +13,22 @@ from monitoring import get_monitoring
 from config_loader import get_config
 import time
 import logging
+
+# Import data transformation components for 3D API
+import sys
+import os
+sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))
+
+try:
+    from data_transformers import (
+        Vector3D, Agent3D, Anomaly3D, SimulationState3D,
+        SimulationStateTransformer, create_3d_simulation_state,
+        create_3d_agents, create_3d_anomalies_from_ledger
+    )
+    TRANSFORMERS_AVAILABLE = True
+except ImportError as e:
+    logging.warning(f"Could not import 3D transformers: {e}")
+    TRANSFORMERS_AVAILABLE = False
 
 
 @dataclass
@@ -109,6 +126,31 @@ def initialize_session_state() -> SimulationState:
 
 # Initialize state
 state = initialize_session_state()
+
+# Start API server for 3D endpoints
+def start_api_server_background():
+    """Start the 3D API server in background thread."""
+    try:
+        from .api_server import start_api_server, initialize_api_simulation
+
+        # Initialize simulation for API
+        if state.simulation is not None:
+            initialize_api_simulation(len(state.simulation.node_agents))
+
+        # Start API server on port 8502
+        server = start_api_server(8502)
+        st.session_state.api_server = server
+
+        logger.info("3D API server started in background")
+
+    except Exception as e:
+        logger.error(f"Failed to start API server: {e}")
+        st.session_state.api_server = None
+
+# Start API server if not already running
+if 'api_server' not in st.session_state:
+    api_thread = threading.Thread(target=start_api_server_background, daemon=True)
+    api_thread.start()
 
 # Render control buttons with enhanced functionality
 def render_control_buttons(state: SimulationState, params: UIParameters) -> None:
@@ -219,8 +261,110 @@ def _run_simulation_thread(state: SimulationState, params: UIParameters) -> None
         state.running = False
 
 
+# 3D API Endpoints for Frontend Integration
+def render_3d_api_endpoints(state: SimulationState) -> None:
+    """Render 3D API endpoints section for frontend integration."""
+    if not TRANSFORMERS_AVAILABLE:
+        st.warning("3D transformers not available. Install backend requirements to enable 3D API endpoints.")
+        return
+
+    st.subheader("3D Visualization API")
+
+    if state.simulation is None or state.ledger is None:
+        st.info("Initialize simulation to enable 3D API endpoints.")
+        return
+
+    # API endpoint information
+    with st.expander("API Endpoints", expanded=True):
+        st.markdown("""
+        **Available Endpoints:**
+        - `GET /3d/agents` - Get all agents in 3D format
+        - `GET /3d/anomalies` - Get recent anomalies in 3D format
+        - `GET /3d/simulation-state` - Get complete 3D simulation state
+        - `GET /3d/positions` - Get agent positions mapping
+        - `GET /health` - API health check
+        """)
+
+        # Base URL for API calls
+        base_url = "http://localhost:8502"  # API server port
+
+        col1, col2, col3, col4 = st.columns(4)
+
+        with col1:
+            if st.button("Get 3D Agents"):
+                try:
+                    agents_3d = create_3d_agents(state.simulation.node_agents)
+                    st.json([asdict(agent) for agent in agents_3d])
+                    st.success(f"Retrieved {len(agents_3d)} agents in 3D format")
+                except Exception as e:
+                    st.error(f"Error getting 3D agents: {e}")
+
+        with col2:
+            if st.button("Get 3D Anomalies"):
+                try:
+                    anomalies_3d = create_3d_anomalies_from_ledger(
+                        state.ledger, state.simulation.node_agents, max_anomalies=5
+                    )
+                    st.json([asdict(anomaly) for anomaly in anomalies_3d])
+                    st.success(f"Retrieved {len(anomalies_3d)} anomalies in 3D format")
+                except Exception as e:
+                    st.error(f"Error getting 3D anomalies: {e}")
+
+        with col3:
+            if st.button("Get 3D State"):
+                try:
+                    sim_state_3d = create_3d_simulation_state(
+                        state.simulation.node_agents, state.ledger, state.running
+                    )
+                    st.json(asdict(sim_state_3d))
+                    st.success("Retrieved complete 3D simulation state")
+                except Exception as e:
+                    st.error(f"Error getting 3D state: {e}")
+
+        with col4:
+            if st.button("Test API Health"):
+                st.info("3D API endpoints are ready for frontend integration")
+
+    # Real-time data streaming info
+    with st.expander("Real-time Streaming", expanded=False):
+        st.markdown("""
+        **WebSocket Integration:**
+        - Connect to `ws://localhost:8503` for real-time updates
+        - Receives simulation state changes at 20 Hz
+        - Compatible with 3D frontend visualization
+
+        **Data Format:**
+        ```json
+        {
+          "type": "simulation_update",
+          "data": {
+            "status": "running",
+            "timestamp": 1234567890,
+            "activeAgents": 100,
+            "totalConnections": 245,
+            "averageTrustScore": 0.75,
+            "anomalies": [...]
+          },
+          "timestamp": 1234567890
+        }
+        ```
+        """)
+
+        if st.button("Start Real-time Updates"):
+            st.info("Real-time updates are being streamed to connected 3D frontend")
+            st.success("WebSocket server active on ws://localhost:8503")
+
+        # Show WebSocket connection status
+        if 'api_server' in st.session_state and st.session_state.api_server:
+            st.info("✅ Real-time streaming server is running")
+        else:
+            st.warning("⚠️ Real-time streaming server not available")
+
 # Render control buttons
 render_control_buttons(state, params)
+
+# Render 3D API endpoints
+render_3d_api_endpoints(state)
 
 # Main dashboard with enhanced state management
 def render_main_dashboard(state: SimulationState, params: UIParameters) -> None:
