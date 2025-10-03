@@ -227,14 +227,18 @@ check_environment() {
     
     # Activate virtual environment
     source "$VENV_DIR/bin/activate"
-    
+
     # Verify Python environment
     if [ -z "${VIRTUAL_ENV:-}" ]; then
         log "ERROR" "Failed to activate virtual environment"
         exit 1
     fi
-    
+
     log "DEBUG" "Virtual environment activated: $VIRTUAL_ENV"
+
+    # Set PYTHONPATH to include the src directory for module imports
+    export PYTHONPATH="$PROJECT_ROOT/decentralized-ai-simulation:${PYTHONPATH:-}"
+    log "DEBUG" "Set PYTHONPATH to include src modules: $PROJECT_ROOT/decentralized-ai-simulation"
     
     # Check if required modules are available
     python -c "
@@ -361,7 +365,10 @@ run_simulation() {
         log "INFO" "Launching Streamlit web interface..."
         log "INFO" "The web interface will open in your default browser"
         log "INFO" "Press Ctrl+C to stop the server"
-        
+
+        # Change to project root for UI mode to ensure proper module resolution
+        cd "$PROJECT_ROOT"
+
         # Run streamlit with proper configuration
         exec $cmd --server.port 8501 --server.address localhost
     else
