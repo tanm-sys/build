@@ -1,0 +1,151 @@
+# Decentralized AI Simulation Configuration
+# Environment: development | production
+environment: development
+
+# API Configuration
+api:
+  host: "0.0.0.0"
+  port: 8000
+  debug: false
+  cors_origins: ["*"]
+  cors_methods: ["GET", "POST"]
+  cors_headers: ["*"]
+  request_timeout: 30
+  max_concurrent_requests: 100
+
+# Database Configuration
+database:
+  path: "ledger.db"
+  connection_pool_size: 10
+  timeout: 30
+  check_same_thread: false
+  retry_attempts: 3
+  retry_delay: 1.0
+  max_overflow: 20
+  pool_recycle: 3600
+  echo: false
+
+# Ray Configuration (v2.45.0)
+ray:
+  enable: true
+  address: "auto"
+  num_cpus: null  # Use all available CPUs
+  num_gpus: null  # Use all available GPUs
+  object_store_memory: null  # Auto-configure
+  dashboard_host: "0.0.0.0"
+  dashboard_port: 8265
+  include_dashboard: true
+  log_to_driver: true
+  logging_level: "INFO"
+  ignore_reinit_error: true
+
+# Simulation Configuration
+simulation:
+  default_agents: 50
+  default_steps: 100
+  grid_width: 10
+  grid_height: 10
+  step_delay: 0.1
+  anomaly_rate: 0.05
+  use_parallel_threshold: 50
+  max_simulation_time: 300  # 5 minutes max
+  enable_checkpointing: true
+  checkpoint_interval: 10
+  random_seed: null
+
+# Agent Configuration
+agent:
+  initial_wealth: 1
+  initial_trust_score: 100
+  trust_increment: 10
+  trust_decrement: 20
+  blacklist_threshold: 50
+  trade_probability: 0.1
+  move_probability: 0.5
+  max_wealth: 1000
+  min_wealth: 0
+  trust_decay_rate: 0.95
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "simulation.log"
+  max_bytes: 10485760  # 10MB
+  backup_count: 5
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  enable_json_logging: false
+  enable_file_rotation: true
+  enable_console_output: true
+  log_requests: false
+  log_performance: false
+
+# Streamlit Dashboard Configuration (v1.39.0)
+streamlit:
+  page_title: "Decentralized AI Simulation"
+  layout: "wide"
+  agent_slider_min: 10
+  agent_slider_max: 200
+  agent_slider_default: 50
+  anomaly_slider_min: 0.0
+  anomaly_slider_max: 0.1
+  anomaly_slider_default: 0.05
+  steps_slider_min: 10
+  steps_slider_max: 100
+  steps_slider_default: 50
+  cache_ttl: 5
+  server_port: 8501
+  server_address: "0.0.0.0"
+  enable_cors: false
+  enable_xsrf_protection: true
+  max_upload_size: 200
+  max_message_size: 200
+  enable_websocket_compression: false
+  gather_usage_stats: false
+
+# Monitoring Configuration
+monitoring:
+  health_check_interval: 30
+  metrics_port: 8000
+  enable_prometheus: false
+  enable_detailed_metrics: true
+  metrics_retention_days: 7
+  enable_health_checks: true
+  health_check_path: "/health"
+  metrics_path: "/metrics"
+  enable_request_tracing: false
+  tracing_sample_rate: 0.1
+
+# Performance Configuration
+performance:
+  enable_multiprocessing: true
+  max_workers: 4
+  memory_limit_mb: 1024
+  gc_threshold: 1000
+  enable_caching: true
+  cache_size_mb: 100
+  enable_async_processing: false
+  thread_pool_size: 10
+  enable_memory_profiling: false
+
+# Security Configuration
+security:
+  enable_input_validation: true
+  max_request_size_mb: 10
+  rate_limit_requests_per_minute: 100
+  enable_rate_limiting: true
+  allowed_hosts: []
+  enable_https_redirect: false
+  ssl_cert_file: null
+  ssl_key_file: null
+  secret_key: null
+  enable_csrf_protection: true
+
+# Development Configuration
+development:
+  debug_mode: false
+  enable_profiling: false
+  log_sql_queries: false
+  auto_reload: false
+  enable_hot_reload: false
+  show_tracebacks: true
+  enable_debug_toolbar: false
