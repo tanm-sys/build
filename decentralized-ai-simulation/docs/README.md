@@ -221,22 +221,22 @@ python -c "from logging_setup import get_logger; logger = get_logger('test'); lo
 ### High-Level System Architecture
 ```mermaid
 graph TB
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         CONFIG[Config Loader<br/>config_loader.py]
         LOG[Logging System<br/>logging_setup.py]
         MON[Monitoring System<br/>monitoring.py]
     end
     
-    subgraph "Data Layer"
+    subgraph "Data_Layer"
         DB[Database Ledger<br/>database.py]
     end
     
-    subgraph "Processing Layer"
+    subgraph "Processing_Layer"
         SIM[Simulation Engine<br/>simulation.py]
         AGENTS[AI Agents<br/>agents.py]
     end
     
-    subgraph "Interface Layer"
+    subgraph "Interface_Layer"
         CLI[CLI Interface<br/>decentralized_ai_simulation.py]
         UI[Streamlit UI<br/>streamlit_app.py]
     end
@@ -268,22 +268,22 @@ graph TB
 ### Data Flow with Modern Features
 ```mermaid
 flowchart LR
-    subgraph "Traffic Generation"
+    subgraph "Traffic_Generation"
         TG[Traffic Data Generation]
     end
     
-    subgraph "Anomaly Detection"
+    subgraph "Anomaly_Detection"
         AD[Isolation Forest Detection]
         TH[Threshold Analysis]
     end
     
-    subgraph "Consensus Mechanism"
+    subgraph "Consensus_Mechanism"
         SG[Signature Generation]
         BV[Broadcast Validation]
         CV[Consensus Voting]
     end
     
-    subgraph "Ledger Operations"
+    subgraph "Ledger_Operations"
         LO[Ledger Update]
         AU[Model & Blacklist Update]
     end
@@ -317,13 +317,13 @@ flowchart LR
         TEST_LOCAL[Local Testing]
     end
     
-    subgraph "Continuous Integration"
+    subgraph "Continuous_Integration"
         BUILD[Automated Build]
         UNIT[Unit Tests]
         INTEGRATION[Integration Tests]
     end
     
-    subgraph "Continuous Deployment"
+    subgraph "Continuous_Deployment"
         DEPLOY_DEV[Deploy to Dev]
         TEST_DEV[Test in Dev Environment]
         DEPLOY_PROD[Deploy to Production]

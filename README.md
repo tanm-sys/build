@@ -153,22 +153,22 @@ python -c "from logging_setup import get_logger; logger = get_logger('test'); lo
 ### High-Level System Architecture
 ```mermaid
 graph TB
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         CONFIG[Config Loader<br/>config_loader.py]
         LOG[Logging System<br/>logging_setup.py]
         MON[Monitoring System<br/>monitoring.py]
     end
     
-    subgraph "Data Layer"
+    subgraph "Data_Layer"
         DB[Database Ledger<br/>database.py]
     end
     
-    subgraph "Processing Layer"
+    subgraph "Processing_Layer"
         SIM[Simulation Engine<br/>simulation.py]
         AGENTS[AI Agents<br/>agents.py]
     end
     
-    subgraph "Interface Layer"
+    subgraph "Interface_Layer"
         CLI[CLI Interface<br/>decentralized_ai_simulation.py]
         UI[Streamlit UI<br/>streamlit_app.py]
     end
@@ -179,7 +179,7 @@ graph TB
     CONFIG --> SIM
     LOG --> ALL[All Components]
     MON --> ALL
-    SIM -->
+    SIM --> DB
 =======
 # 🚀 Decentralized AI Simulation Project
 
@@ -380,19 +380,19 @@ python -c "from logging_setup import get_logger; logger = get_logger('test'); lo
 
 ```mermaid
 graph TB
-    subgraph "AI Agent Network"
+    subgraph "AI_Agent_Network"
         AGENT1[Agent 1<br/>Anomaly Detection]
         AGENT2[Agent 2<br/>Anomaly Detection]
         AGENT3[Agent N<br/>Anomaly Detection]
     end
 
-    subgraph "Core Infrastructure"
+    subgraph "Core_Infrastructure"
         CONSENSUS[Consensus Engine<br/>Majority Voting]
         LEDGER[Immutable Ledger<br/>SQLite + WAL Mode]
         MONITOR[Monitoring System<br/>Health + Metrics]
     end
 
-    subgraph "User Interfaces"
+    subgraph "User_Interfaces"
         CLI[Command Line<br/>Headless Execution]
         WEB[Streamlit Dashboard<br/>Real-time Monitoring]
     end
@@ -418,22 +418,22 @@ graph TB
 ### High-Level System Architecture
 ```mermaid
 graph TB
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         CONFIG[Config Loader<br/>config_loader.py]
         LOG[Logging System<br/>logging_setup.py]
         MON[Monitoring System<br/>monitoring.py]
     end
     
-    subgraph "Data Layer"
+    subgraph "Data_Layer"
         DB[Database Ledger<br/>database.py]
     end
     
-    subgraph "Processing Layer"
+    subgraph "Processing_Layer"
         SIM[Simulation Engine<br/>simulation.py]
         AGENTS[AI Agents<br/>agents.py]
     end
     
-    subgraph "Interface Layer"
+    subgraph "Interface_Layer"
         CLI[CLI Interface<br/>decentralized_ai_simulation.py]
         UI[Streamlit UI<br/>streamlit_app.py]
     end
@@ -465,22 +465,22 @@ graph TB
 ### Data Flow with Modern Features
 ```mermaid
 flowchart LR
-    subgraph "Traffic Generation"
+    subgraph "Traffic_Generation"
         TG[Traffic Data Generation]
     end
     
-    subgraph "Anomaly Detection"
+    subgraph "Anomaly_Detection"
         AD[Isolation Forest Detection]
         TH[Threshold Analysis]
     end
     
-    subgraph "Consensus Mechanism"
+    subgraph "Consensus_Mechanism"
         SG[Signature Generation]
         BV[Broadcast Validation]
         CV[Consensus Voting]
     end
     
-    subgraph "Ledger Operations"
+    subgraph "Ledger_Operations"
         LO[Ledger Update]
         AU[Model & Blacklist Update]
     end
@@ -514,13 +514,13 @@ flowchart LR
         TEST_LOCAL[Local Testing]
     end
     
-    subgraph "Continuous Integration"
+    subgraph "Continuous_Integration"
         BUILD[Automated Build]
         UNIT[Unit Tests]
         INTEGRATION[Integration Tests]
     end
     
-    subgraph "Continuous Deployment"
+    subgraph "Continuous_Deployment"
         DEPLOY_DEV[Deploy to Dev]
         TEST_DEV[Test in Dev Environment]
         DEPLOY_PROD[Deploy to Production]
@@ -1006,7 +1006,7 @@ chmod 600 .env
 
 ```mermaid
 flowchart TD
-    subgraph "Traffic Generation"
+    subgraph "Traffic_Generation"
         START[Simulation Start] --> GENERATE[Generate Synthetic Traffic]
         GENERATE --> NORMAL{Normal Traffic?}
         NORMAL -- Yes --> BASELINE[Baseline Patterns]

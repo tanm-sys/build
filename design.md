@@ -8,25 +8,25 @@ The decentralized AI simulation project has been modernized with enterprise-grad
 
 ```mermaid
 graph TB
-    subgraph "Infrastructure Services"
+    subgraph "Infrastructure_Services"
         CONFIG[Config Loader<br/>YAML + Env Vars]
         LOG[Logging System<br/>Structured + Rotation]
         MON[Monitoring System<br/>Health + Metrics]
     end
 
-    subgraph "Data Management"
+    subgraph "Data_Management"
         DB[Database Ledger<br/>SQLite with Pooling]
         CACHE[Query Caching<br/>Intelligent Caching]
         LEDGER[Immutable Storage<br/>Append-only Design]
     end
 
-    subgraph "Simulation Core"
+    subgraph "Simulation_Core"
         SIM[Simulation Engine<br/>Mesa Framework]
         SCHED[Agent Scheduler<br/>Parallel Execution]
         CONS[Consensus Resolver<br/>Majority Voting]
     end
 
-    subgraph "AI Agents"
+    subgraph "AI_Agents"
         AGENT[Anomaly Agents<br/>ML-Powered]
         TRAFFIC[Traffic Generation<br/>Synthetic Data]
         DETECT[Anomaly Detection<br/>Isolation Forest]
@@ -246,25 +246,25 @@ flowchart TD
 ### Consensus Mechanism Workflow
 ```mermaid
 flowchart LR
-    subgraph "Signature Submission"
+    subgraph "Signature_Submission"
         SUBMIT[Agent Submits Signature]
         STORE[Store in Ledger]
     end
     
-    subgraph "Validation Phase"
+    subgraph "Validation_Phase"
         POLL[Agents Poll Ledger]
         VALIDATE[Validate New Signatures]
         VOTE[Cast Validation Vote]
     end
     
-    subgraph "Consensus Resolution"
+    subgraph "Consensus_Resolution"
         COLLECT[Collect All Votes]
         THRESHOLD{Majority Consensus?}
         ACCEPT[Accept Signature]
         REJECT[Reject Signature]
     end
     
-    subgraph "Model Update"
+    subgraph "Model_Update"
         TRAIN[Retrain Model]
         BLACKLIST[Update Blacklist]
         NOTIFY[Notify All Agents]

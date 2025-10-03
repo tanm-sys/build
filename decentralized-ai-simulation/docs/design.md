@@ -8,25 +8,25 @@ The decentralized AI simulation project has been modernized with enterprise-grad
 
 ```mermaid
 graph TB
-    subgraph "Infrastructure Services"
+    subgraph "Infrastructure_Services"
         CONFIG[Config Loader<br/>YAML + Env Vars]
         LOG[Logging System<br/>Structured + Rotation]
         MON[Monitoring System<br/>Health + Metrics]
     end
 
-    subgraph "Data Management"
+    subgraph "Data_Management"
         DB[Database Ledger<br/>SQLite with Pooling]
         CACHE[Query Caching<br/>Intelligent Caching]
         LEDGER[Immutable Storage<br/>Append-only Design]
     end
 
-    subgraph "Simulation Core"
+    subgraph "Simulation_Core"
         SIM[Simulation Engine<br/>Mesa Framework]
         SCHED[Agent Scheduler<br/>Parallel Execution]
         CONS[Consensus Resolver<br/>Majority Voting]
     end
 
-    subgraph "AI Agents"
+    subgraph "AI_Agents"
         AGENT[Anomaly Agents<br/>ML-Powered]
         TRAFFIC[Traffic Generation<br/>Synthetic Data]
         DETECT[Anomaly Detection<br/>Isolation Forest]
@@ -246,25 +246,25 @@ flowchart TD
 ### Consensus Mechanism Workflow
 ```mermaid
 flowchart LR
-    subgraph "Signature Submission"
+    subgraph "Signature_Submission"
         SUBMIT[Agent Submits Signature]
         STORE[Store in Ledger]
     end
     
-    subgraph "Validation Phase"
+    subgraph "Validation_Phase"
         POLL[Agents Poll Ledger]
         VALIDATE[Validate New Signatures]
         VOTE[Cast Validation Vote]
     end
     
-    subgraph "Consensus Resolution"
+    subgraph "Consensus_Resolution"
         COLLECT[Collect All Votes]
         THRESHOLD{Majority Consensus?}
         ACCEPT[Accept Signature]
         REJECT[Reject Signature]
     end
     
-    subgraph "Model Update"
+    subgraph "Model_Update"
         TRAIN[Retrain Model]
         BLACKLIST[Update Blacklist]
         NOTIFY[Notify All Agents]
@@ -338,39 +338,39 @@ flowchart TD
 ### System Architecture Overview (High-Level)
 ```mermaid
 graph TB
-    subgraph "External Interfaces"
+    subgraph "External_Interfaces"
         API[REST API Gateway<br/>Request/Response]
         UI[Streamlit Dashboard<br/>Real-time Monitoring]
         CLI[Command Line Interface<br/>Administrative Control]
     end
 
-    subgraph "Application Layer"
+    subgraph "Application_Layer"
         WEB[Web Server Layer<br/>FastAPI/Flask]
         AUTH[Authentication Layer<br/>JWT/API Keys]
         RATE[Rate Limiting<br/>Request Throttling]
     end
 
-    subgraph "Service Layer"
+    subgraph "Service_Layer"
         CONFIG[Configuration Service<br/>YAML + Env Vars]
         LOG[Logging Service<br/>Structured + Rotation]
         MON[Monitoring Service<br/>Health + Metrics]
         CACHE[Caching Layer<br/>Redis/Memory]
     end
 
-    subgraph "Business Logic Layer"
+    subgraph "Business_Logic_Layer"
         SIM[Simulation Engine<br/>Mesa + Ray]
         AGENTS[AI Agent Manager<br/>Lifecycle + Coordination]
         CONSENSUS[Consensus Engine<br/>Voting + Validation]
         MODELS[ML Model Registry<br/>Versioning + Updates]
     end
 
-    subgraph "Data Layer"
+    subgraph "Data_Layer"
         DB[(SQLite Ledger<br/>WAL + Pooling)]
         STORAGE[(File Storage<br/>Logs + Artifacts)]
         BLACKLIST[(Threat DB<br/>Signatures + Patterns)]
     end
 
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         OS[Operating System<br/>Linux/Windows]
         RAY[Ray Cluster<br/>Distributed Computing]
         DOCKER[Docker Containers<br/>Deployment + Isolation]
@@ -437,38 +437,38 @@ graph TB
 ### Data Flow Architecture (Complete Pipeline)
 ```mermaid
 flowchart TD
-    subgraph "Data Generation"
+    subgraph "Data_Generation"
         TRAFFIC[Traffic Generator<br/>Synthetic Patterns]
         NOISE[Background Noise<br/>Normal Activity]
         ANOMALY[Anomaly Injector<br/>Attack Patterns]
     end
 
-    subgraph "Data Processing"
+    subgraph "Data_Processing"
         COLLECT[Data Collector<br/>Stream Processing]
         FILTER[Noise Filter<br/>Preprocessing]
         FEATURE[Feature Extractor<br/>Statistical Analysis]
     end
 
-    subgraph "AI Analysis"
+    subgraph "AI_Analysis"
         ISOLATION[Isolation Forest<br/>Anomaly Detection]
         SCORING[Anomaly Scoring<br/>Confidence Levels]
         CLUSTER[Pattern Clustering<br/>Threat Grouping]
     end
 
-    subgraph "Signature Creation"
+    subgraph "Signature_Creation"
         EXTRACT[Signature Extractor<br/>Key Features]
         HASH[Hash Generator<br/>Unique Identifiers]
         METADATA[Metadata Tagger<br/>Context + Timestamps]
     end
 
-    subgraph "Consensus & Storage"
+    subgraph "Consensus_&_Storage"
         BROADCAST[Signature Broadcast<br/>Network Distribution]
         VALIDATE[Peer Validation<br/>Cosine Similarity]
         VOTE[Consensus Voting<br/>Majority Rules]
         LEDGER[(Immutable Ledger<br/>Blockchain-like)]
     end
 
-    subgraph "Model Updates"
+    subgraph "Model_Updates"
         AGGREGATE[Pattern Aggregator<br/>Batch Collection]
         RETRAIN[Model Retraining<br/>Updated Parameters]
         DEPLOY[Model Deployment<br/>Live Updates]
@@ -528,14 +528,14 @@ flowchart TD
 ### Deployment Architecture (Multi-Environment)
 ```mermaid
 graph TB
-    subgraph "Development Environment"
+    subgraph "Development_Environment"
         DEV_GIT[Git Repository<br/>Feature Branches]
         DEV_CI[CI/CD Pipeline<br/>Automated Testing]
         DEV_CONT[Container Registry<br/>Docker Images]
         DEV_K8S[Development Cluster<br/>Single Node]
     end
 
-    subgraph "Staging Environment"
+    subgraph "Staging_Environment"
         STAGING_GIT[Main Branch<br/>Merged Code]
         STAGING_CI[Staging Pipeline<br/>Integration Tests]
         STAGING_CONT[Staging Registry<br/>Tagged Images]
@@ -543,7 +543,7 @@ graph TB
         STAGING_DB[(Staging Database<br/>Test Data)]
     end
 
-    subgraph "Production Environment"
+    subgraph "Production_Environment"
         PROD_GIT[Release Tags<br/>Versioned Releases]
         PROD_CI[Production Pipeline<br/>Security + Load Tests]
         PROD_CONT[Production Registry<br/>Approved Images]
@@ -552,7 +552,7 @@ graph TB
         PROD_CDN[CDN/Edge<br/>Global Distribution]
     end
 
-    subgraph "Shared Services"
+    subgraph "Shared_Services"
         MONITORING[Monitoring Stack<br/>Prometheus + Grafana]
         LOGGING[Centralized Logging<br/>ELK Stack]
         ARTIFACTS[Artifact Storage<br/>S3/MinIO]
@@ -616,42 +616,42 @@ graph TB
 ### Security Architecture (Defense in Depth)
 ```mermaid
 flowchart TD
-    subgraph "Perimeter Security"
+    subgraph "Perimeter_Security"
         FW[Firewall<br/>Network Layer]
         WAF[Web Application Firewall<br/>HTTP Filtering]
         VPN[VPN Gateway<br/>Secure Access]
         CERT[SSL/TLS Certificates<br/>Encryption in Transit]
     end
 
-    subgraph "Access Control"
+    subgraph "Access_Control"
         AUTHN[Authentication<br/>Identity Verification]
         AUTHZ[Authorization<br/>Permission Management]
         RBAC[Role-Based Access<br/>Least Privilege]
         SESSION[Session Management<br/>Secure Tokens]
     end
 
-    subgraph "Input Validation"
+    subgraph "Input_Validation"
         SANITIZE[Input Sanitization<br/>XSS Prevention]
         VALIDATE[Schema Validation<br/>Type Checking]
         RATE_LIMIT[Rate Limiting<br/>DoS Protection]
         CSRF[CSRF Protection<br/>Request Forgery]
     end
 
-    subgraph "Data Protection"
+    subgraph "Data_Protection"
         ENCRYPT_AT_REST[Encryption at Rest<br/>Database + Files]
         ENCRYPT_IN_TRANSIT[Encryption in Transit<br/>TLS 1.3]
         PII_MASKING[PII Data Masking<br/>Privacy Protection]
         AUDIT_LOGGING[Audit Logging<br/>Security Events]
     end
 
-    subgraph "Application Security"
+    subgraph "Application_Security"
         SECURE_CONFIG[Secure Configuration<br/>No Hardcoded Secrets]
         DEPENDENCY_SCAN[Dependency Scanning<br/>Vulnerability Checks]
         CODE_SCAN[Static Code Analysis<br/>SAST Scanning]
         CONTAINER_SCAN[Container Scanning<br/>Image Vulnerabilities]
     end
 
-    subgraph "Monitoring & Response"
+    subgraph "Monitoring_&_Response"
         IDS[Intrusion Detection<br/>Anomaly Monitoring]
         SIEM[Security Events<br/>Log Correlation]
         ALERTING[Alert Management<br/>Incident Response]
@@ -718,7 +718,7 @@ flowchart TD
 ### Scalability Architecture (Elastic Design)
 ```mermaid
 graph TB
-    subgraph "Horizontal Scaling"
+    subgraph "Horizontal_Scaling"
         LOAD_BALANCER[Load Balancer<br/>Request Distribution]
         APP1[Application Instance 1<br/>Stateless Design]
         APP2[Application Instance 2<br/>Independent Operation]
@@ -726,14 +726,14 @@ graph TB
         DB_CLUSTER[(Database Cluster<br/>Read Replicas)]
     end
 
-    subgraph "Vertical Scaling"
+    subgraph "Vertical_Scaling"
         CPU_SCALE[CPU Scaling<br/>More Cores]
         RAM_SCALE[Memory Scaling<br/>Increased RAM]
         STORAGE_SCALE[Storage Scaling<br/>SSD + NVMe]
         CACHE_SCALE[Cache Scaling<br/>Distributed Redis]
     end
 
-    subgraph "Distributed Processing"
+    subgraph "Distributed_Processing"
         RAY_HEAD[Ray Head Node<br/>Cluster Management]
         RAY_WORKER1[Ray Worker 1<br/>Task Processing]
         RAY_WORKER2[Ray Worker 2<br/>Parallel Execution]
@@ -747,7 +747,7 @@ graph TB
         SCALING_ACTION[Auto-scaling Action<br/>Add/Remove Instances]
     end
 
-    subgraph "Performance Optimization"
+    subgraph "Performance_Optimization"
         CDN_EDGE[CDN/Edge Caching<br/>Global Distribution]
         DB_OPTIMIZATION[Database Tuning<br/>Query Optimization]
         CODE_OPTIMIZATION[Code Profiling<br/>Bottleneck Analysis]
@@ -872,7 +872,7 @@ stateDiagram-v2
 #### Database Transaction Workflow
 ```mermaid
 flowchart TD
-    subgraph "Read Operations"
+    subgraph "Read_Operations"
         RO1[Read Request] --> RO2{Cache Check}
         RO2 -->|Cache Hit| RO3[Return Cached Data]
         RO2 -->|Cache Miss| RO4[Acquire Connection]
@@ -883,7 +883,7 @@ flowchart TD
         RO8 --> RO3
     end
 
-    subgraph "Write Operations"
+    subgraph "Write_Operations"
         WO1[Write Request] --> WO2[Acquire Connection]
         WO2 --> WO3[Start Transaction]
         WO3 --> WO4[Execute Insert/Update]
@@ -895,7 +895,7 @@ flowchart TD
         WO8 --> WO9[Release Connection]
     end
 
-    subgraph "Ledger Operations"
+    subgraph "Ledger_Operations"
         LO1[Signature Submit] --> LO2[Validate Format]
         LO2 --> LO3[Generate Hash]
         LO3 --> LO4[Store in WAL]
@@ -939,26 +939,26 @@ flowchart TD
 #### Monitoring and Alerting Workflow
 ```mermaid
 flowchart TD
-    subgraph "Metrics Collection"
+    subgraph "Metrics_Collection"
         MC1[System Metrics<br/>CPU, Memory, Disk] --> MC2[Application Metrics<br/>Response Time, Errors]
         MC2 --> MC3[Business Metrics<br/>Anomalies, Consensus]
         MC3 --> MC4[Custom Metrics<br/>Agent Performance]
     end
 
-    subgraph "Health Checks"
+    subgraph "Health_Checks"
         HC1[Component Health<br/>Database, Cache] --> HC2[Service Health<br/>API, Simulation]
         HC2 --> HC3[Integration Health<br/>External Services]
         HC3 --> HC4[Overall Status<br/>System Health Score]
     end
 
-    subgraph "Alert Generation"
+    subgraph "Alert_Generation"
         AG1[Threshold Check<br/>Metric Comparisons] --> AG2[Severity Assessment<br/>Critical/Warning/Info]
         AG2 --> AG3[Alert Creation<br/>Rich Context]
         AG3 --> AG4[Deduplication<br/>Prevent Spam]
         AG4 --> AG5[Notification Routing<br/>Email/Slack/Pager]
     end
 
-    subgraph "Incident Response"
+    subgraph "Incident_Response"
         IR1[Alert Received] --> IR2[Initial Assessment<br/>Impact Analysis]
         IR2 --> IR3[Automated Response<br/>Auto-scaling/Failover]
         IR3 --> IR4[Manual Intervention<br/>If Required]
@@ -1252,14 +1252,14 @@ development:
 ### Horizontal and Vertical Scaling
 ```mermaid
 graph TB
-    subgraph "Vertical Scaling"
+    subgraph "Vertical_Scaling"
         VS1[Increase CPU Cores]
         VS2[Add More RAM]
         VS3[Larger Connection Pool]
         VS4[Optimize Cache Size]
     end
 
-    subgraph "Horizontal Scaling"
+    subgraph "Horizontal_Scaling"
         HS1[Add More Nodes]
         HS2[Distribute Agents]
         HS3[Load Balancing]

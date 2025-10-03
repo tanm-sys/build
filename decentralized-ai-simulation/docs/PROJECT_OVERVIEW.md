@@ -246,30 +246,30 @@ This simulation demonstrates principles applicable to:
 
 ```mermaid
 graph TB
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         CONFIG[Configuration System<br/>YAML + Environment Variables]
         LOGGING[Structured Logging<br/>Rotation + Multiple Handlers]
         MONITOR[Monitoring System<br/>Health Checks + Metrics]
     end
 
-    subgraph "Data Management Layer"
+    subgraph "Data_Management_Layer"
         LEDGER[Immutable Ledger<br/>SQLite + WAL Mode]
         CACHE[Query Cache<br/>LRU + Thread-Safe]
         POOL[Connection Pool<br/>Thread-Local Connections]
     end
 
-    subgraph "Simulation Engine"
+    subgraph "Simulation_Engine"
         MESA[Mesa Framework<br/>Agent-Based Modeling]
         SCHEDULER[Agent Scheduler<br/>Parallel Execution]
         CONSENSUS[Consensus Resolver<br/>Majority Voting]
     end
 
-    subgraph "AI Agent Network"
+    subgraph "AI_Agent_Network"
         AGENT1[Agent 1<br/>Anomaly Detection]
         AGENT2[Agent 2<br/>Anomaly Detection]
         AGENT3[Agent N<br/>Anomaly Detection]
 
-        subgraph "Agent Components"
+        subgraph "Agent_Components"
             TRAFFIC[Traffic Generator<br/>Synthetic Data]
             DETECT[ML Detection<br/>Isolation Forest]
             SIGNATURE[Signature Generator<br/>Threat Patterns]
@@ -278,7 +278,7 @@ graph TB
         end
     end
 
-    subgraph "Interface Layer"
+    subgraph "Interface_Layer"
         CLI[Command Line Interface<br/>Execution Control]
         WEB[Streamlit Web UI<br/>Real-time Dashboard]
         API[Monitoring API<br/>Health + Metrics]
@@ -398,28 +398,28 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    subgraph "Data Generation"
+    subgraph "Data_Generation"
         START[Simulation Start] --> GENERATE[Generate Synthetic Traffic]
         GENERATE --> NORMAL{Normal Traffic?}
         NORMAL -- Yes --> BASELINE[Baseline Patterns]
         NORMAL -- No --> ANOMALY[Inject Anomalies]
     end
 
-    subgraph "Machine Learning Detection"
+    subgraph "Machine_Learning_Detection"
         BASELINE --> ANALYZE[Isolation Forest Analysis]
         ANOMALY --> ANALYZE
         ANALYZE --> SCORE[Calculate Anomaly Scores]
         SCORE --> THRESHOLD{Score > Threshold?}
     end
 
-    subgraph "Signature Generation"
+    subgraph "Signature_Generation"
         THRESHOLD -- Yes --> EXTRACT[Extract Anomaly Features]
         EXTRACT --> PATTERN[Identify Threat Patterns]
         PATTERN --> SIGNATURE[Generate Threat Signature]
         SIGNATURE --> METADATA[Add Metadata & Timestamp]
     end
 
-    subgraph "Consensus Validation"
+    subgraph "Consensus_Validation"
         METADATA --> BROADCAST[Broadcast to Ledger]
         BROADCAST --> PEERS[Peer Agent Validation]
         PEERS --> SIMILARITY[Cosine Similarity Check]
@@ -427,7 +427,7 @@ flowchart TD
         VOTE --> CONSENSUS{Majority Consensus?}
     end
 
-    subgraph "Learning and Adaptation"
+    subgraph "Learning_and_Adaptation"
         CONSENSUS -- Yes --> ACCEPT[Accept Signature]
         CONSENSUS -- No --> REJECT[Reject Signature]
         ACCEPT --> UPDATE[Update ML Models]
@@ -436,7 +436,7 @@ flowchart TD
         REJECT --> DISCARD[Discard Signature]
     end
 
-    subgraph "Continuous Cycle"
+    subgraph "Continuous_Cycle"
         IMPROVE --> GENERATE
         DISCARD --> GENERATE
         THRESHOLD -- No --> GENERATE
@@ -460,27 +460,27 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph "Development Phase"
+    subgraph "Development_Phase"
         DEV1[Code Development]
         DEV2[Local Testing]
         DEV3[Quality Checks]
     end
 
-    subgraph "Automated Testing"
+    subgraph "Automated_Testing"
         TEST1[Unit Tests<br/>22 Test Cases]
         TEST2[Integration Tests<br/>Component Interaction]
         TEST3[Performance Tests<br/>Load & Scalability]
         TEST4[Coverage Analysis<br/>Code Coverage Report]
     end
 
-    subgraph "Quality Assurance"
+    subgraph "Quality_Assurance"
         QA1[Code Linting<br/>Flake8 + Black]
         QA2[Type Checking<br/>Static Analysis]
         QA3[Security Scan<br/>Vulnerability Check]
         QA4[Documentation<br/>API + User Docs]
     end
 
-    subgraph "Deployment Pipeline"
+    subgraph "Deployment_Pipeline"
         DEPLOY1[Staging Deploy<br/>Test Environment]
         DEPLOY2[Health Validation<br/>System Checks]
         DEPLOY3[Production Deploy<br/>Live Environment]
@@ -541,14 +541,14 @@ flowchart LR
 
 ```mermaid
 graph TB
-    subgraph "External Clients"
+    subgraph "External_Clients"
         CLIENT1[REST Client<br/>curl/Postman]
         CLIENT2[Web Browser<br/>JavaScript/AJAX]
         CLIENT3[Monitoring System<br/>Prometheus/Grafana]
         CLIENT4[External API<br/>Third-party Integration]
     end
 
-    subgraph "API Gateway Layer"
+    subgraph "API_Gateway_Layer"
         ROUTER[API Router<br/>FastAPI/Flask]
         AUTH[Authentication Middleware<br/>API Key Validation]
         RATE_LIMIT[Rate Limiter<br/>Request Throttling]
@@ -556,7 +556,7 @@ graph TB
         VALIDATOR[Input Validator<br/>Schema Validation]
     end
 
-    subgraph "Service Layer"
+    subgraph "Service_Layer"
         MONITOR_API[Monitoring API<br/>Health + Metrics]
         SIMULATION_API[Simulation API<br/>Control + Status]
         AGENT_API[Agent API<br/>Lifecycle Management]
@@ -564,7 +564,7 @@ graph TB
         CONFIG_API[Configuration API<br/>Settings Management]
     end
 
-    subgraph "Data Access Layer"
+    subgraph "Data_Access_Layer"
         MONITORING[Monitoring Service<br/>Metrics Collection]
         SIMULATION[Simulation Engine<br/>Agent Coordination]
         DATABASE[Database Layer<br/>Connection Pool]
@@ -572,7 +572,7 @@ graph TB
         LOGGER[Logging Service<br/>Structured Logs]
     end
 
-    subgraph "External Systems"
+    subgraph "External_Systems"
         PROMETHEUS[Prometheus<br/>Metrics Storage]
         GRAFANA[Grafana<br/>Visualization]
         LOG_SYSTEM[Log Aggregation<br/>ELK Stack]
@@ -636,27 +636,27 @@ graph TB
 
 ```mermaid
 flowchart TD
-    subgraph "Configuration Sources"
+    subgraph "Configuration_Sources"
         YAML[YAML Files<br/>config.yaml, config.local.yaml]
         ENV[Environment Variables<br/>SIMULATION_*, DATABASE_*, etc.]
         DEFAULTS[Default Values<br/>Hardcoded Fallbacks]
         RUNTIME[Runtime Overrides<br/>Command-line Arguments]
     end
 
-    subgraph "Processing Pipeline"
+    subgraph "Processing_Pipeline"
         LOADER[Configuration Loader<br/>Priority Resolution]
         VALIDATOR[Schema Validator<br/>Type + Range Checks]
         MERGER[Value Merger<br/>Hierarchical Override]
         EXPANDER[Environment Expander<br/>Variable Substitution]
     end
 
-    subgraph "Runtime Configuration"
+    subgraph "Runtime_Configuration"
         CONFIG[Final Configuration<br/>Validated + Expanded]
         CACHE[Configuration Cache<br/>Runtime Access]
         HOT_RELOAD[Hot Reload Monitor<br/>File Change Detection]
     end
 
-    subgraph "Application Components"
+    subgraph "Application_Components"
         SIMULATION[Simulation Engine<br/>Agent Parameters]
         DATABASE[Database Layer<br/>Connection Settings]
         LOGGING[Logging System<br/>Levels + Destinations]
@@ -712,28 +712,28 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph "Error Detection"
+    subgraph "Error_Detection"
         EXCEPTION[Exception Occurred<br/>Runtime Error]
         CLASSIFY[Error Classifier<br/>Type + Severity]
         CONTEXT[Context Collector<br/>Stack Trace + State]
         LOG[Structured Logger<br/>JSON Format]
     end
 
-    subgraph "Error Processing"
+    subgraph "Error_Processing"
         HANDLER[Error Handler<br/>Strategy Selection]
         RETRY[Retry Manager<br/>Exponential Backoff]
         CIRCUIT[Circuit Breaker<br/>Failure Threshold]
         FALLBACK[Fallback Provider<br/>Alternative Logic]
     end
 
-    subgraph "Recovery Mechanisms"
+    subgraph "Recovery_Mechanisms"
         AUTO_RECOVER[Auto Recovery<br/>Self-healing]
         PARTIAL_FAIL[Partial Failure<br/>Graceful Degradation]
         NOTIFICATION[Alert Manager<br/>Notifications]
         METRICS[Metrics Collector<br/>Error Statistics]
     end
 
-    subgraph "System Components"
+    subgraph "System_Components"
         AGENT[AI Agents<br/>Anomaly Detection]
         DATABASE[Database Layer<br/>Connection Issues]
         NETWORK[Network Layer<br/>Communication Errors]
@@ -882,28 +882,28 @@ stateDiagram-v2
 
 ```mermaid
 flowchart TD
-    subgraph "Connection Request"
+    subgraph "Connection_Request"
         REQUEST[Connection Request<br/>Thread/Agent Needs DB]
         POOL_CHECK{Pool Available?}
         POOL_FULL{Pool Exhausted?}
         CREATE_NEW[Create New Connection<br/>TCP Handshake]
     end
 
-    subgraph "Connection Pool Management"
+    subgraph "Connection_Pool_Management"
         POOL[Connection Pool<br/>Thread-local Storage]
         OVERFLOW[Overflow Handler<br/>Queue + Wait]
         HEALTH[Health Monitor<br/>Connection Validation]
         CLEANUP[Cleanup Manager<br/>Idle Connection Removal]
     end
 
-    subgraph "Database Operations"
+    subgraph "Database_Operations"
         QUERY[Execute Query<br/>Read/Write Operation]
         TRANSACTION[Transaction Manager<br/>ACID Compliance]
         CACHE[Query Cache<br/>Result Caching]
         BATCH[Batch Processor<br/>Bulk Operations]
     end
 
-    subgraph "Connection Lifecycle"
+    subgraph "Connection_Lifecycle"
         RETURN[Return to Pool<br/>Connection Reuse]
         VALIDATE[Validate Connection<br/>Health Check]
         RECYCLE[Recycle Connection<br/>Reset State]
@@ -964,21 +964,21 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph "Development Workflow"
+    subgraph "Development_Workflow"
         SETUP[Environment Setup<br/>Dependencies + Config]
         CODE[Code Development<br/>Features + Tests]
         LOCAL[Local Testing<br/>Unit + Integration]
         REVIEW[Code Review<br/>Quality + Security]
     end
 
-    subgraph "CI/CD Pipeline"
+    subgraph "CI/CD_Pipeline"
         BUILD[Build Process<br/>Compile + Package]
         TEST[Automated Testing<br/>All Test Suites]
         QUALITY[Quality Gates<br/>Coverage + Linting]
         SECURITY[Security Scan<br/>Vulnerabilities]
     end
 
-    subgraph "Deployment Stages"
+    subgraph "Deployment_Stages"
         STAGING[Staging Deploy<br/>Pre-production]
         VALIDATE[Validation Tests<br/>Smoke + Load]
         PRODUCTION[Production Deploy<br/>Live Environment]
@@ -1032,7 +1032,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    subgraph "Research Use Case"
+    subgraph "Research_Use_Case"
         RESEARCH[Research Question<br/>Hypothesis Definition]
         EXPERIMENT[Experiment Design<br/>Variables + Controls]
         SIMULATION[Simulation Setup<br/>Parameters + Agents]
@@ -1041,7 +1041,7 @@ flowchart TD
         PAPER[Publication<br/>Findings + Methods]
     end
 
-    subgraph "Educational Use Case"
+    subgraph "Educational_Use_Case"
         CURRICULUM[Course Integration<br/>Learning Objectives]
         DEMO[Interactive Demo<br/>Hands-on Examples]
         EXERCISE[Student Exercises<br/>Guided Activities]
@@ -1049,7 +1049,7 @@ flowchart TD
         ASSESSMENT[Learning Assessment<br/>Knowledge Validation]
     end
 
-    subgraph "Production Use Case"
+    subgraph "Production_Use_Case"
         REQUIREMENTS[Requirements Analysis<br/>Business Needs]
         ARCHITECTURE[System Architecture<br/>Components + Scale]
         IMPLEMENTATION[Implementation<br/>Code + Configuration]

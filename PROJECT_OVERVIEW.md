@@ -241,30 +241,30 @@ This simulation demonstrates principles applicable to:
 
 ```mermaid
 graph TB
-    subgraph "Infrastructure Layer"
+    subgraph "Infrastructure_Layer"
         CONFIG[Configuration System<br/>YAML + Environment Variables]
         LOGGING[Structured Logging<br/>Rotation + Multiple Handlers]
         MONITOR[Monitoring System<br/>Health Checks + Metrics]
     end
 
-    subgraph "Data Management Layer"
+    subgraph "Data_Management_Layer"
         LEDGER[Immutable Ledger<br/>SQLite + WAL Mode]
         CACHE[Query Cache<br/>LRU + Thread-Safe]
         POOL[Connection Pool<br/>Thread-Local Connections]
     end
 
-    subgraph "Simulation Engine"
+    subgraph "Simulation_Engine"
         MESA[Mesa Framework<br/>Agent-Based Modeling]
         SCHEDULER[Agent Scheduler<br/>Parallel Execution]
         CONSENSUS[Consensus Resolver<br/>Majority Voting]
     end
 
-    subgraph "AI Agent Network"
+    subgraph "AI_Agent_Network"
         AGENT1[Agent 1<br/>Anomaly Detection]
         AGENT2[Agent 2<br/>Anomaly Detection]
         AGENT3[Agent N<br/>Anomaly Detection]
 
-        subgraph "Agent Components"
+        subgraph "Agent_Components"
             TRAFFIC[Traffic Generator<br/>Synthetic Data]
             DETECT[ML Detection<br/>Isolation Forest]
             SIGNATURE[Signature Generator<br/>Threat Patterns]
@@ -273,7 +273,7 @@ graph TB
         end
     end
 
-    subgraph "Interface Layer"
+    subgraph "Interface_Layer"
         CLI[Command Line Interface<br/>Execution Control]
         WEB[Streamlit Web UI<br/>Real-time Dashboard]
         API[Monitoring API<br/>Health + Metrics]
@@ -393,28 +393,28 @@ sequenceDiagram
 
 ```mermaid
 flowchart TD
-    subgraph "Data Generation"
+    subgraph "Data_Generation"
         START[Simulation Start] --> GENERATE[Generate Synthetic Traffic]
         GENERATE --> NORMAL{Normal Traffic?}
         NORMAL -- Yes --> BASELINE[Baseline Patterns]
         NORMAL -- No --> ANOMALY[Inject Anomalies]
     end
 
-    subgraph "Machine Learning Detection"
+    subgraph "Machine_Learning_Detection"
         BASELINE --> ANALYZE[Isolation Forest Analysis]
         ANOMALY --> ANALYZE
         ANALYZE --> SCORE[Calculate Anomaly Scores]
         SCORE --> THRESHOLD{Score > Threshold?}
     end
 
-    subgraph "Signature Generation"
+    subgraph "Signature_Generation"
         THRESHOLD -- Yes --> EXTRACT[Extract Anomaly Features]
         EXTRACT --> PATTERN[Identify Threat Patterns]
         PATTERN --> SIGNATURE[Generate Threat Signature]
         SIGNATURE --> METADATA[Add Metadata & Timestamp]
     end
 
-    subgraph "Consensus Validation"
+    subgraph "Consensus_Validation"
         METADATA --> BROADCAST[Broadcast to Ledger]
         BROADCAST --> PEERS[Peer Agent Validation]
         PEERS --> SIMILARITY[Cosine Similarity Check]
@@ -422,7 +422,7 @@ flowchart TD
         VOTE --> CONSENSUS{Majority Consensus?}
     end
 
-    subgraph "Learning and Adaptation"
+    subgraph "Learning_and_Adaptation"
         CONSENSUS -- Yes --> ACCEPT[Accept Signature]
         CONSENSUS -- No --> REJECT[Reject Signature]
         ACCEPT --> UPDATE[Update ML Models]
@@ -431,7 +431,7 @@ flowchart TD
         REJECT --> DISCARD[Discard Signature]
     end
 
-    subgraph "Continuous Cycle"
+    subgraph "Continuous_Cycle"
         IMPROVE --> GENERATE
         DISCARD --> GENERATE
         THRESHOLD -- No --> GENERATE
@@ -455,27 +455,27 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph "Development Phase"
+    subgraph "Development_Phase"
         DEV1[Code Development]
         DEV2[Local Testing]
         DEV3[Quality Checks]
     end
 
-    subgraph "Automated Testing"
+    subgraph "Automated_Testing"
         TEST1[Unit Tests<br/>22 Test Cases]
         TEST2[Integration Tests<br/>Component Interaction]
         TEST3[Performance Tests<br/>Load & Scalability]
         TEST4[Coverage Analysis<br/>Code Coverage Report]
     end
 
-    subgraph "Quality Assurance"
+    subgraph "Quality_Assurance"
         QA1[Code Linting<br/>Flake8 + Black]
         QA2[Type Checking<br/>Static Analysis]
         QA3[Security Scan<br/>Vulnerability Check]
         QA4[Documentation<br/>API + User Docs]
     end
 
-    subgraph "Deployment Pipeline"
+    subgraph "Deployment_Pipeline"
         DEPLOY1[Staging Deploy<br/>Test Environment]
         DEPLOY2[Health Validation<br/>System Checks]
         DEPLOY3[Production Deploy<br/>Live Environment]
