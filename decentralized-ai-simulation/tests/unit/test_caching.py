@@ -2,7 +2,7 @@
 """Test script for caching mechanisms."""
 
 import time
-from database import DatabaseLedger
+from src.core.database import DatabaseLedger
 
 def test_caching_mechanisms():
     """Test the caching mechanisms in the database ledger."""

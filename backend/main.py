@@ -44,15 +44,15 @@ except ImportError as e:
     # Fallback to direct imports if package structure is different
     print(f"Warning: Could not import from package structure: {e}")
     print("Attempting direct imports...")
-    from simulation import Simulation
-    from agents import AnomalyAgent, AnomalySignature
-    from database import DatabaseLedger
-    from config_loader import get_config
-    from logging_setup import get_logger
-    from monitoring import get_monitoring
+    from src.core.simulation import Simulation
+    from src.core.agents import AnomalyAgent, AnomalySignature
+    from src.core.database import DatabaseLedger
+    from src.config.config_loader import get_config
+    from src.utils.logging_setup import get_logger
+    from src.utils.monitoring import get_monitoring
 
 # Import data transformation module
-from data_transformers import (
+from backend.data_transformers import (
     Vector3D, Agent3D, Anomaly3D, SimulationState3D,
     SimulationStateTransformer, create_3d_simulation_state,
     create_3d_agents, create_3d_anomalies_from_ledger

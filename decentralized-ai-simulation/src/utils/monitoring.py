@@ -117,7 +117,7 @@ class Monitoring:
 # Default health checks
 def database_health_check() -> HealthStatus:
     """Health check for database connectivity."""
-    from database import DatabaseLedger
+    from src.core.database import DatabaseLedger
     try:
         db = DatabaseLedger()
         entries = db.read_ledger()
@@ -138,7 +138,7 @@ def database_health_check() -> HealthStatus:
 def simulation_health_check() -> HealthStatus:
     """Health check for simulation components."""
     try:
-        from simulation import Simulation
+        from src.core.simulation import Simulation
         # Just test that we can import and instantiate
         _ = Simulation(num_agents=1)
         return HealthStatus(

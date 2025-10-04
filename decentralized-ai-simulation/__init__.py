@@ -11,14 +11,18 @@ __author__ = "Decentralized AI Simulation Team"
 # Export main classes for easier importing
 try:
     # Try relative imports (works when package is installed)
-    from .src.core.simulation import Simulation
-    from .src.core.agents import AnomalyAgent, AnomalySignature
-    from .src.core.database import DatabaseLedger
-except ImportError:
-    # Fall back to absolute imports (works when running tests)
     from src.core.simulation import Simulation
     from src.core.agents import AnomalyAgent, AnomalySignature
     from src.core.database import DatabaseLedger
+except ImportError:
+    # Fall back to absolute imports (works when running tests)
+    try:
+        from src.core.simulation import Simulation
+        from src.core.agents import AnomalyAgent, AnomalySignature
+        from src.core.database import DatabaseLedger
+    except ImportError:
+        # Skip imports if modules don't exist yet
+        pass
 
 __all__ = [
     'Simulation',

@@ -22,12 +22,12 @@ import sqlite3
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from simulation import Simulation
-from database import DatabaseLedger, close_all_connections
-from agents import AnomalyAgent
-from config_loader import get_config
-from logging_setup import get_logger
-from monitoring import get_monitoring
+from src.core.simulation import Simulation
+from src.core.database import DatabaseLedger, close_all_connections
+from src.core.agents import AnomalyAgent
+from src.config.config_loader import get_config
+from src.utils.logging_setup import get_logger
+from src.utils.monitoring import get_monitoring
 
 logger = get_logger(__name__)
 

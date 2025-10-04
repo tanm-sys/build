@@ -18,8 +18,8 @@ import websockets
 from websockets import WebSocketServerProtocol
 
 # Import simulation components
-from simulation import Simulation
-from database import DatabaseLedger
+from src.core.simulation import Simulation
+from src.core.database import DatabaseLedger
 
 # Import 3D data transformers
 import sys
@@ -27,7 +27,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))
 
 try:
-    from data_transformers import (
+    from backend.data_transformers import (
         SimulationStateTransformer, create_3d_simulation_state,
         create_3d_agents, create_3d_anomalies_from_ledger,
         Agent3D, Anomaly3D, SimulationState3D

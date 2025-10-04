@@ -20,7 +20,7 @@ import os
 # Add parent directory to path for imports
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from data_transformers import (
+from backend.data_transformers import (
     Vector3D, Agent3D, Anomaly3D, SimulationState3D,
     SimulationStateTransformer, create_3d_simulation_state,
     create_3d_agents, create_3d_anomalies_from_ledger
@@ -192,7 +192,7 @@ class TestAPIBackend:
     def backend_server(self):
         """Start the backend server for testing."""
         # Import and start the backend server
-        from main import app
+        from backend.main import app
         # In a real test, you would use test client or start server
         # For now, we'll test the components directly
         yield app
@@ -200,15 +200,15 @@ class TestAPIBackend:
     def test_backend_imports(self):
         """Test that backend components can be imported."""
         try:
-            from main import SimulationBridge
-            from data_transformers import SimulationStateTransformer
+            from backend.main import SimulationBridge
+            from backend.data_transformers import SimulationStateTransformer
             assert True
         except ImportError as e:
             pytest.fail(f"Failed to import backend components: {e}")
 
     def test_simulation_bridge_creation(self):
         """Test SimulationBridge creation and basic functionality."""
-        from main import SimulationBridge
+        from backend.main import SimulationBridge
 
         bridge = SimulationBridge()
         assert bridge.simulation is None

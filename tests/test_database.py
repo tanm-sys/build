@@ -1,7 +1,7 @@
 import pytest
 import tempfile
 import os
-from database import DatabaseLedger
+from src.core.database import DatabaseLedger
 
 @pytest.fixture
 def temp_db():
@@ -9,7 +9,7 @@ def temp_db():
     os.close(fd)
     yield path
     # Close all database connections before deleting the file
-    from database import close_db_connection
+    from src.core.database import close_db_connection
     close_db_connection()
     os.unlink(path)
 

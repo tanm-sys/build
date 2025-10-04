@@ -189,25 +189,88 @@ Run comprehensive verification:
 python -c "import mesa; import ray; import sqlite3; import yaml; print('All imports successful')"
 
 # Test configuration system
-python -c "from config_loader import get_config; print(f'Database path: {get_config(\"database.path\")}')"
+python -c "from decentralized_ai_simulation.src.config.config_manager import get_config; print(f'Database path: {get_config(\"database.path\")}')"
 
 # Test logging
-python -c "from logging_setup import get_logger; logger = get_logger('test'); logger.info('Logging test successful')"
+python -c "from decentralized_ai_simulation.src.utils.logging_setup import get_logger; logger = get_logger('test'); logger.info('Logging test successful')"
 ```
+
+## 📁 Project Structure
+
+The project follows a well-organized, modular structure that separates concerns and promotes maintainability:
+
+### Directory Organization
+
+```
+decentralized-ai-simulation/
+├── 📁 src/                          # Source code modules
+│   ├── 📁 core/                     # Core simulation components
+│   │   ├── 📄 agents.py            # Agent implementation
+│   │   ├── 📄 database.py          # Database ledger system
+│   │   ├── 📄 simulation.py        # Simulation framework
+│   │   └── 📄 decentralized_ai_simulation.py
+│   ├── 📁 config/                  # Configuration management
+│   │   ├── 📄 config_loader.py     # Configuration loading utilities
+│   │   └── 📄 config_manager.py    # Configuration management system
+│   ├── 📁 ui/                      # User interface components
+│   │   ├── 📄 api_server.py       # REST API server
+│   │   └── 📄 streamlit_app.py    # Streamlit dashboard
+│   └── 📁 utils/                   # Utility modules
+│       ├── 📄 file_manager.py      # File management utilities
+│       ├── 📄 data_manager.py      # Data management utilities
+│       ├── 📄 migration_helper.py  # Migration and refactoring tools
+│       └── 📄 monitoring.py       # Health monitoring system
+├── 📁 tests/                       # Test suite
+│   ├── 📁 unit/                    # Unit tests
+│   ├── 📁 integration/             # Integration tests
+│   └── 📁 fixtures/               # Test data and fixtures
+├── 📁 docs/                        # Documentation
+│   ├── 📁 project/                 # Project structure documentation
+│   ├── 📁 guides/                  # User guides and tutorials
+│   └── 📄 README.md               # This file
+├── 📁 config/                      # Configuration files
+│   ├── 📄 config.yaml             # Main configuration
+│   └── 📁 environments/           # Environment-specific configs
+├── 📁 scripts/                     # Automation scripts
+└── 📁 data/                        # Runtime data and databases
+```
+
+### Key Structure Benefits
+
+- **🔧 Modularity**: Clear separation between core logic, utilities, and interfaces
+- **📦 Maintainability**: Organized packages with clear responsibilities
+- **🔄 Scalability**: Structure supports adding new components without reorganization
+- **🧪 Testability**: Well-organized test structure with clear test boundaries
+- **📚 Documentation**: Comprehensive documentation for all components
+
+### Import Structure
+
+The new structure uses absolute imports from the project root:
+
+```python
+# Core modules
+from decentralized_ai_simulation.src.core.agents import AnomalyAgent
+from decentralized_ai_simulation.src.core.database import DatabaseLedger
+
+# Utilities
+from decentralized_ai_simulation.src.utils.file_manager import FileManager
+from decentralized_ai_simulation.src.utils.data_manager import DataManager
+
+# Configuration
+from decentralized_ai_simulation.src.config.config_manager import get_config
+```
+
+> 📖 **For detailed information about the file structure, see [File Structure Overview](project/file-structure-overview.md)**
 
 ## 🏗️ Architecture Overview
 
 ### Modernized Components
 
 #### Core Components
-- **`config_loader.py`**: YAML configuration loader with environment support and dot notation access
-- **`logging_setup.py`**: Structured logging with rotation and configurable handlers
-- **`monitoring.py`**: Health checks and metrics collection system
-- **`database.py`**: Thread-safe SQLite ledger with connection pooling and caching
-- **`agents.py`**: Mesa-based anomaly detection agents with modernized ML integration
-- **`simulation.py`**: Scalable simulation engine with parallel execution support
-- **`decentralized_ai_simulation.py`**: Main entry point with CLI interface
-- **`streamlit_app.py`**: Modern dashboard for real-time monitoring
+- **`src/core/agents.py`**: Mesa-based anomaly detection agents with modernized ML integration
+- **`src/core/database.py`**: Thread-safe SQLite ledger with connection pooling and caching
+- **`src/core/simulation.py`**: Scalable simulation engine with parallel execution support
+- **`src/core/decentralized_ai_simulation.py`**: Main entry point with CLI interface
 
 #### Enhanced Design Patterns
 - **Configuration-Driven**: All components configurable through YAML and environment variables
@@ -355,32 +418,47 @@ flowchart LR
 
 ## 📚 API Documentation
 
-### Configuration System (`config_loader.py`)
+### Configuration System (`src/config/config_manager.py`)
 - `ConfigLoader(config_path="config.yaml")`: Initialize configuration loader
 - `get(key, default=None)`: Get configuration value with dot notation
 - `is_production()`: Check if environment is production
 - `is_development()`: Check if environment is development
+- `get_config_with_validation()`: Type-safe configuration access
 
-### Logging System (`logging_setup.py`)
+### Logging System (`src/utils/logging_setup.py`)
 - `setup_logging()`: Configure structured logging with rotation
 - `get_logger(name)`: Get a named logger instance
 - Automatic initialization on import
 
-### Monitoring System (`monitoring.py`)
+### File Management (`src/utils/file_manager.py`)
+- `FileManager()`: Comprehensive file management utilities
+- `safe_write_file()`: Atomic file writes with backup support
+- `safe_read_file()`: Safe file reading with error handling
+- `create_directory_structure()`: Create organized directory structures
+- `move_files_safely()`: Move files with rollback capabilities
+
+### Data Management (`src/utils/data_manager.py`)
+- `DataManager()`: JSON/YAML data storage and validation
+- `store_json_data()`: Store data with integrity checks
+- `load_json_data()`: Load data with validation
+- `create_database()`: Create SQLite databases with schema
+- `add_blacklist_entry()`: Manage blacklist data
+
+### Monitoring System (`src/utils/monitoring.py`)
 - `Monitoring()`: Central monitoring instance
 - `record_metric(name, value, labels)`: Record performance metrics
 - `register_health_check(name, func)`: Register custom health checks
 - `perform_all_health_checks()`: Execute all health checks
 - `get_system_health()`: Get overall system health status
 
-### Database Ledger (`database.py`)
+### Database Ledger (`src/core/database.py`)
 - `DatabaseLedger(db_file=None)`: Thread-safe SQLite ledger
 - `append_entry(entry)`: Append new entry with automatic ID assignment
 - `read_ledger()`: Read all entries (cached)
 - `get_new_entries(last_seen_id)`: Efficient query for new entries
 - `get_entry_by_id(entry_id)`: Get specific entry (cached)
 
-### Anomaly Agent (`agents.py`)
+### Anomaly Agent (`src/core/agents.py`)
 - `AnomalyAgent(model)`: Mesa-based agent with modernized detection
 - `generate_traffic(batch_size, force_anomaly)`: Generate simulated traffic
 - `detect_anomaly(data, threshold)`: Isolation Forest anomaly detection
@@ -388,11 +466,18 @@ flowchart LR
 - `validate_signature(sig)`: Signature validation with cosine similarity
 - `update_model_and_blacklist(sig)`: Model retraining and blacklist update
 
-### Simulation Engine (`simulation.py`)
+### Simulation Engine (`src/core/simulation.py`)
 - `Simulation(num_agents=100, seed=None)`: Mesa model with modern features
 - `step()`: Execute one simulation step with parallel support
 - `run(steps=100)`: Run simulation for multiple steps
 - `resolve_consensus(all_validations)`: Consensus resolution with threshold
+
+### Migration Helper (`src/utils/migration_helper.py`)
+- `MigrationHelper()`: Automated file reorganization and refactoring
+- `create_migration_plan()`: Define migration steps and dependencies
+- `execute_migration()`: Execute migrations with rollback support
+- `update_import_statements()`: Update Python import statements
+- `rollback_migration()`: Restore previous structure if needed
 
 ## 🎯 Usage
 
@@ -400,7 +485,7 @@ flowchart LR
 
 **Basic Configuration Access:**
 ```python
-from config_loader import get_config
+from decentralized_ai_simulation.src.config.config_manager import get_config
 
 # Access configuration values with dot notation
 db_path = get_config('database.path')
@@ -410,10 +495,11 @@ ray_config = get_config('ray.enable')  # Boolean values
 streamlit_port = get_config('streamlit.server_port')
 
 # Check environment type
-from config_loader import is_production, is_development
-if is_production():
+from decentralized_ai_simulation.src.config.config_manager import get_config_loader
+config_loader = get_config_loader()
+if config_loader.is_production():
     print("Running in production mode")
-elif is_development():
+elif config_loader.is_development():
     print("Running in development mode")
 ```
 
@@ -491,8 +577,8 @@ LOGGING_LEVEL=DEBUG python decentralized_ai_simulation.py
 
 **Programmatic Usage:**
 ```python
-from simulation import Simulation
-from monitoring import get_monitoring
+from decentralized_ai_simulation.src.core.simulation import Simulation
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
 
 # Create and run simulation
 sim = Simulation(num_agents=150)
@@ -509,7 +595,7 @@ print(f"System health: {health.status}")
 
 **Health Check Integration:**
 ```python
-from monitoring import get_monitoring, HealthStatus
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring, HealthStatus
 
 # Register custom health check
 def custom_health_check():
@@ -594,7 +680,7 @@ SIMULATION_DEFAULT_AGENTS=200 RAY_ENABLE=true RAY_NUM_CPUS=16 python decentraliz
 
 # Monitor system health and performance during execution
 python -c "
-from monitoring import get_monitoring
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
 import time
 while True:
     health = get_monitoring().get_system_health()
@@ -785,7 +871,7 @@ simulation:
 A: 1. Restart the application after config changes
    2. Check environment variable precedence
    3. Verify YAML syntax with yamllint
-   4. Use python -c "from config_loader import get_config; print(get_config('your.key'))"
+   4. Use python -c "from decentralized_ai_simulation.src.config.config_manager import get_config; print(get_config('your.key'))"
 ```
 
 **Q: How to enable production mode?**
@@ -824,7 +910,7 @@ python -m streamlit run src/ui/streamlit_app.py --server.port 8501
 
 **Q: How do I monitor system health?**
 ```python
-from monitoring import get_monitoring
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
 
 # Get system health
 health = get_monitoring().get_system_health()
@@ -869,7 +955,7 @@ A: 1. Check agent model training data quality
 **Q: Database connection errors**
 ```bash
 # Test database connection
-python -c "from database import DatabaseLedger; db = DatabaseLedger(); print('OK'); db.close()"
+python -c "from decentralized_ai_simulation.src.core.database import DatabaseLedger; db = DatabaseLedger(); print('OK'); db.close()"
 
 # Check database file permissions
 chmod 666 data/databases/ledger.db
@@ -928,6 +1014,7 @@ A: 1. Check Python version compatibility
    3. Check configuration file syntax
    4. Review logs: tail -f logs/simulation.log
    5. Test imports: python -c "import mesa, ray, streamlit"
+   6. Test new import structure: python -c "from decentralized_ai_simulation.src.core.agents import AnomalyAgent"
 ```
 
 **Q: Ray cluster connection issues**
@@ -940,6 +1027,9 @@ ray.shutdown()
 
 # Check Ray dashboard
 # Access http://localhost:8265 for cluster status
+
+# Test new import structure
+python -c "from decentralized_ai_simulation.src.core.simulation import Simulation; print('Import structure OK')"
 ```
 
 ### Development
@@ -960,7 +1050,7 @@ ray.shutdown()
 **Q: How do I add a new agent type?**
 ```python
 # Inherit from base agent class
-from agents import AnomalyAgent
+from decentralized_ai_simulation.src.core.agents import AnomalyAgent
 
 class CustomAgent(AnomalyAgent):
     def __init__(self, unique_id, model):
@@ -974,7 +1064,7 @@ class CustomAgent(AnomalyAgent):
 
 **Q: How do I extend the configuration?**
 ```python
-# In config_loader.py
+# In src/config/config_manager.py
 def get_config(key, default=None):
     # Add new configuration keys
     config_map = {
@@ -998,6 +1088,9 @@ export LOGGING_LEVEL=WARNING
 # Monitor in production
 curl http://localhost:8501/health
 curl http://localhost:8501/metrics
+
+# Test new import structure in production
+python -c "from decentralized_ai_simulation.src.core.database import DatabaseLedger; print('Production imports OK')"
 ```
 
 **Q: Docker deployment issues**
@@ -1047,7 +1140,7 @@ A: 1. Check alert configuration in config.yaml
 
 **Q: How do I monitor performance?**
 ```python
-from monitoring import get_monitoring
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
 
 # Get performance metrics
 metrics = get_monitoring().get_all_metrics()
@@ -1067,6 +1160,11 @@ get_monitoring().record_metric('custom_metric', value, labels)
 | Documentation | Purpose | Key Sections |
 |---------------|---------|--------------|
 | **[README.md](README.md)** | **Main Guide** | Installation, usage, FAQ, support |
+| **[File Structure Overview](project/file-structure-overview.md)** | **Project Organization** | Directory structure, file organization, import patterns |
+| **[File Management Guidelines](guides/file-management-guidelines.md)** | **File Operations** | FileManager, DataManager, safe file operations |
+| **[Developer File Guide](guides/developer-file-guide.md)** | **Development Workflow** | Adding files, import conventions, testing guidelines |
+| **[Migration Documentation](guides/migration-documentation.md)** | **Structure Changes** | Migration history, rollback procedures, future guidelines |
+| **[Configuration Management](guides/configuration-management.md)** | **Configuration** | Environment management, validation, templates |
 | **[TROUBLESHOOTING_GUIDE.md](TROUBLESHOOTING_GUIDE.md)** | **Problem Resolution** | Installation issues, configuration problems, performance troubleshooting |
 | **[BEST_PRACTICES.md](BEST_PRACTICES.md)** | **Development Standards** | Code quality, configuration management, deployment best practices |
 | **[PERFORMANCE_OPTIMIZATION.md](PERFORMANCE_OPTIMIZATION.md)** | **Performance Tuning** | Database optimization, Ray configuration, monitoring setup |

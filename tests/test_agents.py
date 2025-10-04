@@ -8,7 +8,7 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from agents import AnomalyAgent, AgentFactory, validate_agent_input
+from decentralized_ai_simulation.src.core.agents import AnomalyAgent, AgentFactory, validate_agent_input
 from sklearn.ensemble import IsolationForest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

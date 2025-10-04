@@ -5,7 +5,7 @@ import threading
 import time
 import random
 import numpy as np
-from database import DatabaseLedger
+from src.core.database import DatabaseLedger
 
 # Initialize numpy random generator for modern random number generation
 rng = np.random.default_rng(42)

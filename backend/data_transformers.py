@@ -33,9 +33,9 @@ except ImportError as e:
     # Fallback to direct imports if package structure is different
     print(f"Warning: Could not import from package structure: {e}")
     print("Attempting direct imports...")
-    from agents import AnomalyAgent, AnomalySignature
-    from database import DatabaseLedger
-    from logging_setup import get_logger
+    from src.core.agents import AnomalyAgent, AnomalySignature
+    from src.core.database import DatabaseLedger
+    from src.utils.logging_setup import get_logger
 
 logger = get_logger(__name__)
 

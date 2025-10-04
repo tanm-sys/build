@@ -3,7 +3,7 @@
 
 import os
 import tempfile
-from config_loader import ConfigLoader
+from src.config.config_loader import ConfigLoader
 
 def test_environment_override():
     # Test environment variable override

@@ -6,11 +6,11 @@ import threading
 from typing import Optional, Dict, Any, Tuple, List
 from dataclasses import dataclass, asdict
 import json
-from simulation import Simulation
-from database import DatabaseLedger
+from src.core.simulation import Simulation
+from src.core.database import DatabaseLedger
 import ray
-from monitoring import get_monitoring
-from config_loader import get_config
+from src.utils.monitoring import get_monitoring
+from src.config.config_loader import get_config
 import time
 import logging
 
@@ -20,7 +20,7 @@ import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))
 
 try:
-    from data_transformers import (
+    from backend.data_transformers import (
         Vector3D, Agent3D, Anomaly3D, SimulationState3D,
         SimulationStateTransformer, create_3d_simulation_state,
         create_3d_agents, create_3d_anomalies_from_ledger

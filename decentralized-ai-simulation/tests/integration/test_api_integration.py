@@ -202,7 +202,7 @@ class TestCrossComponentIntegration:
 
         # For now, we'll test the transformation pipeline
         try:
-            from data_transformers import SimulationStateTransformer
+            from backend.data_transformers import SimulationStateTransformer
 
             # Create minimal test data
             transformer = SimulationStateTransformer()
@@ -236,7 +236,7 @@ class TestCrossComponentIntegration:
         # These would be tested against actual API responses
         # For now, we'll verify the field definitions exist in our transformers
 
-        from data_transformers import Agent3D, Anomaly3D, SimulationState3D
+        from backend.data_transformers import Agent3D, Anomaly3D, SimulationState3D
 
         # Check that our dataclasses have the expected fields
         agent_fields = set(Agent3D.__dataclass_fields__.keys())
@@ -257,7 +257,7 @@ class TestPerformanceRequirements:
         # For now, we'll test the transformation performance
 
         try:
-            from data_transformers import SimulationStateTransformer
+            from backend.data_transformers import SimulationStateTransformer
 
             transformer = SimulationStateTransformer()
 
@@ -293,7 +293,7 @@ class TestPerformanceRequirements:
             initial_memory = process.memory_info().rss / 1024 / 1024  # MB
 
             # Perform intensive transformation
-            from data_transformers import SimulationStateTransformer
+            from backend.data_transformers import SimulationStateTransformer
 
             transformer = SimulationStateTransformer()
 

@@ -1,0 +1,19 @@
+{
+  "migration_date": "2025-10-04T05:32:09.597389",
+  "total_files_moved": 99,
+  "rollback_steps": [
+    "Restore files from migration_backups/ directory",
+    "Use MigrationHelper.rollback_migration() if needed",
+    "Check that all original files are restored",
+    "Verify project functionality after rollback"
+  ],
+  "backup_location": "migration_backups/",
+  "critical_files_to_check": [
+    "agents.py",
+    "database.py",
+    "simulation.py",
+    "config.yaml",
+    "README.md",
+    "requirements.txt"
+  ]
+}

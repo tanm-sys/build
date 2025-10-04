@@ -35,7 +35,7 @@ class AnomalySignature:
 
 **Example:**
 ```python
-from agents import AnomalySignature
+from decentralized_ai_simulation.src.core.agents import AnomalySignature
 
 # Create anomaly signature
 signature = AnomalySignature(
@@ -72,7 +72,7 @@ class ValidationResult:
 
 **Example:**
 ```python
-from agents import ValidationResult
+from decentralized_ai_simulation.src.core.agents import ValidationResult
 
 # Create validation result
 result = ValidationResult(signature_id=123, is_valid=True)
@@ -101,7 +101,7 @@ class TrafficData:
 
 **Example:**
 ```python
-from agents import TrafficData
+from decentralized_ai_simulation.src.core.agents import TrafficData
 import numpy as np
 
 # Create traffic data with anomalies
@@ -142,8 +142,8 @@ Initialize the agent with modern type annotations and enhanced configuration for
 
 **Example:**
 ```python
-from agents import AnomalyAgent
-from simulation import Simulation
+from decentralized_ai_simulation.src.core.agents import AnomalyAgent
+from decentralized_ai_simulation.src.core.simulation import Simulation
 
 # Create simulation and agent
 sim = Simulation(num_agents=10)
@@ -529,7 +529,7 @@ min_data_points: int = 10             # Minimum data for validation
 
 ```python
 from mesa import Model, Agent
-from agents import AnomalyAgent
+from decentralized_ai_simulation.src.core.agents import AnomalyAgent
 
 class CustomSimulation(Model):
     def __init__(self):

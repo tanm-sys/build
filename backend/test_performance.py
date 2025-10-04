@@ -20,7 +20,7 @@ from contextlib import contextmanager
 import sys
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from data_transformers import (
+from backend.data_transformers import (
     SimulationStateTransformer, create_3d_simulation_state,
     create_3d_agents, create_3d_anomalies_from_ledger
 )

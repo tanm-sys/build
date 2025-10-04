@@ -4,9 +4,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import pytest
 from unittest.mock import Mock, patch
-from simulation import Simulation
-from database import DatabaseLedger
-from agents import AnomalyAgent
+from src.core.simulation import Simulation
+from src.core.database import DatabaseLedger
+from src.core.agents import AnomalyAgent
 import ray
 
 @pytest.fixture

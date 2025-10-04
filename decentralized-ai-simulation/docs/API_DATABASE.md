@@ -76,7 +76,7 @@ database:
 
 **Example:**
 ```python
-from database import get_connection_pool
+from decentralized_ai_simulation.src.core.database import get_connection_pool
 
 # Get global connection pool
 pool = get_connection_pool()
@@ -99,7 +99,7 @@ Generator yielding SQLite connection with proper resource management
 
 **Example:**
 ```python
-from database import get_db_connection
+from decentralized_ai_simulation.src.core.database import get_db_connection
 
 # Safe database operations with context manager
 try:
@@ -118,7 +118,7 @@ Close all database connections in the global pool for clean application shutdown
 
 **Usage:**
 ```python
-from database import close_all_connections
+from decentralized_ai_simulation.src.core.database import close_all_connections
 
 # Clean shutdown
 close_all_connections()
@@ -147,7 +147,7 @@ Initialize the ledger with SQLite database and enhanced configuration for immuta
 
 **Example:**
 ```python
-from database import DatabaseLedger
+from decentralized_ai_simulation.src.core.database import DatabaseLedger
 
 # Create ledger with default configuration
 ledger = DatabaseLedger()
@@ -518,7 +518,7 @@ database:
 
 ```python
 # Correct usage patterns
-from database import get_db_connection
+from decentralized_ai_simulation.src.core.database import get_db_connection
 
 # Pattern 1: Context manager (recommended)
 with get_db_connection() as conn:
@@ -549,7 +549,7 @@ finally:
 **Monitoring Integration:**
 ```python
 # Integration with monitoring systems
-from monitoring import get_monitoring
+from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
 
 monitoring = get_monitoring()
 monitoring.record_metric('db_connections_active', len(pool._connections))
@@ -561,8 +561,8 @@ monitoring.record_metric('db_cache_hit_rate', calculate_cache_hit_rate())
 #### With Simulation Framework
 
 ```python
-from database import DatabaseLedger
-from simulation import Simulation
+from decentralized_ai_simulation.src.core.database import DatabaseLedger
+from decentralized_ai_simulation.src.core.simulation import Simulation
 
 class MonitoredSimulation(Simulation):
     def __init__(self, *args, **kwargs):
