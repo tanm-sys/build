@@ -1,9 +1,36 @@
-# Python
+# ==============================================================================
+# Python AI Simulation Project - Comprehensive .gitignore
+# ==============================================================================
+
+# ==============================================================================
+# Python Bytecode and Cache Files
+# ==============================================================================
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
 .Python
+*.pyd
+*.pyo
+*.pyc
+
+# ==============================================================================
+# Virtual Environments
+# ==============================================================================
+.env
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.env/
+.env.local
+.env.*.local
+
+# ==============================================================================
+# Distribution and Packaging Artifacts
+# ==============================================================================
 build/
 develop-eggs/
 dist/
@@ -20,42 +47,278 @@ wheels/
 .installed.cfg
 *.egg
 MANIFEST
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage.*
+*.coverage.xml
+*.cover
+*.log
+.mypy_cache/
+.pytest_cache/
+.hypothesis/
 
-# Virtual environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
-
-# IDE
+# ==============================================================================
+# IDE and Editor Files
+# ==============================================================================
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+*.sublime-project
+*.sublime-workspace
+*.komodo
+*.komodoproject
+.kdev4
+*.kdevelop
+*.kdevelop.pcs
+*.kate-swp
+*.vimrc.local
+*.gvimrc.local
+*.nvimrc.local
+*.vscode/settings.json
+*.vscode/launch.json
+*.vscode/tasks.json
 
-# OS
+# ==============================================================================
+# OS-Specific Files
+# ==============================================================================
+# macOS
 .DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
+.DocumentRevisions-V100
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
 
-# Project specific
-*.log
-*.db
-blacklist_Node_*.json
-simulation_results/
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+Desktop.ini
+$RECYCLE.BIN/
+*.cab
+*.msi
+*.msix
+*.msm
+*.msp
+*.lnk
+
+# Linux
+*~
+
+# ==============================================================================
+# Logs and Output Files
+# ==============================================================================
+logs/
+output/
+results/
+*.out
+*.err
+nohup.out
+*.pid
+*.seed
+*.pid.lock
+*.log.*
+debug.log
+error.log
+
+# ==============================================================================
+# Temporary and Test Files
+# ==============================================================================
+tmp/
 temp/
+.tmp/
+.temp/
+.cache/
+*.tmp
+*.temp
 .pytest_cache/
 .coverage
 htmlcov/
+*.coverage.xml
+*.prof
+.benchmarks/
+.tox/
+.hypothesis/
+.mypy_cache/
+.dmypy.json
+dmypy.json
 
+# ==============================================================================
+# Dependency and Installation Artifacts
+# ==============================================================================
+node_modules/
+.npm/
+.npmrc
+.yarn/
+yarn.lock
+package-lock.json
+.pnpm/
+.pnpmrc
+pip-log.txt
+pip-delete-this-directory.txt
+
+# ==============================================================================
+# Project-Specific Directories
+# ==============================================================================
+backend/__pycache__/
+decentralized-ai-simulation/config/__pycache__/
+simulation_outputs/
+simulation_results/
+blacklist_Node_*.json
+*.db
+data/cache/
+data/temp/
+data/logs/
+
+# ==============================================================================
+# Security and Sensitive Files
+# ==============================================================================
+*.key
+*.pem
+*.p12
+*.pfx
+*.cer
+*.crt
+*.der
+*.jks
+secrets.json
+.secrets/
+private/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+config_local.yaml
+credentials.json
+auth.json
+
+# ==============================================================================
+# Jupyter Notebook Files
+# ==============================================================================
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+.ipynb_checkpoints
+.ipynb_checkpoints/
+
+# ==============================================================================
+# Coverage Reports and Profiling Data
+# ==============================================================================
+*.coverage.xml
+*.prof
+*.profraw
+perf.data
+perf.data.old
+gmon.out
+.callgrind.out
+.cachegrind.out
+*.gcov
+*.gcda
+*.gcno
+coverage.lcov
+coverage.info
+*.cover
+.coverage.*
+
+# ==============================================================================
+# AI/ML Specific Files
+# ==============================================================================
+# Ray distributed computing
+ray_results/
+*.pkl
+*.pickle
+*.h5
+*.hdf5
+*.model
+*.pb
+*.onnx
+*.tflite
+*.mlmodel
+
+# Scikit-learn
+sklearn/
+*.joblib
+
+# TensorFlow/PyTorch
+*.ckpt
+*.checkpoint
+*.h5
+*.pb
+*.onnx
+*.pt
+*.pth
+*.pkl
+*.bin
+*.safetensors
+
+# ==============================================================================
+# Documentation and Reports
+# ==============================================================================
+docs/_build/
+docs/build/
+*.pdf
+*.docx
+*.html
+*.epub
+*.mobi
+*.chm
+
+# ==============================================================================
+# Testing and Development
+# ==============================================================================
+.test/
+test-results/
+test-output/
+tests/__pycache__/
+tests/*/test_*.pyc
+*.test
+*.spec
+test_*.py
+*_test.py
+test_*.pyc
+
+# ==============================================================================
+# Deployment and Production
+# ==============================================================================
+deploy/
+deployment/
+prod/
+production/
+staging/
+.dev/
+.staging/
+.prod/
+
+# ==============================================================================
+# Legacy/Backup Files
+# ==============================================================================
+*.bak
+*.backup
+*.old
+*.orig
+*.rej
+*.swp
+*.swo
+*~
+
+# ==============================================================================
 # Configuration (keep template, ignore local overrides)
+# ==============================================================================
 config_local.yaml
 .env.local
+.env.development
+.env.production

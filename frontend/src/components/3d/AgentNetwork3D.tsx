@@ -98,7 +98,16 @@ const AgentNetwork3D: React.FC<AgentNetwork3DProps> = ({
         if (!connection) return;
 
         const opacity = 0.3 + Math.sin(time * 1.5 + index) * 0.2;
-        (line as THREE.Line).material.opacity = opacity * connection.strength;
+        const material = (line as THREE.Line).material;
+        if (Array.isArray(material)) {
+          material.forEach(mat => {
+            if (mat instanceof THREE.LineBasicMaterial) {
+              mat.opacity = opacity * connection.strength;
+            }
+          });
+        } else if (material instanceof THREE.LineBasicMaterial) {
+          material.opacity = opacity * connection.strength;
+        }
       });
     }
   });
@@ -107,14 +116,36 @@ const AgentNetwork3D: React.FC<AgentNetwork3DProps> = ({
   useEffect(() => {
     if (!nodesRef.current || !linesRef.current) return;
 
-    // Clear existing nodes
+    // Store references for cleanup
+    const geometries: THREE.BufferGeometry[] = [];
+    const materials: THREE.Material[] = [];
+
+    // Clear existing nodes and dispose of their resources
     while (nodesRef.current.children.length > 0) {
-      nodesRef.current.remove(nodesRef.current.children[0]);
+      const child = nodesRef.current.children[0] as THREE.Mesh;
+      if (child.geometry) {
+        child.geometry.dispose();
+        geometries.push(child.geometry);
+      }
+      if (child.material) {
+        (child.material as THREE.Material).dispose();
+        materials.push(child.material as THREE.Material);
+      }
+      nodesRef.current.remove(child);
     }
 
-    // Clear existing lines
+    // Clear existing lines and dispose of their resources
     while (linesRef.current.children.length > 0) {
-      linesRef.current.remove(linesRef.current.children[0]);
+      const child = linesRef.current.children[0] as THREE.Line;
+      if (child.geometry) {
+        child.geometry.dispose();
+        geometries.push(child.geometry);
+      }
+      if (child.material) {
+        (child.material as THREE.Material).dispose();
+        materials.push(child.material as THREE.Material);
+      }
+      linesRef.current.remove(child);
     }
 
     // Create agent nodes
@@ -133,6 +164,10 @@ const AgentNetwork3D: React.FC<AgentNetwork3DProps> = ({
         emissive: new THREE.Color().setHSL(0.3, 0.8, 0.1),
         emissiveIntensity: 0.2
       });
+
+      // Track for cleanup
+      geometries.push(geometry);
+      materials.push(material);
 
       const node = new THREE.Mesh(geometry, material);
       node.position.copy(agent.position);
@@ -156,9 +191,19 @@ const AgentNetwork3D: React.FC<AgentNetwork3DProps> = ({
         opacity: connection.strength * 0.5
       });
 
+      // Track for cleanup
+      geometries.push(geometry);
+      materials.push(material);
+
       const line = new THREE.Line(geometry, material);
       linesRef.current.add(line);
     });
+
+    // Cleanup function to dispose of all resources
+    return () => {
+      geometries.forEach(geometry => geometry.dispose());
+      materials.forEach(material => material.dispose());
+    };
   }, [agentPositions, connectionLines, qualitySettings]);
 
   return (

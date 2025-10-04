@@ -22,8 +22,8 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
 try:
-    from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
-    from decentralized_ai_simulation.src.utils.logging_setup import get_logger
+    from ..monitoring import get_monitoring
+    from ..logging_setup import get_logger
     EXISTING_MONITORING_AVAILABLE = True
 except ImportError:
     EXISTING_MONITORING_AVAILABLE = False

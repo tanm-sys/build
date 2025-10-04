@@ -15,20 +15,25 @@ import { usePerformance } from '../../contexts/PerformanceContext';
  * Implements adaptive quality based on device capabilities
  */
 const SceneManager: React.FC = () => {
-  const { camera, gl, scene } = useThree();
+  const { gl, scene } = useThree();
   const { simulationState, agents, trustScores } = useSimulation();
-  const { highContrast, reducedMotion } = useAccessibility();
+  const { isReducedMotion } = useAccessibility();
   const { performanceLevel, adaptiveQuality } = usePerformance();
 
   const sceneRef = useRef<THREE.Scene>(scene);
   const animationFrameRef = useRef<number>();
 
   // Adaptive quality settings based on performance monitoring
-  const qualitySettings = useMemo(() => {
+  const qualitySettings = useMemo((): {
+    shadowMapSize: number;
+    particleCount: number;
+    geometryDetail: 'low' | 'medium' | 'high';
+    antialias: boolean;
+  } => {
     const baseSettings = {
       shadowMapSize: 1024,
       particleCount: 1000,
-      geometryDetail: 'high',
+      geometryDetail: 'high' as const,
       antialias: true
     };
 
@@ -38,7 +43,7 @@ const SceneManager: React.FC = () => {
           ...baseSettings,
           shadowMapSize: 512,
           particleCount: 300,
-          geometryDetail: 'low',
+          geometryDetail: 'low' as const,
           antialias: false
         };
       case 'medium':
@@ -46,7 +51,7 @@ const SceneManager: React.FC = () => {
           ...baseSettings,
           shadowMapSize: 1024,
           particleCount: 600,
-          geometryDetail: 'medium',
+          geometryDetail: 'medium' as const,
           antialias: true
         };
       default:
@@ -56,6 +61,9 @@ const SceneManager: React.FC = () => {
 
   // Initialize scene with performance optimizations
   useEffect(() => {
+    // Track created objects for cleanup
+    const createdObjects: THREE.Object3D[] = [];
+
     // Configure renderer for optimal performance
     gl.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     gl.setSize(window.innerWidth, window.innerHeight);
@@ -73,6 +81,7 @@ const SceneManager: React.FC = () => {
     // Lighting setup
     const ambientLight = new THREE.AmbientLight(0x404040, 0.6);
     scene.add(ambientLight);
+    createdObjects.push(ambientLight);
 
     const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
     directionalLight.position.set(50, 50, 25);
@@ -80,17 +89,30 @@ const SceneManager: React.FC = () => {
     directionalLight.shadow.mapSize.width = qualitySettings.shadowMapSize;
     directionalLight.shadow.mapSize.height = qualitySettings.shadowMapSize;
     scene.add(directionalLight);
+    createdObjects.push(directionalLight);
 
     return () => {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
+
+      // Clean up Three.js objects to prevent memory leaks in StrictMode
+      createdObjects.forEach(obj => {
+        scene.remove(obj);
+        if (obj instanceof THREE.Light) {
+          // Lights don't need explicit disposal in this context
+          // but we remove them from the scene
+        }
+      });
+
+      // Reset fog
+      scene.fog = null;
     };
   }, [gl, scene, qualitySettings]);
 
   // Animation loop with performance monitoring
-  useFrame((state, delta) => {
-    if (reducedMotion) return;
+  useFrame((_, delta) => {
+    if (isReducedMotion) return;
 
     // Adaptive frame rate based on performance
     const targetFPS = adaptiveQuality ? 30 : 60;

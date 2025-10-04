@@ -23,17 +23,36 @@ import numpy as np
 # Import existing simulation components
 import sys
 import os
-sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
 
-from decentralized_ai_simulation.src.core.simulation import Simulation
-from decentralized_ai_simulation.src.core.agents import AnomalyAgent, AnomalySignature
-from decentralized_ai_simulation.src.core.database import DatabaseLedger
-from decentralized_ai_simulation.src.config.config_loader import get_config
-from decentralized_ai_simulation.src.utils.logging_setup import get_logger
-from decentralized_ai_simulation.src.utils.monitoring import get_monitoring
+# Add the parent directory to Python path for proper imports
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
+
+# Add the decentralized-ai-simulation directory to Python path
+simulation_dir = os.path.join(parent_dir, 'decentralized-ai-simulation')
+sys.path.insert(0, simulation_dir)
+
+try:
+    # Try importing from the package structure
+    from src.core.simulation import Simulation
+    from src.core.agents import AnomalyAgent, AnomalySignature
+    from src.core.database import DatabaseLedger
+    from src.config.config_loader import get_config
+    from src.utils.logging_setup import get_logger
+    from src.utils.monitoring import get_monitoring
+except ImportError as e:
+    # Fallback to direct imports if package structure is different
+    print(f"Warning: Could not import from package structure: {e}")
+    print("Attempting direct imports...")
+    from simulation import Simulation
+    from agents import AnomalyAgent, AnomalySignature
+    from database import DatabaseLedger
+    from config_loader import get_config
+    from logging_setup import get_logger
+    from monitoring import get_monitoring
 
 # Import data transformation module
-from .data_transformers import (
+from data_transformers import (
     Vector3D, Agent3D, Anomaly3D, SimulationState3D,
     SimulationStateTransformer, create_3d_simulation_state,
     create_3d_agents, create_3d_anomalies_from_ledger

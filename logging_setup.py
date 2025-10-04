@@ -1,6 +1,7 @@
 """Logging setup for decentralized AI simulation."""
 import logging
 import logging.handlers
+
 from config_loader import get_config
 
 def setup_logging() -> None:

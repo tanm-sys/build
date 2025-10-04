@@ -1,0 +1,252 @@
+/**
+ * Component Styles
+ * Control panels, buttons, status indicators, and UI components
+ */
+
+/* Control Panel Styles */
+.control-panel {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--glass-bg);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-xl);
+  box-shadow: var(--glass-shadow);
+  padding: var(--space-4);
+  min-width: 400px;
+  z-index: var(--z-fixed);
+}
+
+.control-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-3);
+}
+
+.control-panel__title {
+  margin: 0;
+  font-size: var(--font-size-lg);
+  font-weight: 600;
+  color: var(--color-white);
+}
+
+.control-panel__content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.control-panel__main-controls {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+}
+
+.control-panel__secondary-controls {
+  display: flex;
+  gap: var(--space-2);
+  justify-content: center;
+}
+
+.control-panel__status {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) 0;
+  border-top: 1px solid var(--glass-border);
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-gray-400);
+}
+
+.status-dot--running {
+  background-color: var(--color-success);
+  animation: pulse 2s infinite;
+}
+
+.status-dot--paused {
+  background-color: var(--color-warning);
+}
+
+.status-dot--stopped {
+  background-color: var(--color-gray-400);
+}
+
+.status-dot--anomaly_detected {
+  background-color: var(--color-danger);
+  animation: pulse-danger 1s infinite;
+}
+
+.status-text {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 500;
+}
+
+.performance-metrics {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.metric {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.metric__label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-300);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.metric__value {
+  font-size: var(--font-size-sm);
+  color: var(--color-white);
+  font-weight: 600;
+  font-family: var(--font-family-mono);
+}
+
+/* Control Button Styles */
+.control-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  border: none;
+  border-radius: var(--radius-lg);
+  font-family: var(--font-family-primary);
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+  background: var(--glass-bg);
+  color: var(--color-white);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+}
+
+.control-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.control-button:hover::before {
+  left: 100%;
+}
+
+.control-button:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.control-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.control-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.control-button--primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-secondary));
+  border-color: var(--color-primary);
+}
+
+.control-button--secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.control-button--danger {
+  background: linear-gradient(135deg, var(--color-danger), #ff6666);
+  border-color: var(--color-danger);
+}
+
+.control-button--small {
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-xs);
+}
+
+.control-button--large {
+  padding: var(--space-3) var(--space-6);
+  font-size: var(--font-size-base);
+}
+
+.control-button.active {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+.control-button__icon {
+  font-size: 1.2em;
+  line-height: 1;
+}
+
+.control-button__shortcut {
+  font-size: var(--font-size-xs);
+  opacity: 0.7;
+  font-family: var(--font-family-mono);
+  padding: var(--space-1) var(--space-2);
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: var(--radius-sm);
+}
+
+/* Progress indicators */
+.progress-container {
+  margin-top: var(--space-2);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-1);
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  transition: width var(--transition-base);
+}
+
+.progress-fill--warning {
+  background: linear-gradient(90deg, var(--color-warning), var(--color-danger));
+  animation: progress-pulse 2s infinite;
+}
+
+.progress-label {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-300);
+  text-align: center;
+}

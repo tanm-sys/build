@@ -12,9 +12,30 @@ from typing import Dict, List, Any, Optional, Tuple
 from dataclasses import dataclass, asdict
 import numpy as np
 
-from decentralized_ai_simulation.src.core.agents import AnomalyAgent, AnomalySignature
-from decentralized_ai_simulation.src.core.database import DatabaseLedger
-from decentralized_ai_simulation.src.utils.logging_setup import get_logger
+# Import existing simulation components
+import sys
+import os
+
+# Add the parent directory to Python path for proper imports
+parent_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, parent_dir)
+
+# Add the decentralized-ai-simulation directory to Python path
+simulation_dir = os.path.join(parent_dir, 'decentralized-ai-simulation')
+sys.path.insert(0, simulation_dir)
+
+try:
+    # Try importing from the package structure
+    from src.core.agents import AnomalyAgent, AnomalySignature
+    from src.core.database import DatabaseLedger
+    from src.utils.logging_setup import get_logger
+except ImportError as e:
+    # Fallback to direct imports if package structure is different
+    print(f"Warning: Could not import from package structure: {e}")
+    print("Attempting direct imports...")
+    from agents import AnomalyAgent, AnomalySignature
+    from database import DatabaseLedger
+    from logging_setup import get_logger
 
 logger = get_logger(__name__)
 

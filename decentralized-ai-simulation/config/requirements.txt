@@ -1,10 +1,34 @@
+# =============================================================================
+# Core Dependencies for Decentralized AI Simulation Platform (Config Module)
+# =============================================================================
+
+# Agent-based modeling and distributed computing
 mesa==3.3.0
 ray[default]==2.45.0
-networkx==3.5
+
+# Data processing and scientific computing
 numpy==2.1.3
-scikit-learn==1.7.2
-streamlit==1.39.0
-plotly==6.3.1
 pandas==2.2.3
+scikit-learn==1.7.2
+
+# Network analysis and visualization
+networkx==3.5
+plotly==6.3.1
+
+# Web interface and streaming
+streamlit==1.39.0
+
+# Development and testing
 pytest==8.4.2
+
+# Configuration and utilities
 PyYAML==6.0.3
+python-dotenv==1.1.1
+
+# =============================================================================
+# Version Synchronization:
+# - All versions match main requirements.txt for consistency
+# - Ray: Updated to stable 2.45.0 for better compatibility
+# - Plotly: Updated to 6.3.1 for latest features and security fixes
+# - python-dotenv: Added for environment variable management in deploy scripts
+# =============================================================================

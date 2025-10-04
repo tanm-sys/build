@@ -28,8 +28,8 @@ from data_transformers import (
 
 # Import simulation components
 sys.path.append(os.path.join(os.path.dirname(__file__), '..'))
-from decentralized_ai_simulation.src.core.simulation import Simulation
-from decentralized_ai_simulation.src.core.database import DatabaseLedger
+from ..simulation import Simulation
+from ..database import DatabaseLedger
 
 class TestSimulationIntegration:
     """Test integration between simulation components."""

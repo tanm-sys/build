@@ -1,0 +1,94 @@
+/**
+ * Accessibility Styles and Overrides
+ * WCAG 2.1 compliance, high contrast, and accessibility features
+ */
+
+/* High contrast mode overrides */
+.high-contrast {
+  --color-primary: #0000ff;
+  --color-secondary: #ff00ff;
+  --color-accent: #00ffff;
+  --color-success: #00ff00;
+  --color-warning: #ffff00;
+  --color-danger: #ff0000;
+
+  --glass-bg: rgba(0, 0, 0, 0.9);
+  --glass-border: rgba(255, 255, 255, 1);
+  --glass-shadow: rgba(0, 0, 0, 0.5);
+}
+
+/* Color blind mode adjustments */
+.color-blind-mode {
+  --color-primary: #0066cc;
+  --color-secondary: #cc6600;
+  --color-accent: #cc0066;
+  --color-success: #006600;
+  --color-warning: #cc6600;
+  --color-danger: #cc0000;
+}
+
+/* Font size variations */
+.font-small {
+  --font-size-xs: 0.6875rem;
+  --font-size-sm: 0.8125rem;
+  --font-size-base: 0.9375rem;
+  --font-size-lg: 1.0625rem;
+  --font-size-xl: 1.1875rem;
+  --font-size-2xl: 1.375rem;
+  --font-size-3xl: 1.75rem;
+  --font-size-4xl: 2.125rem;
+}
+
+.font-large {
+  --font-size-xs: 0.8125rem;
+  --font-size-sm: 0.9375rem;
+  --font-size-base: 1.0625rem;
+  --font-size-lg: 1.1875rem;
+  --font-size-xl: 1.3125rem;
+  --font-size-2xl: 1.625rem;
+  --font-size-3xl: 2rem;
+  --font-size-4xl: 2.5rem;
+}
+
+/* Screen reader only content */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Focus styles for accessibility */
+*:focus {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+*:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* High contrast mode enhancements */
+@media (prefers-contrast: high) {
+  .control-button {
+    border-width: 2px;
+  }
+
+  .status-dot {
+    border: 2px solid var(--color-white);
+  }
+
+  .metric__value {
+    font-weight: 700;
+  }
+}

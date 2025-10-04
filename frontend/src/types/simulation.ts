@@ -9,6 +9,23 @@ export interface Vector3D {
   z: number;
 }
 
+export interface AgentMetadata {
+  name?: string;
+  description?: string;
+  version?: string;
+  capabilities?: string[];
+  performance?: {
+    cpuUsage?: number;
+    memoryUsage?: number;
+    networkLatency?: number;
+  };
+  security?: {
+    clearanceLevel?: 'low' | 'medium' | 'high';
+    encryptionEnabled?: boolean;
+    lastSecurityAudit?: number;
+  };
+}
+
 export interface Agent {
   id: string;
   position: Vector3D;
@@ -16,7 +33,7 @@ export interface Agent {
   status: 'active' | 'inactive' | 'suspended';
   connections: string[];
   lastUpdate: number;
-  metadata?: Record<string, any>;
+  metadata?: AgentMetadata;
 }
 
 export interface TrustScoreData {
@@ -60,9 +77,50 @@ export interface PerformanceMetrics {
   triangles: number;
 }
 
+export interface SimulationUpdateData {
+  status: SimulationState['status'];
+  activeAgents: number;
+  totalConnections: number;
+  averageTrustScore: number;
+  anomalies: Anomaly[];
+}
+
+export interface AgentUpdateData {
+  id: string;
+  position?: Vector3D;
+  trustScore?: number;
+  status?: Agent['status'];
+  connections?: string[];
+  metadata?: AgentMetadata;
+}
+
+export interface TrustUpdateData {
+  id: string;
+  position?: Vector3D;
+  value?: number;
+  source?: string;
+}
+
+export interface AnomalyAlertData {
+  id: string;
+  type: Anomaly['type'];
+  severity: Anomaly['severity'];
+  position: Vector3D;
+  description: string;
+}
+
+export type WebSocketMessageData =
+  | SimulationUpdateData
+  | Agent[] // For agent_update with array
+  | AgentUpdateData // For agent_update with single object
+  | TrustScoreData[] // For trust_update with array
+  | TrustUpdateData // For trust_update with single object
+  | AnomalyAlertData
+  | Record<string, never>; // For heartbeat (no data)
+
 export interface WebSocketMessage {
-  type: 'simulation_update' | 'agent_update' | 'trust_update' | 'anomaly_alert';
-  data: any;
+  type: 'simulation_update' | 'agent_update' | 'trust_update' | 'anomaly_alert' | 'heartbeat';
+  data: WebSocketMessageData;
   timestamp: number;
 }
 
@@ -223,13 +281,30 @@ export interface KeyboardShortcut {
   category: 'navigation' | 'view' | 'simulation' | 'export' | 'accessibility';
 }
 
+export interface PluginPermissions {
+  read?: boolean;
+  write?: boolean;
+  execute?: boolean;
+  network?: boolean;
+  filesystem?: boolean;
+}
+
+export interface PluginSettings {
+  apiEndpoint?: string;
+  timeout?: number;
+  retryCount?: number;
+  cacheEnabled?: boolean;
+  debugMode?: boolean;
+  customConfig?: Record<string, string | number | boolean>;
+}
+
 export interface PluginConfig {
   id: string;
   name: string;
   version: string;
   enabled: boolean;
-  permissions: string[];
-  settings: Record<string, any>;
+  permissions: (keyof PluginPermissions)[];
+  settings: PluginSettings;
 }
 
 export interface WorkspaceSettings {
@@ -253,12 +328,21 @@ export interface SystemInfo {
   supportedExtensions: string[];
 }
 
+export interface LogData {
+  error?: Error;
+  stack?: string;
+  component?: string;
+  action?: string;
+  duration?: number;
+  metadata?: Record<string, string | number | boolean>;
+}
+
 export interface LogEntry {
   timestamp: number;
   level: 'debug' | 'info' | 'warn' | 'error';
   category: string;
   message: string;
-  data?: any;
+  data?: LogData;
   userId?: string;
   sessionId?: string;
 }
@@ -308,20 +392,43 @@ export interface CustomizationSettings {
   customJS?: string;
 }
 
+export interface WebhookConfig {
+  id: string;
+  url: string;
+  events: ('agent_update' | 'trust_update' | 'anomaly_alert' | 'simulation_state_change')[];
+  enabled: boolean;
+  secret?: string;
+  retryPolicy?: {
+    maxAttempts: number;
+    backoffMultiplier: number;
+    initialDelay: number;
+  };
+}
+
+export interface DataSourceConfig {
+  endpoint?: string;
+  authentication?: {
+    type: 'none' | 'basic' | 'bearer' | 'apikey';
+    credentials?: Record<string, string>;
+  };
+  pollingInterval?: number;
+  timeout?: number;
+  headers?: Record<string, string>;
+}
+
+export interface DataSource {
+  id: string;
+  type: 'rest' | 'graphql' | 'websocket' | 'database' | 'file';
+  config: DataSourceConfig;
+  enabled: boolean;
+  lastSync?: number;
+  status: 'active' | 'error' | 'syncing';
+}
+
 export interface IntegrationSettings {
   apiKeys: Record<string, string>;
-  webhooks: Array<{
-    id: string;
-    url: string;
-    events: string[];
-    enabled: boolean;
-  }>;
-  dataSources: Array<{
-    id: string;
-    type: string;
-    config: Record<string, any>;
-    enabled: boolean;
-  }>;
+  webhooks: WebhookConfig[];
+  dataSources: DataSource[];
 }
 
 export interface DebugSettings {

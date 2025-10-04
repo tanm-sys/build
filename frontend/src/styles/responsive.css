@@ -1,0 +1,102 @@
+/**
+ * Responsive Design and Media Queries
+ * Mobile-first responsive design, touch optimizations, and print styles
+ */
+
+/* Mobile responsive design */
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+    padding: var(--space-2);
+  }
+
+  .dashboard-section {
+    width: 100%;
+  }
+
+  .control-panel {
+    min-width: auto;
+    width: calc(100vw - var(--space-4));
+    max-width: 400px;
+  }
+
+  .control-panel__main-controls {
+    flex-wrap: wrap;
+  }
+
+  .control-panel__secondary-controls {
+    flex-wrap: wrap;
+  }
+
+  .performance-metrics {
+    flex-direction: column;
+    gap: var(--space-2);
+    align-items: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .control-panel__main-controls {
+    gap: var(--space-2);
+  }
+
+  .control-button {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .control-button__label {
+    display: none;
+  }
+
+  .control-button__shortcut {
+    display: none;
+  }
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-gray-50: #1f2937;
+    --color-gray-100: #374151;
+    --color-gray-900: #f9fafb;
+    --glass-bg: rgba(0, 0, 0, 0.3);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
+}
+
+/* Print styles */
+@media print {
+  .control-panel,
+  .dashboard-section {
+    display: none;
+  }
+
+  .visualization-section {
+    position: static;
+    background: white;
+    border: 1px solid black;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .control-button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  .control-button:active {
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 768px) and (orientation: landscape) {
+  .control-panel {
+    bottom: var(--space-2);
+  }
+
+  .main-content {
+    padding-bottom: 120px;
+  }
+}

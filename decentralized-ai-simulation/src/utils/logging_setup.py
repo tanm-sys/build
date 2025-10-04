@@ -1,7 +1,7 @@
 """Logging setup for decentralized AI simulation."""
 import logging
 import logging.handlers
-from src.config.config_loader import get_config
+from decentralized_ai_simulation.src.config.config_loader import get_config
 
 def setup_logging() -> None:
     """Configure structured logging for the application."""

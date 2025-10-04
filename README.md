@@ -185,7 +185,7 @@ graph TB
 
 [![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
 [![Mesa 3.3.0](https://img.shields.io/badge/mesa-3.3.0-orange.svg)](https://mesa.readthedocs.io/)
-[![Ray 2.45.0](https://img.shields.io/badge/ray-2.45.0-red.svg)](https://ray.io/)
+[![Ray 2.50.0](https://img.shields.io/badge/ray-2.50.0-red.svg)](https://ray.io/)
 [![Streamlit 1.39.0](https://img.shields.io/badge/streamlit-1.39.0-ff69b4.svg)](https://streamlit.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -1389,7 +1389,7 @@ monitoring:
 #### Docker Deployment Commands
 ```bash
 # 1. Build container image
-docker build -t simulation-app:2.45.0 .
+docker build -t simulation-app:2.50.0 .
 
 # 2. Run container
 docker run -d \
@@ -1426,7 +1426,7 @@ spec:
     spec:
       containers:
       - name: simulation
-        image: simulation-app:2.45.0
+        image: simulation-app:2.50.0
         ports:
         - containerPort: 8501
         - containerPort: 9090

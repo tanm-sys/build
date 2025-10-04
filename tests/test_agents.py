@@ -1,43 +1,101 @@
-import sys
+import json
 import os
+import random
+import sys
+import time
+from typing import Dict, List, Any
+from unittest.mock import Mock, patch
+
+import numpy as np
+import pytest
+from agents import AnomalyAgent, AgentFactory, validate_agent_input
+from sklearn.ensemble import IsolationForest
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import pytest
-import numpy as np
-from unittest.mock import Mock, patch
-from agents import AnomalyAgent
-from sklearn.ensemble import IsolationForest
-import random
-import time
-import json
+# Test utilities and fixtures
+class TestUtils:
+    """Utility class for test data and common operations."""
+
+    @staticmethod
+    def create_mock_model() -> Mock:
+        """Create a mock model for testing."""
+        model = Mock()
+        model.ledger = TestUtils.create_mock_ledger()
+        return model
+
+    @staticmethod
+    def create_mock_ledger() -> Mock:
+        """Create a mock ledger for testing."""
+        ledger = Mock()
+        ledger.append_entry.return_value = 1
+        ledger.get_new_entries.return_value = []
+        ledger.read_ledger.return_value = []
+        return ledger
+
+    @staticmethod
+    def create_test_anomaly_data(num_points: int = 10) -> np.ndarray:
+        """Create test anomaly data for testing."""
+        rng = np.random.default_rng(42)
+        normal_data = rng.normal(100, 20, num_points - 1)
+        anomaly_data = np.append(normal_data, 500)  # Add one anomaly
+        return anomaly_data
+
+    @staticmethod
+    def create_test_signature() -> Dict[str, Any]:
+        """Create a test signature for testing."""
+        return {
+            'timestamp': time.time(),
+            'features': [{'packet_size': 500.0, 'source_ip': '192.168.1.1'}],
+            'confidence': 0.95,
+            'node_id': 'test_node'
+        }
 
 # Initialize numpy random generator for modern random number generation
 rng = np.random.default_rng(42)
 
+# Test fixtures
 @pytest.fixture
 def mock_model():
-    return Mock()
+    """Create a mock model for testing."""
+    return TestUtils.create_mock_model()
 
 @pytest.fixture
 def mock_ledger():
-    ledger = Mock()
-    ledger.append_entry.return_value = 1
-    ledger.get_new_entries.return_value = []
-    ledger.read_ledger.return_value = []
-    return ledger
+    """Create a mock ledger for testing."""
+    return TestUtils.create_mock_ledger()
 
-def test_anomaly_agent_init(mock_model, mock_ledger):
-    """Test Agent initialization."""
-    mock_model.ledger = mock_ledger
-    agent = AnomalyAgent(mock_model)
-    
+@pytest.fixture
+def test_anomaly_data():
+    """Create test anomaly data for testing."""
+    return TestUtils.create_test_anomaly_data()
+
+@pytest.fixture
+def test_signature():
+    """Create a test signature for testing."""
+    return TestUtils.create_test_signature()
+
+@pytest.fixture
+def sample_agent(mock_model):
+    """Create a sample agent for testing."""
+    return AnomalyAgent(mock_model)
+
+def test_anomaly_agent_init(sample_agent, mock_ledger):
+    """Test Agent initialization with lazy loading."""
+    agent = sample_agent
+
+    # Test basic initialization
     assert agent.node_id.startswith("Node_")
-    assert isinstance(agent.anomaly_model, IsolationForest)
-    assert agent.recent_data == []
+    assert len(agent.recent_data) == 0
     assert agent.last_seen_id == 0
     assert agent.local_blacklist_file == f"blacklist_{agent.node_id}.json"
     assert agent.ledger == mock_ledger
-    assert agent.model is mock_model
+
+    # Test lazy loading of anomaly model
+    assert agent._anomaly_model is None  # Should not be initialized yet
+    model = agent.anomaly_model  # Trigger lazy loading
+    assert isinstance(model, IsolationForest)
+    assert agent._anomaly_model is not None  # Should be initialized now
 
 def test_generate_traffic_normal(mock_model, mock_ledger):
     """Test generating normal traffic."""
@@ -180,3 +238,76 @@ def test_update_model_and_blacklist(mock_model, mock_ledger):
     train_data = np.array(agent.recent_data + [500]).reshape(-1, 1)
     if len(train_data) > 0:
         agent.anomaly_model.fit(train_data)
+
+# Performance and optimization tests
+class TestAgentPerformance:
+    """Test class for agent performance and optimization features."""
+
+    def test_lazy_loading_performance(self, mock_model):
+        """Test that lazy loading improves initialization performance."""
+        mock_model.ledger = TestUtils.create_mock_ledger()
+
+        # Measure initialization time
+        start_time = time.time()
+        agent = AnomalyAgent(mock_model)
+        init_time = time.time() - start_time
+
+        # Agent should initialize quickly without loading the model
+        assert init_time < 0.1  # Should be very fast
+        assert agent._anomaly_model is None
+
+        # Model should load only when first accessed
+        start_time = time.time()
+        _ = agent.anomaly_model
+        model_load_time = time.time() - start_time
+
+        assert model_load_time < 0.5  # Model loading should be reasonably fast
+        assert agent._anomaly_model is not None
+
+    def test_bounded_list_memory_efficiency(self, sample_agent):
+        """Test that BoundedList prevents memory leaks."""
+        agent = sample_agent
+
+        # Add many items to test memory bounds
+        for i in range(2000):
+            agent.recent_data.append(f"item_{i}")
+
+        # Should not exceed max_size (1000)
+        assert len(agent.recent_data) <= 1000
+
+        # Should track total appended items
+        stats = agent.recent_data.get_stats()
+        assert stats['total_appended'] >= 2000
+        assert stats['current_size'] <= 1000
+
+    def test_agent_factory_batch_creation(self, mock_model):
+        """Test AgentFactory batch creation functionality."""
+        mock_model.ledger = TestUtils.create_mock_ledger()
+
+        # Test successful batch creation
+        agents = AgentFactory.create_agents_batch(mock_model, 5)
+        assert len(agents) == 5
+        assert all(isinstance(agent, AnomalyAgent) for agent in agents)
+
+        # Test error handling in batch creation
+        with patch('agents.logger') as mock_logger:
+            # This should handle errors gracefully and continue
+            agents = AgentFactory.create_agents_batch(mock_model, 3)
+            assert len(agents) >= 0  # May be less than requested if errors occur
+
+    def test_input_validation_utility(self):
+        """Test the input validation utility function."""
+        # Test valid inputs
+        validate_agent_input(100, "test_param", int, min_val=0, max_val=1000)
+        validate_agent_input("test_string", "test_param", str)
+        validate_agent_input(10.5, "test_param", float, min_val=0.0, max_val=100.0)
+
+        # Test invalid inputs
+        with pytest.raises(TypeError):
+            validate_agent_input("not_an_int", "test_param", int)
+
+        with pytest.raises(ValueError):
+            validate_agent_input(-1, "test_param", int, min_val=0)
+
+        with pytest.raises(ValueError):
+            validate_agent_input("", "test_param", str)

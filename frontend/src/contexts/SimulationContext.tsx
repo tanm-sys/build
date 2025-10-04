@@ -1,5 +1,13 @@
 import React, { createContext, useContext, useReducer, useEffect, ReactNode } from 'react';
-import { Agent, SimulationState, TrustScoreData, WebSocketMessage } from '../types/simulation';
+import {
+  Agent,
+  SimulationState,
+  TrustScoreData,
+  WebSocketMessage,
+  Anomaly,
+  Vector3D,
+  AgentMetadata
+} from '../types/simulation';
 
 /**
  * Simulation Context Provider
@@ -64,53 +72,124 @@ interface SimulationProviderProps {
 export const SimulationProvider: React.FC<SimulationProviderProps> = ({ children }) => {
   const [state, dispatch] = useReducer(simulationReducer, initialState);
 
-  // WebSocket connection for real-time updates
+  // WebSocket connection for real-time updates with advanced error recovery
   useEffect(() => {
     let ws: WebSocket | null = null;
     let reconnectTimeout: NodeJS.Timeout;
+    let heartbeatInterval: NodeJS.Timeout;
+    let reconnectAttempts = 0;
+    let isManualDisconnect = false;
+    const maxReconnectAttempts = 10;
+    const baseReconnectDelay = 1000; // 1 second
+    const maxReconnectDelay = 30000; // 30 seconds
+
+    const getReconnectDelay = (attempt: number) => {
+      // Exponential backoff with jitter
+      const exponentialDelay = Math.min(baseReconnectDelay * Math.pow(2, attempt), maxReconnectDelay);
+      const jitter = Math.random() * 0.1 * exponentialDelay; // 10% jitter
+      return exponentialDelay + jitter;
+    };
+
+    const startHeartbeat = (websocket: WebSocket) => {
+      heartbeatInterval = setInterval(() => {
+        if (websocket.readyState === WebSocket.OPEN) {
+          // Send ping frame to check connection health (no response expected)
+          try {
+            websocket.send(JSON.stringify({ type: 'heartbeat', timestamp: Date.now() }));
+          } catch (error) {
+            console.warn('Failed to send heartbeat:', error);
+          }
+        }
+      }, 30000); // Ping every 30 seconds
+    };
+
+    const stopHeartbeat = () => {
+      if (heartbeatInterval) {
+        clearInterval(heartbeatInterval);
+      }
+    };
 
     const connectWebSocket = () => {
       try {
-        // In a real application, this would connect to your backend WebSocket server
-        ws = new WebSocket('ws://localhost:8080/simulation');
+        // Connect to backend WebSocket server using environment variable
+        const wsUrl = import.meta.env.VITE_WEBSOCKET_URL || 'ws://localhost:8000/ws/simulation';
+        ws = new WebSocket(wsUrl);
 
         ws.onopen = () => {
-          console.log('WebSocket connected');
+          console.log('WebSocket connected successfully');
           dispatch({ type: 'SET_CONNECTION_STATUS', payload: true });
+          reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+
+          // Start heartbeat monitoring
+          if (ws) {
+            startHeartbeat(ws);
+          }
         };
 
         ws.onmessage = (event) => {
           try {
             const message: WebSocketMessage = JSON.parse(event.data);
+
+            // Handle heartbeat messages (don't process them as regular messages)
+            if (message.type === 'heartbeat') {
+              return; // Heartbeat message, no need to process further
+            }
+
             handleWebSocketMessage(message, dispatch);
           } catch (error) {
             console.error('Failed to parse WebSocket message:', error);
+            // Don't trigger reconnection for message parsing errors
           }
         };
 
-        ws.onclose = () => {
-          console.log('WebSocket disconnected');
+        ws.onclose = (event) => {
+          console.log(`WebSocket disconnected. Code: ${event.code}, Reason: ${event.reason}`);
           dispatch({ type: 'SET_CONNECTION_STATUS', payload: false });
+          stopHeartbeat();
 
-          // Attempt to reconnect after 5 seconds
-          reconnectTimeout = setTimeout(connectWebSocket, 5000);
+          // Don't attempt reconnection if manually disconnected or max attempts reached
+          if (isManualDisconnect || reconnectAttempts >= maxReconnectAttempts) {
+            console.log('WebSocket reconnection disabled');
+            return;
+          }
+
+          // Calculate delay with exponential backoff
+          const delay = getReconnectDelay(reconnectAttempts);
+          reconnectAttempts++;
+
+          console.log(`Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts}) in ${Math.round(delay/1000)}s`);
+
+          reconnectTimeout = setTimeout(() => {
+            connectWebSocket();
+          }, delay);
         };
 
         ws.onerror = (error) => {
-          console.error('WebSocket error:', error);
-          dispatch({ type: 'SET_CONNECTION_STATUS', payload: false });
+          console.error('WebSocket error occurred:', error);
+          // Error event is followed by close event, so we don't need to handle reconnection here
         };
       } catch (error) {
-        console.error('Failed to connect WebSocket:', error);
+        console.error('Failed to initialize WebSocket connection:', error);
         dispatch({ type: 'SET_CONNECTION_STATUS', payload: false });
+
+        // Attempt reconnection even on initialization failure
+        if (!isManualDisconnect && reconnectAttempts < maxReconnectAttempts) {
+          const delay = getReconnectDelay(reconnectAttempts);
+          reconnectAttempts++;
+
+          reconnectTimeout = setTimeout(connectWebSocket, delay);
+        }
       }
     };
 
     connectWebSocket();
 
     return () => {
+      isManualDisconnect = true; // Mark as manual disconnect
+      stopHeartbeat();
+
       if (ws) {
-        ws.close();
+        ws.close(1000, 'Component unmounting'); // Clean close
       }
       if (reconnectTimeout) {
         clearTimeout(reconnectTimeout);
@@ -181,8 +260,7 @@ function simulationReducer(state: SimulationContextType, action: SimulationActio
         agents: [...state.agents, action.payload],
         simulationState: {
           ...state.simulationState,
-          activeAgents: state.agents.length + 1,
-          lastUpdate: Date.now()
+          activeAgents: state.agents.length + 1
         }
       };
 
@@ -203,8 +281,7 @@ function simulationReducer(state: SimulationContextType, action: SimulationActio
         agents: state.agents.filter(agent => agent.id !== action.payload),
         simulationState: {
           ...state.simulationState,
-          activeAgents: state.agents.length - 1,
-          lastUpdate: Date.now()
+          activeAgents: state.agents.length - 1
         }
       };
 
@@ -242,28 +319,44 @@ function simulationReducer(state: SimulationContextType, action: SimulationActio
 function handleWebSocketMessage(message: WebSocketMessage, dispatch: React.Dispatch<SimulationAction>) {
   switch (message.type) {
     case 'simulation_update':
-      dispatch({ type: 'SET_SIMULATION_STATE', payload: message.data });
+      const simulationData = message.data as { status: SimulationState['status']; activeAgents: number; totalConnections: number; averageTrustScore: number; anomalies: Anomaly[] };
+      const simulationState: SimulationState = {
+        status: simulationData.status,
+        timestamp: message.timestamp,
+        activeAgents: simulationData.activeAgents,
+        totalConnections: simulationData.totalConnections,
+        averageTrustScore: simulationData.averageTrustScore,
+        anomalies: simulationData.anomalies
+      };
+      dispatch({ type: 'SET_SIMULATION_STATE', payload: simulationState });
       break;
 
     case 'agent_update':
       if (Array.isArray(message.data)) {
-        dispatch({ type: 'UPDATE_AGENTS', payload: message.data });
+        dispatch({ type: 'UPDATE_AGENTS', payload: message.data as Agent[] });
       } else {
-        dispatch({ type: 'UPDATE_AGENT', payload: message.data });
+        const agentData = message.data as { id: string; position?: Vector3D; trustScore?: number; status?: Agent['status']; connections?: string[]; metadata?: AgentMetadata };
+        dispatch({ type: 'UPDATE_AGENT', payload: { id: agentData.id, updates: agentData } });
       }
       break;
 
     case 'trust_update':
       if (Array.isArray(message.data)) {
-        dispatch({ type: 'UPDATE_TRUST_SCORES', payload: message.data });
+        dispatch({ type: 'UPDATE_TRUST_SCORES', payload: message.data as TrustScoreData[] });
       } else {
-        dispatch({ type: 'UPDATE_TRUST_SCORE', payload: message.data });
+        const trustData = message.data as { id: string; position?: Vector3D; value?: number; source?: string };
+        dispatch({ type: 'UPDATE_TRUST_SCORE', payload: { id: trustData.id, updates: trustData } });
       }
       break;
 
     case 'anomaly_alert':
-      // Handle anomaly alerts
-      console.log('Anomaly detected:', message.data);
+      const anomalyData = message.data as { id: string; type: Anomaly['type']; severity: Anomaly['severity']; position: Vector3D; description: string };
+      console.log('Anomaly detected:', anomalyData);
+      // Could dispatch an action to add anomaly to state if needed
+      break;
+
+    case 'heartbeat':
+      // Heartbeat message - no action needed
       break;
   }
 }
