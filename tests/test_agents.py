@@ -20,8 +20,25 @@ project_root = os.path.dirname(current_dir)
 agents_module_path = os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core', 'agents')
 sys.path.insert(0, agents_module_path)
 
-# Import directly from the agent_manager module
-from agent_manager import AnomalyAgent, AgentFactory, validate_agent_input
+# Import with fallback mechanism
+try:
+    from agent_manager import AnomalyAgent, AgentFactory, validate_agent_input
+except ImportError:
+    try:
+        # Fallback to absolute import
+        from decentralized_ai_simulation.src.core.agents.agent_manager import AnomalyAgent, AgentFactory, validate_agent_input
+    except ImportError:
+        # Final fallback - try importing the module directly
+        import sys
+        import os
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        project_root = os.path.dirname(current_dir)
+        agents_module_path = os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core', 'agents')
+        sys.path.insert(0, agents_module_path)
+        import agent_manager
+        AnomalyAgent = agent_manager.AnomalyAgent
+        AgentFactory = agent_manager.AgentFactory
+        validate_agent_input = agent_manager.validate_agent_input
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 

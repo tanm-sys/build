@@ -32,16 +32,20 @@ from sklearn.ensemble import IsolationForest
 # Import with fallback to handle duplicate files
 try:
     # Try relative import first (consistent with other core modules)
-    from ..utils.logging_setup import get_logger
+    from ...utils.logging_setup import get_logger
 except ImportError:
     try:
-        # Fallback to absolute import
-        from src.utils.logging_setup import get_logger
+        # Fallback to absolute import from project root
+        from decentralized_ai_simulation.src.utils.logging_setup import get_logger
     except ImportError:
-        # Final fallback for when module is imported directly
-        import logging
-        def get_logger(name: str):
-            return logging.getLogger(name)
+        try:
+            # Fallback to absolute import without project name
+            from src.utils.logging_setup import get_logger
+        except ImportError:
+            # Final fallback for when module is imported directly
+            import logging
+            def get_logger(name: str):
+                return logging.getLogger(name)
 
 logger = get_logger(__name__)
 

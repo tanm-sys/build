@@ -10,10 +10,25 @@ config_dir = os.path.join(current_dir, '..', 'config')
 sys.path.insert(0, config_dir)
 
 try:
+    # Try relative import first
     from ..config.config_loader import get_config
 except ImportError:
-    # Fallback for when running as part of the package
-    from decentralized_ai_simulation.src.config.config_loader import get_config
+    try:
+        # Fallback for when running as part of the package
+        from decentralized_ai_simulation.src.config.config_loader import get_config
+    except ImportError:
+        try:
+            # Fallback for different import contexts
+            from src.config.config_loader import get_config
+        except ImportError:
+            # Final fallback - import config_loader directly
+            import sys
+            import os
+            current_dir = os.path.dirname(os.path.abspath(__file__))
+            config_dir = os.path.join(current_dir, '..', 'config')
+            sys.path.insert(0, config_dir)
+            import config_loader
+            get_config = config_loader.get_config
 
 def setup_logging() -> None:
     """Configure structured logging for the application."""
