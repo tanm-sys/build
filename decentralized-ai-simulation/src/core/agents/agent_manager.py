@@ -31,16 +31,17 @@ from sklearn.ensemble import IsolationForest
 
 # Import with fallback to handle duplicate files
 try:
-    # Try to import using a simple relative import
-    import sys
-    import os
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    utils_dir = os.path.join(current_dir, '..', '..', 'utils')
-    sys.path.insert(0, utils_dir)
-    from logging_setup import get_logger
+    # Try relative import first (consistent with other core modules)
+    from ..utils.logging_setup import get_logger
 except ImportError:
-    # Fallback to root level imports
-    from src.utils.logging_setup import get_logger
+    try:
+        # Fallback to absolute import
+        from src.utils.logging_setup import get_logger
+    except ImportError:
+        # Final fallback for when module is imported directly
+        import logging
+        def get_logger(name: str):
+            return logging.getLogger(name)
 
 logger = get_logger(__name__)
 

@@ -12,17 +12,15 @@ from sklearn.ensemble import IsolationForest
 import sys
 import os
 
-# Simple approach: add the specific module path to sys.path
+# Add the agents module path to sys.path for direct imports
+import sys
+import os
 current_dir = os.path.dirname(os.path.abspath(__file__))
 project_root = os.path.dirname(current_dir)
 agents_module_path = os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core', 'agents')
-
-# Add both the agents module path and its parent for relative imports
 sys.path.insert(0, agents_module_path)
-sys.path.insert(0, os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core'))
-sys.path.insert(0, os.path.join(project_root, 'decentralized-ai-simulation', 'src'))
 
-# Now import directly
+# Import directly from the agent_manager module
 from agent_manager import AnomalyAgent, AgentFactory, validate_agent_input
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -90,8 +88,9 @@ def test_signature():
     return TestUtils.create_test_signature()
 
 @pytest.fixture
-def sample_agent(mock_model):
+def sample_agent(mock_model, mock_ledger):
     """Create a sample agent for testing."""
+    mock_model.ledger = mock_ledger
     return AnomalyAgent(mock_model)
 
 def test_anomaly_agent_init(sample_agent, mock_ledger):
