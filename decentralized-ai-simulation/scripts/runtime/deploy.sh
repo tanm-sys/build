@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # =============================================================================
-# Decentralized AI Simulation - Production Deployment Script
+# Decentralized AI Simulation - Enhanced Production Deployment Script
 # =============================================================================
+# Modern bash script for production deployment with comprehensive validation,
+# rollback capabilities, and cross-platform compatibility.
+#
 # This script prepares and deploys the application for production environments
 # with proper configuration, security settings, and health validation.
 #
@@ -21,20 +24,38 @@
 #   --skip-tests        Skip pre-deployment tests
 #   --skip-health       Skip health checks after deployment
 #   --dry-run           Show what would be done without executing
+#
+# Exit Codes:
+#   0 - Success
+#   1 - General error
+#   2 - Invalid arguments
+#   3 - Environment setup failed
+#   4 - Deployment validation failed
+#   5 - Rollback required
 # =============================================================================
 
-set -e  # Exit on any error
-set -u  # Exit on undefined variables
+set -euo pipefail  # Exit on any error, undefined variables, and pipe failures
+shopt -s globstar   # Enable globstar for recursive globbing
+shopt -s extglob    # Enable extended globbing patterns
 
-# Script configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-VENV_DIR="$PROJECT_ROOT/.venv"
-LOG_FILE="$PROJECT_ROOT/logs/deploy.log"
-BACKUP_DIR="$PROJECT_ROOT/backups"
+# Enhanced script configuration with robust path resolution
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+readonly VENV_DIR="${PROJECT_ROOT}/.venv"
+readonly LOG_DIR="${PROJECT_ROOT}/logs"
+readonly LOG_FILE="${LOG_DIR}/deploy.log"
+readonly BACKUP_DIR="${PROJECT_ROOT}/backups"
+readonly CONFIG_DIR="${PROJECT_ROOT}/config"
 
-# Deployment configuration
-ENVIRONMENT="staging"
+# Deployment configuration with validation arrays
+readonly SUPPORTED_ENVIRONMENTS=("staging" "production" "docker")
+readonly DEFAULT_ENVIRONMENT="staging"
+readonly DEPLOYMENT_TIMEOUT=1800  # 30 minutes
+readonly HEALTH_CHECK_RETRIES=3
+readonly HEALTH_CHECK_DELAY=10
+
+# Configuration variables with defaults
+ENVIRONMENT="${DEFAULT_ENVIRONMENT}"
 VERBOSE=false
 FORCE_DEPLOY=false
 CUSTOM_CONFIG=""
@@ -43,178 +64,324 @@ SKIP_TESTS=false
 SKIP_HEALTH=false
 DRY_RUN=false
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# Enhanced color palette for better visual feedback
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly BOLD_RED='\033[1;31m'
+readonly BOLD_GREEN='\033[1;32m'
+readonly BOLD_YELLOW='\033[1;33m'
+readonly BOLD_BLUE='\033[1;34m'
+readonly BOLD_CYAN='\033[1;36m'
+readonly NC='\033[0m' # No Color
+
+# Global variables for tracking deployment state
+PYTHON_CMD=""
+VIRTUAL_ENV_ACTIVE=false
+DEPLOYMENT_START_TIME=""
+BACKUP_CREATED=""
 
 # =============================================================================
-# Utility Functions
+# Enhanced Utility Functions
 # =============================================================================
 
-# Input validation functions
+# Enhanced logging function with structured output and deployment tracking
+log() {
+    local level="$1"
+    shift
+    local message="$*"
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Create log directory if it doesn't exist
+    mkdir -p "${LOG_DIR}"
+
+    # Log to file with structured format
+    printf '[%s] [%s] %s\n' "$timestamp" "$level" "$message" >> "$LOG_FILE"
+
+    # Console output with enhanced colors and formatting
+    case "$level" in
+        "INFO")
+            printf '%b[%s]%b %s\n' "${GREEN}" "$level" "${NC}" "$message"
+            ;;
+        "WARN")
+            printf '%b[%s]%b %s\n' "${YELLOW}" "$level" "${NC}" "$message"
+            ;;
+        "ERROR")
+            printf '%b[%s]%b %s\n' "${RED}" "$level" "${NC}" "$message"
+            ;;
+        "DEBUG")
+            if [[ "$VERBOSE" == true ]]; then
+                printf '%b[%s]%b %s\n' "${BLUE}" "$level" "${NC}" "$message"
+            fi
+            ;;
+        "SUCCESS")
+            printf '%b[%s]%b %s\n' "${BOLD_GREEN}" "$level" "${NC}" "$message"
+            ;;
+        "DEPLOY")
+            printf '%b[%s]%b %s\n' "${PURPLE}" "$level" "${NC}" "$message"
+            ;;
+        "ROLLBACK")
+            printf '%b[%s]%b %s\n' "${BOLD_YELLOW}" "$level" "${NC}" "$message"
+            ;;
+    esac
+}
+
+# Enhanced configuration file validation with YAML structure checking
 validate_config_file() {
     local file="$1"
 
-    if [ -n "$file" ]; then
-        if [ ! -f "$file" ]; then
+    if [[ -n "$file" ]]; then
+        # Check if file exists and is readable
+        if [[ ! -f "$file" ]]; then
             log "ERROR" "Configuration file not found: $file"
-            exit 1
+            exit 2
         fi
 
-        # Check if file is readable
-        if [ ! -r "$file" ]; then
+        if [[ ! -r "$file" ]]; then
             log "ERROR" "Configuration file not readable: $file"
-            exit 1
+            exit 2
+        fi
+
+        # Validate YAML structure if possible
+        if command -v python3 &> /dev/null; then
+            if ! python3 -c "import yaml; yaml.safe_load(open('$file'))" &> /dev/null; then
+                log "WARN" "Configuration file may have YAML syntax issues: $file"
+            fi
         fi
 
         log "DEBUG" "Validated config file: $file"
     fi
 }
 
-log() {
-    local level="$1"
-    shift
-    local message="$*"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    # Create logs directory if it doesn't exist
-    mkdir -p "$(dirname "$LOG_FILE")"
-    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
-    
-    case "$level" in
-        "INFO")
-            echo -e "${GREEN}[INFO]${NC} $message"
-            ;;
-        "WARN")
-            echo -e "${YELLOW}[WARN]${NC} $message"
-            ;;
-        "ERROR")
-            echo -e "${RED}[ERROR]${NC} $message"
-            ;;
-        "DEBUG")
-            if [ "$VERBOSE" = true ]; then
-                echo -e "${BLUE}[DEBUG]${NC} $message"
+# Enhanced deployment validation with comprehensive checks
+validate_deployment_environment() {
+    local env="$1"
+
+    if [[ -n "$env" ]]; then
+        local valid_env=false
+        for valid_env_value in "${SUPPORTED_ENVIRONMENTS[@]}"; do
+            if [[ "$env" == "$valid_env_value" ]]; then
+                valid_env=true
+                break
             fi
-            ;;
-        "SUCCESS")
-            echo -e "${GREEN}[SUCCESS]${NC} $message"
-            ;;
-        "DEPLOY")
-            echo -e "${PURPLE}[DEPLOY]${NC} $message"
-            ;;
-    esac
+        done
+
+        if [[ "$valid_env" == false ]]; then
+            log "ERROR" "Invalid environment: '$env' (must be one of: ${SUPPORTED_ENVIRONMENTS[*]})"
+            exit 2
+        fi
+
+        log "DEBUG" "Validated deployment environment: $env"
+    fi
 }
 
+# Function to check if command exists and is executable
+command_exists() {
+    command -v "$1" &> /dev/null
+}
+
+# Function to wait for a condition with timeout
+wait_for_condition() {
+    local condition="$1"
+    local timeout="$2"
+    local delay="${3:-5}"
+    local elapsed=0
+
+    while [[ $elapsed -lt $timeout ]]; do
+        if eval "$condition"; then
+            return 0
+        fi
+        sleep "$delay"
+        elapsed=$((elapsed + delay))
+    done
+
+    return 1
+}
+
+# Enhanced help display with better formatting and deployment guidance
 show_help() {
+    local script_name
+    script_name=$(basename "${BASH_SOURCE[0]}")
+
     cat << EOF
-Decentralized AI Simulation - Deployment Script
+${BOLD_BLUE}Decentralized AI Simulation - Enhanced Deployment Script${NC}
 
-USAGE:
-    ./deploy.sh [ENVIRONMENT] [OPTIONS]
+${BOLD_YELLOW}USAGE:${NC}
+    $script_name [ENVIRONMENT] [OPTIONS]
 
-ENVIRONMENTS:
-    staging             Deploy to staging environment (default)
-    production          Deploy to production environment
-    docker              Prepare for Docker containerized deployment
+${BOLD_YELLOW}ENVIRONMENTS:${NC}
+    ${BOLD_GREEN}staging${NC}             Deploy to staging environment (default)
+    ${BOLD_GREEN}production${NC}          Deploy to production environment
+    ${BOLD_GREEN}docker${NC}              Prepare for Docker containerized deployment
 
-OPTIONS:
-    -h, --help          Show this help message and exit
-    -v, --verbose       Enable verbose output for detailed deployment info
-    -f, --force         Force deployment even if validation fails
-    -c, --config FILE   Use custom configuration file for deployment
-    -b, --backup        Create backup of current deployment before update
-    --skip-tests        Skip pre-deployment test validation
-    --skip-health       Skip post-deployment health checks
-    --dry-run           Show deployment plan without executing changes
+${BOLD_YELLOW}OPTIONS:${NC}
+    ${BOLD_GREEN}-h, --help${NC}          Show this help message and exit
+    ${BOLD_GREEN}-v, --verbose${NC}       Enable verbose output for detailed deployment info
+    ${BOLD_GREEN}-f, --force${NC}         Force deployment even if validation fails
+    ${BOLD_GREEN}-c, --config FILE${NC}   Use custom configuration file for deployment
+    ${BOLD_GREEN}-b, --backup${NC}        Create backup of current deployment before update
+    ${BOLD_GREEN}--skip-tests${NC}        Skip pre-deployment test validation
+    ${BOLD_GREEN}--skip-health${NC}       Skip post-deployment health checks
+    ${BOLD_CYAN}--dry-run${NC}           Show deployment plan without executing changes
 
-EXAMPLES:
-    ./deploy.sh                         # Deploy to staging with defaults
-    ./deploy.sh production --backup     # Production deploy with backup
-    ./deploy.sh staging --verbose       # Staging deploy with verbose output
-    ./deploy.sh docker --dry-run        # Show Docker deployment plan
-    ./deploy.sh production --config prod.yaml  # Custom config deployment
+${BOLD_YELLOW}EXAMPLES:${NC}
+    $script_name                           # Deploy to staging with defaults
+    $script_name production --backup       # Production deploy with backup
+    $script_name staging --verbose         # Staging deploy with verbose output
+    $script_name docker --dry-run          # Show Docker deployment plan
+    $script_name production --config prod.yaml  # Custom config deployment
 
-DESCRIPTION:
+${BOLD_YELLOW}DESCRIPTION:${NC}
     This script handles production deployment including:
-    
-    • Environment-specific configuration setup
-    • Pre-deployment validation and testing
-    • Database migration and optimization
-    • Security configuration and hardening
-    • Service configuration and startup
-    • Post-deployment health validation
-    • Rollback capabilities with backup support
 
+    • ${BOLD_CYAN}Environment-specific configuration setup${NC}
+    • ${BOLD_CYAN}Pre-deployment validation and testing${NC}
+    • ${BOLD_CYAN}Database migration and optimization${NC}
+    • ${BOLD_CYAN}Security configuration and hardening${NC}
+    • ${BOLD_CYAN}Service configuration and startup${NC}
+    • ${BOLD_CYAN}Post-deployment health validation${NC}
+    • ${BOLD_CYAN}Rollback capabilities with backup support${NC}
+
+${BOLD_RED}⚠️  DEPLOYMENT WARNINGS:${NC}
+    • ${BOLD_RED}Production deployments${NC} are ${BOLD_RED}irreversible${NC} without backups
+    • Always use ${BOLD_CYAN}--dry-run${NC} to preview deployment steps
+    • Ensure ${BOLD_CYAN}--backup${NC} is used for production deployments
+    • Test deployments in ${BOLD_GREEN}staging${NC} before ${BOLD_RED}production${NC}
+
+${BOLD_YELLOW}EXIT CODES:${NC}
+    0 - Success
+    1 - General error
+    2 - Invalid arguments
+    3 - Environment setup failed
+    4 - Deployment validation failed
+    5 - Rollback required
+
+${BOLD_BLUE}For more information, see README.md${NC}
 EOF
 }
 
+# Enhanced deployment prerequisite validation with comprehensive checks
 check_deployment_prerequisites() {
     log "INFO" "Checking deployment prerequisites..."
-    
-    # Check if virtual environment exists
-    if [ ! -d "$VENV_DIR" ]; then
-        log "ERROR" "Virtual environment not found at $VENV_DIR"
-        log "INFO" "Please run ./setup.sh first to set up the environment"
-        exit 1
-    fi
-    
-    # Activate virtual environment
-    source "$VENV_DIR/bin/activate"
-    
-    # Verify Python environment
-    if [ -z "${VIRTUAL_ENV:-}" ]; then
-        log "ERROR" "Failed to activate virtual environment"
-        exit 1
-    fi
-    
-    log "DEBUG" "Virtual environment activated: $VIRTUAL_ENV"
-    
-    # Check if all required files exist
-    local required_files=("config.yaml" "requirements.txt" "simulation.py" "database.py")
-    for file in "${required_files[@]}"; do
-        if [ ! -f "$PROJECT_ROOT/$file" ]; then
-            log "ERROR" "Required file not found: $PROJECT_ROOT/$file"
-            exit 1
+
+    # Validate project structure
+    local required_paths=(
+        "${PROJECT_ROOT}/decentralized-ai-simulation"
+        "${PROJECT_ROOT}/config"
+        "${PROJECT_ROOT}/scripts"
+    )
+
+    for path in "${required_paths[@]}"; do
+        if [[ ! -d "$path" ]]; then
+            log "ERROR" "Required directory not found: $path"
+            log "INFO" "Please ensure project structure is intact"
+            exit 3
         fi
     done
-    
-    # Check system resources (platform-independent approach)
+
+    # Check virtual environment with enhanced validation
+    if [[ ! -d "$VENV_DIR" ]]; then
+        log "ERROR" "Virtual environment not found at $VENV_DIR"
+        log "INFO" "Please run setup script first: ${SCRIPT_DIR}/../setup/setup.sh"
+        exit 3
+    fi
+
+    # Activate virtual environment with error handling
+    if ! source "$VENV_DIR/bin/activate"; then
+        log "ERROR" "Failed to activate virtual environment at $VENV_DIR"
+        exit 3
+    fi
+
+    # Verify activation
+    if [[ -z "${VIRTUAL_ENV:-}" ]]; then
+        log "ERROR" "Virtual environment activation failed"
+        exit 3
+    fi
+
+    VIRTUAL_ENV_ACTIVE=true
+    PYTHON_CMD="python"
+    log "DEBUG" "Virtual environment activated: $VIRTUAL_ENV"
+
+    # Enhanced file validation with detailed reporting
+    local required_files=(
+        "config/config.yaml"
+        "decentralized-ai-simulation/config/requirements.txt"
+        "decentralized-ai-simulation/src/core/simulation.py"
+        "decentralized-ai-simulation/src/core/database.py"
+    )
+
+    for file in "${required_files[@]}"; do
+        if [[ ! -f "$PROJECT_ROOT/$file" ]]; then
+            log "ERROR" "Required file not found: $PROJECT_ROOT/$file"
+            exit 3
+        fi
+    done
+
+    # Enhanced system resource checking with better cross-platform support
     local available_memory_kb=0
     local available_disk_kb=0
 
     case "$(uname -s)" in
         "Linux")
-            available_memory_kb=$(free -k | awk 'NR==2{print $7}')
-            available_disk_kb=$(df "$PROJECT_ROOT" | awk 'NR==2{print $4}')
+            available_memory_kb=$(free -k 2>/dev/null | awk 'NR==2{print $7}' || echo 0)
+            available_disk_kb=$(df "$PROJECT_ROOT" 2>/dev/null | awk 'NR==2{print $4}' || echo 0)
             ;;
         "Darwin")  # macOS
-            available_memory_kb=$(vm_stat | awk '/Pages free/ {print $3}' | tr -d '.' | awk '{print $1 * 4096 / 1024}')
-            available_disk_kb=$(df "$PROJECT_ROOT" | awk 'NR==2{print $4}')
+            available_memory_kb=$(vm_stat 2>/dev/null | awk '/Pages free/ {print $3}' | tr -d '.' | awk '{print $1 * 4096 / 1024}' || echo 0)
+            available_disk_kb=$(df "$PROJECT_ROOT" 2>/dev/null | awk 'NR==2{print $4}' || echo 0)
             ;;
         *)
             log "WARN" "Cannot check system resources on this platform: $(uname -s)"
             ;;
     esac
 
-    if [ "$available_memory_kb" -gt 0 ]; then
+    # Enhanced resource validation with environment-specific recommendations
+    if [[ $available_memory_kb -gt 0 ]]; then
         local available_memory_mb=$((available_memory_kb / 1024))
-        if [ "$available_memory_mb" -lt 512 ]; then
-            log "WARN" "Low available memory: ${available_memory_mb}MB (recommended: 512MB+)"
+        local min_memory=512
+
+        # Adjust minimum memory based on environment
+        case "$ENVIRONMENT" in
+            "production")
+                min_memory=2048
+                ;;
+            "staging")
+                min_memory=1024
+                ;;
+        esac
+
+        if [[ $available_memory_mb -lt $min_memory ]]; then
+            if [[ "$FORCE_DEPLOY" == true ]]; then
+                log "WARN" "Low available memory: ${available_memory_mb}MB (recommended: ${min_memory}MB+ for $ENVIRONMENT)"
+            else
+                log "ERROR" "Insufficient memory: ${available_memory_mb}MB (required: ${min_memory}MB+ for $ENVIRONMENT)"
+                exit 3
+            fi
         fi
     fi
 
-    if [ "$available_disk_kb" -gt 0 ]; then
-        if [ "$available_disk_kb" -lt 1048576 ]; then  # 1GB in KB
-            log "WARN" "Low available disk space: ${available_disk_kb}KB (recommended: 1GB+)"
+    if [[ $available_disk_kb -gt 0 ]]; then
+        local min_disk_kb=1048576  # 1GB in KB
+        if [[ $available_disk_kb -lt $min_disk_kb ]]; then
+            if [[ "$FORCE_DEPLOY" == true ]]; then
+                log "WARN" "Low available disk space: ${available_disk_kb}KB (recommended: 1GB+)"
+            else
+                log "ERROR" "Insufficient disk space: ${available_disk_kb}KB (required: 1GB+)"
+                exit 3
+            fi
         fi
     fi
-    
-    log "INFO" "Prerequisites check completed"
+
+    # Check for deployment conflicts
+    if [[ "$ENVIRONMENT" == "production" ]] && pgrep -f "simulation" > /dev/null 2>&1; then
+        log "WARN" "Simulation processes detected running - ensure they won't conflict"
+    fi
+
+    log "INFO" "Prerequisites check completed successfully"
 }
 
 create_backup() {
@@ -650,25 +817,145 @@ while [[ $# -gt 0 ]]; do
 done
 
 # =============================================================================
-# Main Execution
+# Enhanced Main Execution Function
 # =============================================================================
 
 main() {
-    log "INFO" "Decentralized AI Simulation - Starting deployment to $ENVIRONMENT"
-    
-    # Initialize log file
-    echo "Deployment started at $(date)" > "$LOG_FILE"
-    
-    check_deployment_prerequisites
-    create_backup
-    setup_environment_config
-    run_pre_deployment_tests
-    setup_production_directories
-    optimize_database
-    deploy_application
-    run_health_checks
+    local start_time
+    start_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+    log "INFO" "Decentralized AI Simulation - Starting deployment to $ENVIRONMENT at $start_time"
+    log "INFO" "Script version: 2.0.0"
+    log "INFO" "Process ID: $$"
+
+    # Initialize log file with comprehensive session header
+    {
+        echo "=========================================="
+        echo "Deployment session started at $start_time"
+        echo "Target environment: $ENVIRONMENT"
+        echo "Project root: $PROJECT_ROOT"
+        echo "Log file: $LOG_FILE"
+        echo "Dry run mode: $DRY_RUN"
+        echo "Force mode: $FORCE_DEPLOY"
+        echo "Backup creation: $CREATE_BACKUP"
+        echo "Skip tests: $SKIP_TESTS"
+        echo "Skip health checks: $SKIP_HEALTH"
+        echo "=========================================="
+    } > "$LOG_FILE"
+
+    # Core deployment flow with comprehensive error handling
+    local deployment_success=true
+    local deployment_result=0
+
+    # Phase 1: Prerequisites and validation
+    if check_deployment_prerequisites; then
+        log "INFO" "Prerequisites validation completed"
+    else
+        log "ERROR" "Prerequisites validation failed"
+        exit 3
+    fi
+
+    # Phase 2: Backup (if requested)
+    if [[ "$CREATE_BACKUP" == true ]]; then
+        if create_backup; then
+            log "INFO" "Pre-deployment backup completed"
+        else
+            log "ERROR" "Pre-deployment backup failed"
+            exit 3
+        fi
+    fi
+
+    # Phase 3: Environment configuration
+    if setup_environment_config; then
+        log "INFO" "Environment configuration completed"
+    else
+        log "ERROR" "Environment configuration failed"
+        deployment_success=false
+        deployment_result=4
+    fi
+
+    # Phase 4: Pre-deployment testing
+    if [[ "$SKIP_TESTS" == false ]] && [[ "$DRY_RUN" == false ]]; then
+        if run_pre_deployment_tests; then
+            log "INFO" "Pre-deployment tests passed"
+        else
+            if [[ "$FORCE_DEPLOY" == true ]]; then
+                log "WARN" "Pre-deployment tests failed, but continuing due to --force"
+            else
+                log "ERROR" "Pre-deployment tests failed"
+                deployment_success=false
+                deployment_result=4
+            fi
+        fi
+    fi
+
+    # Phase 5: Production setup
+    if setup_production_directories; then
+        log "INFO" "Production directories setup completed"
+    else
+        log "ERROR" "Production directories setup failed"
+        deployment_success=false
+        deployment_result=3
+    fi
+
+    # Phase 6: Database optimization
+    if optimize_database; then
+        log "INFO" "Database optimization completed"
+    else
+        log "ERROR" "Database optimization failed"
+        deployment_success=false
+        deployment_result=3
+    fi
+
+    # Phase 7: Application deployment
+    if deploy_application; then
+        log "INFO" "Application deployment completed"
+    else
+        log "ERROR" "Application deployment failed"
+        deployment_success=false
+        deployment_result=3
+    fi
+
+    # Phase 8: Health validation
+    if [[ "$SKIP_HEALTH" == false ]] && [[ "$DRY_RUN" == false ]]; then
+        if run_health_checks; then
+            log "INFO" "Post-deployment health checks passed"
+        else
+            if [[ "$FORCE_DEPLOY" == true ]]; then
+                log "WARN" "Post-deployment health checks failed, but deployment completed"
+            else
+                log "ERROR" "Post-deployment health checks failed"
+                deployment_success=false
+                deployment_result=4
+            fi
+        fi
+    fi
+
+    # Phase 9: Deployment summary
     show_deployment_summary
+
+    local end_time
+    end_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+    if [[ "$DRY_RUN" == true ]]; then
+        log "INFO" "Dry run completed at $end_time - no actual changes were made"
+        exit 0
+    elif [[ $deployment_success == true ]]; then
+        log "SUCCESS" "Deployment completed successfully at $end_time"
+        log "INFO" "Total deployment time: $(($(date -d "$end_time" +%s) - $(date -d "$start_time" +%s))) seconds"
+        exit 0
+    else
+        log "ERROR" "Deployment failed with errors"
+        if [[ -n "$BACKUP_CREATED" ]]; then
+            log "INFO" "Backup available for rollback: $BACKUP_CREATED"
+        fi
+        exit $deployment_result
+    fi
 }
 
-# Run main function
-main
+# =============================================================================
+# Script Entry Point
+# =============================================================================
+
+# Execute main function with all arguments
+main "$@"

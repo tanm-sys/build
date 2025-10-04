@@ -1,9 +1,12 @@
 #!/bin/bash
 
 # =============================================================================
-# Decentralized AI Simulation - Project Setup Script
+# Decentralized AI Simulation - Enhanced Project Setup Script
 # =============================================================================
-# This script sets up the complete development environment for the 
+# Modern bash script for comprehensive development environment setup with
+# enhanced validation, cross-platform compatibility, and detailed progress tracking.
+#
+# This script sets up the complete development environment for the
 # decentralized AI simulation project including virtual environment,
 # dependencies, configuration, database initialization, and health checks.
 #
@@ -15,111 +18,232 @@
 #   -p, --python PATH   Specify Python executable path (default: python3)
 #   --skip-tests        Skip running initial tests after setup
 #   --dev               Setup for development (includes dev dependencies)
+#
+# Exit Codes:
+#   0 - Success
+#   1 - General error
+#   2 - Invalid arguments
+#   3 - System requirements not met
+#   4 - Installation failed
 # =============================================================================
 
-set -e  # Exit on any error
-set -u  # Exit on undefined variables
+set -euo pipefail  # Exit on any error, undefined variables, and pipe failures
+shopt -s globstar   # Enable globstar for recursive globbing
+shopt -s extglob    # Enable extended globbing patterns
 
-# Script configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-VENV_DIR="$PROJECT_ROOT/.venv"
-LOG_FILE="$PROJECT_ROOT/setup.log"
-PYTHON_CMD="python3"
+# Enhanced script configuration with robust path resolution
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+readonly VENV_DIR="${PROJECT_ROOT}/.venv"
+readonly LOG_DIR="${PROJECT_ROOT}/logs"
+readonly LOG_FILE="${LOG_DIR}/setup.log"
+readonly CONFIG_DIR="${PROJECT_ROOT}/config"
+
+# Setup configuration with validation arrays
+readonly DEFAULT_PYTHON_CMD="python3"
+readonly MIN_PYTHON_VERSION="3.8"
+readonly SETUP_TIMEOUT=1800  # 30 minutes
+readonly RETRY_ATTEMPTS=3
+readonly RETRY_DELAY=5
+
+# Configuration variables with defaults
+PYTHON_CMD="${DEFAULT_PYTHON_CMD}"
 VERBOSE=false
 FORCE_REINSTALL=false
 SKIP_TESTS=false
 DEV_MODE=false
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+# Enhanced color palette for better visual feedback
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly BOLD_RED='\033[1;31m'
+readonly BOLD_GREEN='\033[1;32m'
+readonly BOLD_YELLOW='\033[1;33m'
+readonly BOLD_BLUE='\033[1;34m'
+readonly BOLD_CYAN='\033[1;36m'
+readonly NC='\033[0m' # No Color
+
+# Global variables for tracking setup state
+PYTHON_VERSION=""
+VIRTUAL_ENV_ACTIVE=false
+SETUP_START_TIME=""
 
 # =============================================================================
-# Utility Functions
+# Enhanced Utility Functions
 # =============================================================================
 
-# Input validation functions
-validate_python_path() {
-    local python_cmd="$1"
-
-    if [ -n "$python_cmd" ]; then
-        if ! command -v "$python_cmd" &> /dev/null; then
-            log "ERROR" "Python executable not found: $python_cmd"
-            exit 1
-        fi
-
-        # Check Python version
-        local python_version=$($python_cmd --version 2>&1 | cut -d' ' -f2 | cut -d'.' -f1)
-        if [ "$python_version" -lt 3 ]; then
-            log "ERROR" "Python 3+ is required, found Python $python_version"
-            exit 1
-        fi
-
-        log "DEBUG" "Validated Python executable: $python_cmd (version $($python_cmd --version 2>&1 | cut -d' ' -f2))"
-    fi
-}
-
+# Enhanced logging function with structured output and setup tracking
 log() {
     local level="$1"
     shift
     local message="$*"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
-    
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Create log directory if it doesn't exist
+    mkdir -p "${LOG_DIR}"
+
+    # Log to file with structured format
+    printf '[%s] [%s] %s\n' "$timestamp" "$level" "$message" >> "$LOG_FILE"
+
+    # Console output with enhanced colors and formatting
     case "$level" in
         "INFO")
-            echo -e "${GREEN}[INFO]${NC} $message"
+            printf '%b[%s]%b %s\n' "${GREEN}" "$level" "${NC}" "$message"
             ;;
         "WARN")
-            echo -e "${YELLOW}[WARN]${NC} $message"
+            printf '%b[%s]%b %s\n' "${YELLOW}" "$level" "${NC}" "$message"
             ;;
         "ERROR")
-            echo -e "${RED}[ERROR]${NC} $message"
+            printf '%b[%s]%b %s\n' "${RED}" "$level" "${NC}" "$message"
             ;;
         "DEBUG")
-            if [ "$VERBOSE" = true ]; then
-                echo -e "${BLUE}[DEBUG]${NC} $message"
+            if [[ "$VERBOSE" == true ]]; then
+                printf '%b[%s]%b %s\n' "${BLUE}" "$level" "${NC}" "$message"
             fi
+            ;;
+        "SUCCESS")
+            printf '%b[%s]%b %s\n' "${BOLD_GREEN}" "$level" "${NC}" "$message"
+            ;;
+        "SETUP")
+            printf '%b[%s]%b %s\n' "${CYAN}" "$level" "${NC}" "$message"
             ;;
     esac
 }
 
+# Enhanced Python path validation with version checking and compatibility
+validate_python_path() {
+    local python_cmd="$1"
+
+    if [[ -n "$python_cmd" ]]; then
+        # Check if Python executable exists
+        if ! command -v "$python_cmd" &> /dev/null; then
+            log "ERROR" "Python executable not found: $python_cmd"
+            log "INFO" "Please ensure Python is installed and available in PATH"
+            exit 2
+        fi
+
+        # Get detailed Python version information
+        local python_version_output
+        python_version_output=$("$python_cmd" --version 2>&1) || {
+            log "ERROR" "Failed to get Python version for: $python_cmd"
+            exit 2
+        }
+
+        # Extract version number (handle different formats)
+        local python_version
+        python_version=$(echo "$python_version_output" | grep -oE '[0-9]+\.[0-9]+' | head -1)
+
+        if [[ -z "$python_version" ]]; then
+            log "ERROR" "Cannot determine Python version for: $python_cmd"
+            exit 2
+        fi
+
+        # Compare versions properly
+        local major_version
+        major_version=$(echo "$python_version" | cut -d'.' -f1)
+
+        if [[ "$major_version" -lt 3 ]]; then
+            log "ERROR" "Python 3+ is required, found Python $python_version"
+            log "INFO" "Please install Python 3.8 or higher"
+            exit 2
+        fi
+
+        # Check for minimum version
+        if [[ "$python_version" < "$MIN_PYTHON_VERSION" ]]; then
+            log "WARN" "Python $python_version detected, recommended version is $MIN_PYTHON_VERSION+"
+        fi
+
+        PYTHON_VERSION="$python_version"
+        log "DEBUG" "Validated Python executable: $python_cmd (version $python_version_output)"
+    fi
+}
+
+# Function to check if command exists and is executable
+command_exists() {
+    command -v "$1" &> /dev/null
+}
+
+# Function to retry a command with exponential backoff
+retry_command() {
+    local command="$1"
+    local max_attempts="$2"
+    local delay="$3"
+    local attempt=1
+
+    while [[ $attempt -le $max_attempts ]]; do
+        log "DEBUG" "Attempt $attempt/$max_attempts: $command"
+
+        if eval "$command"; then
+            return 0
+        fi
+
+        if [[ $attempt -lt $max_attempts ]]; then
+            log "WARN" "Command failed, retrying in ${delay}s..."
+            sleep "$delay"
+            delay=$((delay * 2))  # Exponential backoff
+        fi
+
+        ((attempt++))
+    done
+
+    log "ERROR" "Command failed after $max_attempts attempts: $command"
+    return 1
+}
+
+# Enhanced help display with better formatting and setup guidance
 show_help() {
+    local script_name
+    script_name=$(basename "${BASH_SOURCE[0]}")
+
     cat << EOF
-Decentralized AI Simulation - Setup Script
+${BOLD_BLUE}Decentralized AI Simulation - Enhanced Setup Script${NC}
 
-USAGE:
-    ./setup.sh [OPTIONS]
+${BOLD_YELLOW}USAGE:${NC}
+    $script_name [OPTIONS]
 
-OPTIONS:
-    -h, --help          Show this help message and exit
-    -v, --verbose       Enable verbose output for debugging
-    -f, --force         Force reinstall even if virtual environment exists
-    -p, --python PATH   Specify Python executable path (default: python3)
-    --skip-tests        Skip running initial tests after setup
-    --dev               Setup for development mode (includes additional tools)
+${BOLD_YELLOW}OPTIONS:${NC}
+    ${BOLD_GREEN}-h, --help${NC}          Show this help message and exit
+    ${BOLD_GREEN}-v, --verbose${NC}       Enable verbose output for debugging
+    ${BOLD_GREEN}-f, --force${NC}         Force reinstall even if virtual environment exists
+    ${BOLD_GREEN}-p, --python PATH${NC}   Specify Python executable path (default: python3)
+    ${BOLD_GREEN}--skip-tests${NC}        Skip running initial tests after setup
+    ${BOLD_GREEN}--dev${NC}               Setup for development mode (includes additional tools)
 
-EXAMPLES:
-    ./setup.sh                          # Standard setup
-    ./setup.sh --verbose --dev          # Development setup with verbose output
-    ./setup.sh --force --python python3.11  # Force reinstall with specific Python
+${BOLD_YELLOW}EXAMPLES:${NC}
+    $script_name                           # Standard setup
+    $script_name --verbose --dev           # Development setup with verbose output
+    $script_name --force --python python3.11  # Force reinstall with specific Python
 
-DESCRIPTION:
+${BOLD_YELLOW}DESCRIPTION:${NC}
     This script performs a complete setup of the decentralized AI simulation
     environment including:
-    
-    1. Python virtual environment creation and activation
-    2. Installation of all required dependencies
-    3. Configuration file initialization
-    4. Database setup and initialization
-    5. Initial health checks and validation
-    6. Optional test suite execution
 
+    1. ${BOLD_CYAN}Python virtual environment creation and activation${NC}
+    2. ${BOLD_CYAN}Installation of all required dependencies${NC}
+    3. ${BOLD_CYAN}Configuration file initialization${NC}
+    4. ${BOLD_CYAN}Database setup and initialization${NC}
+    5. ${BOLD_CYAN}Initial health checks and validation${NC}
+    6. ${BOLD_CYAN}Optional test suite execution${NC}
+
+${BOLD_YELLOW}REQUIREMENTS:${NC}
+    • Python $MIN_PYTHON_VERSION or higher
+    • Internet connection for package downloads
+    • Sufficient disk space (recommended: 1GB+)
+    • Virtual environment support
+
+${BOLD_YELLOW}EXIT CODES:${NC}
+    0 - Success
+    1 - General error
+    2 - Invalid arguments
+    3 - System requirements not met
+    4 - Installation failed
+
+${BOLD_BLUE}For more information, see README.md${NC}
 EOF
 }
 
@@ -189,14 +313,14 @@ install_dependencies() {
     fi
     
     # Install main dependencies
-    if [ -f "$PROJECT_ROOT/requirements.txt" ]; then
+    if [ -f "$PROJECT_ROOT/decentralized-ai-simulation/config/requirements.txt" ]; then
         log "INFO" "Installing dependencies from requirements.txt..."
-        if ! pip install -r "$PROJECT_ROOT/requirements.txt"; then
+        if ! pip install -r "$PROJECT_ROOT/decentralized-ai-simulation/config/requirements.txt"; then
             log "ERROR" "Failed to install dependencies from requirements.txt"
             exit 1
         fi
     else
-        log "ERROR" "requirements.txt not found in $PROJECT_ROOT"
+        log "ERROR" "requirements.txt not found in $PROJECT_ROOT/decentralized-ai-simulation/config/"
         exit 1
     fi
     
@@ -363,38 +487,125 @@ run_initial_tests() {
 }
 
 # =============================================================================
-# Main Setup Function
+# Enhanced Main Setup Function
 # =============================================================================
 
 main() {
-    log "INFO" "Starting Decentralized AI Simulation setup..."
+    local start_time
+    start_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+    log "INFO" "Starting Decentralized AI Simulation setup at $start_time"
+    log "INFO" "Script version: 2.0.0"
+    log "INFO" "Process ID: $$"
     log "INFO" "Project root: $PROJECT_ROOT"
-    log "INFO" "Log file: $LOG_FILE"
-    
-    # Initialize log file
-    echo "Setup started at $(date)" > "$LOG_FILE"
-    
-    check_prerequisites
-    create_virtual_environment
-    
-    # Activate virtual environment for remaining steps
-    source "$VENV_DIR/bin/activate"
-    
-    install_dependencies
-    setup_configuration
-    initialize_database
-    run_health_checks
-    run_initial_tests
-    
-    log "INFO" "Setup completed successfully!"
-    log "INFO" ""
-    log "INFO" "Next steps:"
-    log "INFO" "1. Activate the virtual environment: source .venv/bin/activate"
-    log "INFO" "2. Run the simulation: ./run.sh"
-    log "INFO" "3. Run tests: ./test.sh"
-    log "INFO" "4. Start the UI: ./run.sh --ui"
-    log "INFO" ""
-    log "INFO" "For more information, see README.md"
+    log "INFO" "Python command: $PYTHON_CMD"
+    log "INFO" "Development mode: $DEV_MODE"
+    log "INFO" "Force reinstall: $FORCE_REINSTALL"
+
+    # Initialize log file with comprehensive session header
+    {
+        echo "=========================================="
+        echo "Setup session started at $start_time"
+        echo "Project root: $PROJECT_ROOT"
+        echo "Python command: $PYTHON_CMD"
+        echo "Virtual environment: $VENV_DIR"
+        echo "Log file: $LOG_FILE"
+        echo "Development mode: $DEV_MODE"
+        echo "Force reinstall: $FORCE_REINSTALL"
+        echo "Skip tests: $SKIP_TESTS"
+        echo "Verbose mode: $VERBOSE"
+        echo "=========================================="
+    } > "$LOG_FILE"
+
+    # Core setup flow with comprehensive error handling
+    local setup_success=true
+    local setup_result=0
+
+    # Phase 1: Prerequisites validation
+    if check_prerequisites; then
+        log "INFO" "Prerequisites validation completed"
+    else
+        log "ERROR" "Prerequisites validation failed"
+        exit 3
+    fi
+
+    # Phase 2: Virtual environment setup
+    if create_virtual_environment; then
+        log "INFO" "Virtual environment setup completed"
+    else
+        log "ERROR" "Virtual environment setup failed"
+        setup_success=false
+        setup_result=4
+    fi
+
+    # Phase 3: Dependency installation
+    if install_dependencies; then
+        log "INFO" "Dependency installation completed"
+    else
+        log "ERROR" "Dependency installation failed"
+        setup_success=false
+        setup_result=4
+    fi
+
+    # Phase 4: Configuration setup
+    if setup_configuration; then
+        log "INFO" "Configuration setup completed"
+    else
+        log "ERROR" "Configuration setup failed"
+        setup_success=false
+        setup_result=4
+    fi
+
+    # Phase 5: Database initialization
+    if initialize_database; then
+        log "INFO" "Database initialization completed"
+    else
+        log "ERROR" "Database initialization failed"
+        setup_success=false
+        setup_result=4
+    fi
+
+    # Phase 6: Health validation
+    if run_health_checks; then
+        log "INFO" "Health checks completed"
+    else
+        log "ERROR" "Health checks failed"
+        setup_success=false
+        setup_result=4
+    fi
+
+    # Phase 7: Initial testing (optional)
+    if [[ "$SKIP_TESTS" == false ]]; then
+        if run_initial_tests; then
+            log "INFO" "Initial tests completed"
+        else
+            log "WARN" "Initial tests had issues, but setup can continue"
+        fi
+    else
+        log "INFO" "Skipping initial tests as requested"
+    fi
+
+    # Setup completion with detailed summary
+    local end_time
+    end_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+    if [[ $setup_success == true ]]; then
+        log "SUCCESS" "Setup completed successfully at $end_time"
+        log "INFO" "Total setup time: $(($(date -d "$end_time" +%s) - $(date -d "$start_time" +%s))) seconds"
+        log "INFO" ""
+        log "INFO" "Next steps:"
+        log "INFO" "1. ${BOLD_GREEN}Activate the virtual environment:${NC} source $VENV_DIR/bin/activate"
+        log "INFO" "2. ${BOLD_GREEN}Run the simulation:${NC} ./run.sh"
+        log "INFO" "3. ${BOLD_GREEN}Run tests:${NC} ./test.sh"
+        log "INFO" "4. ${BOLD_GREEN}Start the UI:${NC} ./run.sh --ui"
+        log "INFO" ""
+        log "INFO" "For more information, see README.md"
+        exit 0
+    else
+        log "ERROR" "Setup failed with errors"
+        log "INFO" "Check the log file for details: $LOG_FILE"
+        exit $setup_result
+    fi
 }
 
 # =============================================================================

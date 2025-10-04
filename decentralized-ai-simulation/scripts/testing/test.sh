@@ -1,8 +1,11 @@
 #!/bin/bash
 
 # =============================================================================
-# Decentralized AI Simulation - Comprehensive Testing Script
+# Decentralized AI Simulation - Enhanced Comprehensive Testing Script
 # =============================================================================
+# Modern bash script for comprehensive testing with enhanced reporting,
+# parallel execution support, and cross-platform compatibility.
+#
 # This script runs comprehensive tests including unit tests, integration tests,
 # code quality checks, coverage reporting, and performance validation.
 #
@@ -19,19 +22,34 @@
 #   --integration       Run integration tests only
 #   --html              Generate HTML coverage report
 #   --xml               Generate XML coverage report for CI
+#
+# Exit Codes:
+#   0 - Success (all tests passed)
+#   1 - General error
+#   2 - Invalid arguments
+#   3 - Test environment not ready
+#   4 - Some tests failed
 # =============================================================================
 
-set -e  # Exit on any error
-set -u  # Exit on undefined variables
+set -euo pipefail  # Exit on any error, undefined variables, and pipe failures
+shopt -s globstar   # Enable globstar for recursive globbing
+shopt -s extglob    # Enable extended globbing patterns
 
-# Script configuration
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PROJECT_ROOT="$SCRIPT_DIR"
-VENV_DIR="$PROJECT_ROOT/.venv"
-LOG_FILE="$PROJECT_ROOT/logs/test.log"
-REPORTS_DIR="$PROJECT_ROOT/test_reports"
+# Enhanced script configuration with robust path resolution
+readonly SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+readonly PROJECT_ROOT="$(cd "${SCRIPT_DIR}/../.." && pwd)"
+readonly VENV_DIR="${PROJECT_ROOT}/.venv"
+readonly LOG_DIR="${PROJECT_ROOT}/logs"
+readonly LOG_FILE="${LOG_DIR}/test.log"
+readonly REPORTS_DIR="${PROJECT_ROOT}/test_reports"
 
-# Test configuration
+# Test configuration with validation arrays
+readonly DEFAULT_TEST_TIMEOUT=300  # 5 minutes
+readonly PERFORMANCE_TEST_TIMEOUT=600  # 10 minutes
+readonly COVERAGE_PACKAGES=("." "decentralized_ai_simulation" "tests")
+readonly QUALITY_TOOLS=("flake8" "black" "mypy")
+
+# Configuration variables with defaults
 VERBOSE=false
 FAST_MODE=false
 RUN_COVERAGE=false
@@ -43,95 +61,175 @@ INTEGRATION_ONLY=false
 HTML_COVERAGE=false
 XML_COVERAGE=false
 
-# Colors for output
-RED='\033[0;31m'
-GREEN='\033[0;32m'
-YELLOW='\033[1;33m'
-BLUE='\033[0;34m'
-PURPLE='\033[0;35m'
-CYAN='\033[0;36m'
-NC='\033[0m' # No Color
+# Enhanced color palette for better visual feedback
+readonly RED='\033[0;31m'
+readonly GREEN='\033[0;32m'
+readonly YELLOW='\033[1;33m'
+readonly BLUE='\033[0;34m'
+readonly PURPLE='\033[0;35m'
+readonly CYAN='\033[0;36m'
+readonly BOLD_RED='\033[1;31m'
+readonly BOLD_GREEN='\033[1;32m'
+readonly BOLD_YELLOW='\033[1;33m'
+readonly BOLD_BLUE='\033[1;34m'
+readonly BOLD_CYAN='\033[1;36m'
+readonly NC='\033[0m' # No Color
 
-# Test results tracking
+# Enhanced test results tracking with detailed statistics
 TESTS_PASSED=0
 TESTS_FAILED=0
 TESTS_SKIPPED=0
+TESTS_ERROR=0
+TEST_DURATION=0
+COVERAGE_PERCENTAGE=0
+
+# Global arrays for tracking test execution
+TEST_RESULTS=()
+TEMP_FILES=()
 
 # =============================================================================
-# Utility Functions
+# Enhanced Utility Functions
 # =============================================================================
 
+# Enhanced logging function with structured output and test tracking
 log() {
     local level="$1"
     shift
     local message="$*"
-    local timestamp=$(date '+%Y-%m-%d %H:%M:%S')
-    
-    # Create logs directory if it doesn't exist
-    mkdir -p "$(dirname "$LOG_FILE")"
-    echo "[$timestamp] [$level] $message" >> "$LOG_FILE"
-    
+    local timestamp
+    timestamp=$(date '+%Y-%m-%d %H:%M:%S')
+
+    # Create log directory if it doesn't exist
+    mkdir -p "${LOG_DIR}"
+
+    # Log to file with structured format
+    printf '[%s] [%s] %s\n' "$timestamp" "$level" "$message" >> "$LOG_FILE"
+
+    # Console output with enhanced colors and formatting
     case "$level" in
         "INFO")
-            echo -e "${GREEN}[INFO]${NC} $message"
+            printf '%b[%s]%b %s\n' "${GREEN}" "$level" "${NC}" "$message"
             ;;
         "WARN")
-            echo -e "${YELLOW}[WARN]${NC} $message"
+            printf '%b[%s]%b %s\n' "${YELLOW}" "$level" "${NC}" "$message"
             ;;
         "ERROR")
-            echo -e "${RED}[ERROR]${NC} $message"
+            printf '%b[%s]%b %s\n' "${RED}" "$level" "${NC}" "$message"
             ;;
         "DEBUG")
-            if [ "$VERBOSE" = true ]; then
-                echo -e "${BLUE}[DEBUG]${NC} $message"
+            if [[ "$VERBOSE" == true ]]; then
+                printf '%b[%s]%b %s\n' "${BLUE}" "$level" "${NC}" "$message"
             fi
             ;;
         "SUCCESS")
-            echo -e "${GREEN}[SUCCESS]${NC} $message"
+            printf '%b[%s]%b %s\n' "${BOLD_GREEN}" "$level" "${NC}" "$message"
             ;;
         "TEST")
-            echo -e "${CYAN}[TEST]${NC} $message"
+            printf '%b[%s]%b %s\n' "${CYAN}" "$level" "${NC}" "$message"
+            ;;
+        "COVERAGE")
+            printf '%b[%s]%b %s\n' "${PURPLE}" "$level" "${NC}" "$message"
             ;;
     esac
 }
 
+# Function to check if command exists and is executable
+command_exists() {
+    command -v "$1" &> /dev/null
+}
+
+# Function to install test dependencies if missing
+install_test_dependencies() {
+    local missing_tools=()
+
+    # Check for pytest
+    if ! python -c "import pytest" 2>/dev/null; then
+        missing_tools+=("pytest")
+    fi
+
+    # Check for coverage tools if needed
+    if [[ "$RUN_COVERAGE" == true ]]; then
+        if ! python -c "import pytest_cov" 2>/dev/null; then
+            missing_tools+=("pytest-cov")
+        fi
+    fi
+
+    # Check for quality tools if needed
+    if [[ "$RUN_QUALITY" == true ]]; then
+        if ! python -c "import flake8" 2>/dev/null; then
+            missing_tools+=("flake8")
+        fi
+        if ! python -c "import black" 2>/dev/null; then
+            missing_tools+=("black")
+        fi
+    fi
+
+    if [[ ${#missing_tools[@]} -gt 0 ]]; then
+        log "INFO" "Installing missing test dependencies: ${missing_tools[*]}"
+        if ! pip install "${missing_tools[@]}"; then
+            log "ERROR" "Failed to install test dependencies"
+            return 1
+        fi
+    fi
+
+    return 0
+}
+
+# Enhanced help display with better formatting and testing guidance
 show_help() {
+    local script_name
+    script_name=$(basename "${BASH_SOURCE[0]}")
+
     cat << EOF
-Decentralized AI Simulation - Testing Script
+${BOLD_BLUE}Decentralized AI Simulation - Enhanced Testing Script${NC}
 
-USAGE:
-    ./test.sh [OPTIONS]
+${BOLD_YELLOW}USAGE:${NC}
+    $script_name [OPTIONS]
 
-OPTIONS:
-    -h, --help          Show this help message and exit
-    -v, --verbose       Enable verbose output for detailed test information
-    -f, --fast          Run fast tests only (skip slow integration tests)
-    -c, --coverage      Generate detailed coverage report
-    -q, --quality       Run code quality checks (linting, type checking)
-    -p, --performance   Run performance and load tests
-    -r, --report        Generate comprehensive HTML test report
-    --unit              Run unit tests only
-    --integration       Run integration tests only
-    --html              Generate HTML coverage report
-    --xml               Generate XML coverage report (for CI/CD)
+${BOLD_YELLOW}OPTIONS:${NC}
+    ${BOLD_GREEN}-h, --help${NC}          Show this help message and exit
+    ${BOLD_GREEN}-v, --verbose${NC}       Enable verbose output for detailed test information
+    ${BOLD_GREEN}-f, --fast${NC}          Run fast tests only (skip slow integration tests)
+    ${BOLD_GREEN}-c, --coverage${NC}      Generate detailed coverage report
+    ${BOLD_GREEN}-q, --quality${NC}       Run code quality checks (linting, type checking)
+    ${BOLD_GREEN}-p, --performance${NC}   Run performance and load tests
+    ${BOLD_GREEN}-r, --report${NC}        Generate comprehensive HTML test report
+    ${BOLD_GREEN}--unit${NC}              Run unit tests only
+    ${BOLD_GREEN}--integration${NC}       Run integration tests only
+    ${BOLD_GREEN}--html${NC}              Generate HTML coverage report
+    ${BOLD_GREEN}--xml${NC}               Generate XML coverage report (for CI/CD)
 
-EXAMPLES:
-    ./test.sh                           # Run all tests with default settings
-    ./test.sh --verbose --coverage      # Verbose output with coverage
-    ./test.sh --fast --quality          # Fast tests with quality checks
-    ./test.sh --unit --html             # Unit tests with HTML coverage
-    ./test.sh --report                  # Full test suite with report
+${BOLD_YELLOW}EXAMPLES:${NC}
+    $script_name                           # Run all tests with default settings
+    $script_name --verbose --coverage      # Verbose output with coverage
+    $script_name --fast --quality          # Fast tests with quality checks
+    $script_name --unit --html             # Unit tests with HTML coverage
+    $script_name --report                  # Full test suite with report
 
-DESCRIPTION:
+${BOLD_YELLOW}DESCRIPTION:${NC}
     This script provides comprehensive testing capabilities including:
-    
-    • Unit Tests: Test individual components and functions
-    • Integration Tests: Test component interactions and workflows
-    • Coverage Analysis: Measure code coverage and identify gaps
-    • Code Quality: Linting, formatting, and type checking
-    • Performance Tests: Validate system performance under load
-    • Test Reports: Generate detailed HTML and XML reports
 
+    • ${BOLD_CYAN}Unit Tests${NC}: Test individual components and functions
+    • ${BOLD_CYAN}Integration Tests${NC}: Test component interactions and workflows
+    • ${BOLD_CYAN}Coverage Analysis${NC}: Measure code coverage and identify gaps
+    • ${BOLD_CYAN}Code Quality${NC}: Linting, formatting, and type checking
+    • ${BOLD_CYAN}Performance Tests${NC}: Validate system performance under load
+    • ${BOLD_CYAN}Test Reports${NC}: Generate detailed HTML and XML reports
+
+${BOLD_YELLOW}TEST CATEGORIES:${NC}
+    • ${BOLD_GREEN}Unit Tests${NC}: Fast, isolated component tests
+    • ${BOLD_YELLOW}Integration Tests${NC}: Slower, end-to-end workflow tests
+    • ${BOLD_PURPLE}Performance Tests${NC}: Load and timing validation tests
+    • ${BOLD_BLUE}Quality Checks${NC}: Code style and formatting validation
+
+${BOLD_YELLOW}EXIT CODES:${NC}
+    0 - Success (all tests passed)
+    1 - General error
+    2 - Invalid arguments
+    3 - Test environment not ready
+    4 - Some tests failed
+
+${BOLD_BLUE}For more information, see README.md${NC}
 EOF
 }
 
@@ -600,31 +698,114 @@ while [[ $# -gt 0 ]]; do
 done
 
 # =============================================================================
-# Main Execution
+# Enhanced Main Execution Function
 # =============================================================================
 
 main() {
-    log "INFO" "Decentralized AI Simulation - Starting test suite"
+    local start_time
+    start_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+    log "INFO" "Decentralized AI Simulation - Starting test suite at $start_time"
+    log "INFO" "Script version: 2.0.0"
+    log "INFO" "Process ID: $$"
     log "INFO" "Test reports directory: $REPORTS_DIR"
-    
-    # Initialize log file
-    echo "Test run started at $(date)" > "$LOG_FILE"
-    
-    check_test_environment
-    
-    # Run test suites
-    run_unit_tests
-    run_integration_tests
-    run_code_quality_checks
-    run_performance_tests
-    
-    # Generate summary and exit with appropriate code
-    if generate_test_summary; then
-        exit 0
+
+    # Initialize log file with comprehensive session header
+    {
+        echo "=========================================="
+        echo "Test session started at $start_time"
+        echo "Project root: $PROJECT_ROOT"
+        echo "Test reports: $REPORTS_DIR"
+        echo "Log file: $LOG_FILE"
+        echo "Verbose mode: $VERBOSE"
+        echo "Fast mode: $FAST_MODE"
+        echo "Coverage: $RUN_COVERAGE"
+        echo "Quality checks: $RUN_QUALITY"
+        echo "Performance tests: $RUN_PERFORMANCE"
+        echo "Unit only: $UNIT_ONLY"
+        echo "Integration only: $INTEGRATION_ONLY"
+        echo "=========================================="
+    } > "$LOG_FILE"
+
+    # Core test execution flow with comprehensive error handling
+    local test_success=true
+    local test_result=0
+
+    # Phase 1: Environment validation
+    if check_test_environment; then
+        log "INFO" "Test environment validation completed"
     else
+        log "ERROR" "Test environment validation failed"
+        exit 3
+    fi
+
+    # Phase 2: Install missing dependencies
+    if ! install_test_dependencies; then
+        log "ERROR" "Failed to install test dependencies"
+        exit 3
+    fi
+
+    # Phase 3: Execute test suites based on configuration
+    if [[ "$UNIT_ONLY" == false ]]; then
+        if run_unit_tests; then
+            log "INFO" "Unit tests completed"
+        else
+            test_success=false
+            test_result=4
+        fi
+    else
+        log "INFO" "Skipping unit tests (unit-only mode)"
+    fi
+
+    if [[ "$INTEGRATION_ONLY" == false ]] && [[ "$FAST_MODE" == false ]]; then
+        if run_integration_tests; then
+            log "INFO" "Integration tests completed"
+        else
+            test_success=false
+            test_result=4
+        fi
+    else
+        log "INFO" "Skipping integration tests (integration-only or fast mode)"
+    fi
+
+    if [[ "$RUN_QUALITY" == true ]]; then
+        if run_code_quality_checks; then
+            log "INFO" "Code quality checks completed"
+        else
+            log "WARN" "Code quality checks had issues"
+        fi
+    fi
+
+    if [[ "$RUN_PERFORMANCE" == true ]]; then
+        if run_performance_tests; then
+            log "INFO" "Performance tests completed"
+        else
+            log "WARN" "Performance tests had issues"
+        fi
+    fi
+
+    # Phase 4: Generate comprehensive test summary
+    if generate_test_summary; then
+        local end_time
+        end_time=$(date '+%Y-%m-%d %H:%M:%S')
+
+        if [[ $test_success == true ]]; then
+            log "SUCCESS" "All tests completed successfully at $end_time"
+            log "INFO" "Total test time: $(($(date -d "$end_time" +%s) - $(date -d "$start_time" +%s))) seconds"
+            exit 0
+        else
+            log "ERROR" "Some tests failed - check results above"
+            exit $test_result
+        fi
+    else
+        log "ERROR" "Failed to generate test summary"
         exit 1
     fi
 }
 
-# Run main function
-main
+# =============================================================================
+# Script Entry Point
+# =============================================================================
+
+# Execute main function with all arguments
+main "$@"
