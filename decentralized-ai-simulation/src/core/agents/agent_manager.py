@@ -31,7 +31,13 @@ from sklearn.ensemble import IsolationForest
 
 # Import with fallback to handle duplicate files
 try:
-    from decentralized_ai_simulation.src.utils.logging_setup import get_logger
+    # Try to import using a simple relative import
+    import sys
+    import os
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    utils_dir = os.path.join(current_dir, '..', '..', 'utils')
+    sys.path.insert(0, utils_dir)
+    from logging_setup import get_logger
 except ImportError:
     # Fallback to root level imports
     from src.utils.logging_setup import get_logger

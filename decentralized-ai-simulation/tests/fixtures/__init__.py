@@ -14,10 +14,10 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 from unittest.mock import MagicMock
 
-from decentralized_ai_simulation.src.utils.file_manager import FileManager
-from decentralized_ai_simulation.src.utils.data_manager import DataManager
-from decentralized_ai_simulation.src.config.config_manager import ConfigLoader
-from decentralized_ai_simulation.src.utils.migration_helper import MigrationHelper
+from ...src.utils.file_manager import FileManager
+from ...src.utils.data_manager import DataManager
+from ...src.config.config_manager import ConfigLoader
+from ...src.utils.migration_helper import MigrationHelper
 
 
 class TestFixtureManager:
@@ -281,7 +281,7 @@ def get_nested_value(data: Dict[str, Any], key: str, default: Any = None) -> Any
 
 def create_test_blacklist_entries(count: int = 5) -> List[Dict[str, Any]]:
     """Create test blacklist entries."""
-    from decentralized_ai_simulation.src.utils.data_manager import BlacklistEntry
+    from ...src.utils.data_manager import BlacklistEntry
 
     entries = []
     severities = ['low', 'medium', 'high', 'critical']

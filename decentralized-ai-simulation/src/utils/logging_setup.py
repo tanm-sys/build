@@ -1,7 +1,19 @@
 """Logging setup for decentralized AI simulation."""
 import logging
 import logging.handlers
-from decentralized_ai_simulation.src.config.config_loader import get_config
+import sys
+import os
+
+# Add the config module path and import
+current_dir = os.path.dirname(os.path.abspath(__file__))
+config_dir = os.path.join(current_dir, '..', 'config')
+sys.path.insert(0, config_dir)
+
+try:
+    from config_loader import get_config
+except ImportError:
+    # Fallback for when running as part of the package
+    from decentralized_ai_simulation.src.config.config_loader import get_config
 
 def setup_logging() -> None:
     """Configure structured logging for the application."""

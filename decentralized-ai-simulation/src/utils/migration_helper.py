@@ -11,7 +11,7 @@ import ast
 import re
 import shutil
 from pathlib import Path
-from typing import Dict, List, Tuple, Set, Optional, Any, Callable
+from typing import Dict, List, Tuple, Set, Optional, Any, Callable, Union
 from dataclasses import dataclass, field
 from enum import Enum
 import logging

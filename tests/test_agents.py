@@ -8,8 +8,22 @@ from unittest.mock import Mock, patch
 
 import numpy as np
 import pytest
-from decentralized_ai_simulation.src.core.agents import AnomalyAgent, AgentFactory, validate_agent_input
 from sklearn.ensemble import IsolationForest
+import sys
+import os
+
+# Simple approach: add the specific module path to sys.path
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(current_dir)
+agents_module_path = os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core', 'agents')
+
+# Add both the agents module path and its parent for relative imports
+sys.path.insert(0, agents_module_path)
+sys.path.insert(0, os.path.join(project_root, 'decentralized-ai-simulation', 'src', 'core'))
+sys.path.insert(0, os.path.join(project_root, 'decentralized-ai-simulation', 'src'))
+
+# Now import directly
+from agent_manager import AnomalyAgent, AgentFactory, validate_agent_input
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
