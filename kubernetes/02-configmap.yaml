@@ -1,0 +1,153 @@
+# ConfigMap for AI Simulation Platform Configuration
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-simulation-config
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: config
+data:
+  # Application Configuration
+  app.config: |
+    # Application Settings
+    APP_NAME: "AI Simulation Platform"
+    APP_VERSION: "{{ .Values.image.tag }}"
+    LOG_LEVEL: "{{ .Values.logLevel }}"
+    MAX_AGENTS: "{{ .Values.maxAgents }}"
+    SIMULATION_STEPS: "{{ .Values.simulationSteps }}"
+    
+    # Database Configuration
+    DATABASE_URL: "{{ .Values.database.url }}"
+    DATABASE_POOL_SIZE: "{{ .Values.database.poolSize }}"
+    DATABASE_MAX_OVERFLOW: "{{ .Values.database.maxOverflow }}"
+    
+    # Redis Configuration
+    REDIS_URL: "{{ .Values.redis.url }}"
+    REDIS_POOL_SIZE: "{{ .Values.redis.poolSize }}"
+    
+    # Security Configuration
+    JWT_SECRET: "{{ .Values.jwt.secret }}"
+    JWT_EXPIRY: "{{ .Values.jwt.expiry }}"
+    ENCRYPTION_KEY: "{{ .Values.encryption.key }}"
+    
+    # Performance Configuration
+    WORKER_PROCESSES: "{{ .Values.worker.processes }}"
+    WORKER_THREADS: "{{ .Values.worker.threads }}"
+    MAX_CONCURRENT_SIMULATIONS: "{{ .Values.maxConcurrentSimulations }}"
+    
+    # Monitoring Configuration
+    METRICS_ENABLED: "{{ .Values.metrics.enabled }}"
+    TRACING_ENABLED: "{{ .Values.tracing.enabled }}"
+    
+    # Environment
+    ENVIRONMENT: "{{ .Values.environment }}"
+    DEPLOYMENT_TYPE: "{{ .Values.deployment.strategy }}"
+  nginx.conf: |
+    events {
+        worker_connections 1024;
+    }
+    
+    http {
+        upstream ai-simulation-backend {
+            server ai-simulation-api:8000;
+        }
+        
+        upstream ai-simulation-ui {
+            server ai-simulation-ui:8501;
+        }
+        
+        server {
+            listen 80;
+            server_name _;
+            
+            # Security headers
+            add_header X-Frame-Options "SAMEORIGIN" always;
+            add_header X-Content-Type-Options "nosniff" always;
+            add_header X-XSS-Protection "1; mode=block" always;
+            add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+            
+            # Rate limiting
+            limit_req_zone $binary_remote_addr zone=api:10m rate=10r/s;
+            limit_req_zone $binary_remote_addr zone=ui:10m rate=5r/s;
+            
+            # Health check endpoint
+            location /health {
+                access_log off;
+                return 200 "healthy\n";
+                add_header Content-Type text/plain;
+            }
+            
+            # API endpoints
+            location /api/ {
+                limit_req zone=api burst=20 nodelay;
+                proxy_pass http://ai-simulation-backend;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            # WebSocket support
+            location /ws/ {
+                proxy_pass http://ai-simulation-backend;
+                proxy_http_version 1.1;
+                proxy_set_header Upgrade $http_upgrade;
+                proxy_set_header Connection "upgrade";
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+            
+            # UI endpoints
+            location / {
+                limit_req zone=ui burst=10 nodelay;
+                proxy_pass http://ai-simulation-ui;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+            }
+        }
+    }
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ai-simulation-logging
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: logging
+data:
+  logstash.conf: |
+    input {
+      beats {
+        port => 5044
+      }
+    }
+    
+    filter {
+      if [kubernetes][namespace] == "ai-simulation" {
+        grok {
+          match => { "message" => "%{TIMESTAMP_ISO8601:timestamp} %{LOGLEVEL:level} %{DATA:logger} %{GREEDYDATA:message}" }
+        }
+        
+        date {
+          match => [ "timestamp", "yyyy-MM-dd HH:mm:ss.SSS" ]
+        }
+        
+        mutate {
+          add_field => { "application" => "ai-simulation" }
+          add_field => { "environment" => "{{ .Values.environment }}" }
+        }
+      }
+    }
+    
+    output {
+      elasticsearch {
+        hosts => ["elasticsearch:9200"]
+        index => "ai-simulation-%{+YYYY.MM.dd}"
+      }
+    }

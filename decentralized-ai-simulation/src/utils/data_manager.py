@@ -662,7 +662,7 @@ class DataManager:
         try:
             # Convert data to JSON string for consistent hashing
             data_str = json.dumps(data, sort_keys=True, separators=(',', ':'))
-            return hashlib.md5(data_str.encode('utf-8')).hexdigest()
+            return hashlib.sha256(data_str.encode('utf-8')).hexdigest()
         except Exception as e:
             logger.error(f"Failed to calculate data checksum: {e}")
             return ""

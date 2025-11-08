@@ -1,0 +1,284 @@
+# Default values for AI Simulation Platform
+# This is a YAML-formatted file.
+
+global:
+  imageRegistry: ""
+  imagePullSecrets: []
+  storageClass: ""
+
+replicaCount: 1
+
+image:
+  registry: ghcr.io
+  repository: company/ai-simulation
+  tag: "latest"
+  pullPolicy: IfNotPresent
+  pullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations:
+  prometheus.io/scrape: "true"
+  prometheus.io/port: "8000"
+  prometheus.io/path: "/metrics"
+
+podSecurityContext:
+  fsGroup: 1000
+
+securityContext:
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1000
+
+# API Service Configuration
+api:
+  enabled: true
+  replicaCount: 3
+  
+  image:
+    registry: ghcr.io
+    repository: company/ai-simulation-api
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8000
+  
+  resources:
+    limits:
+      cpu: 2000m
+      memory: 4Gi
+    requests:
+      cpu: 500m
+      memory: 1Gi
+  
+  livenessProbe:
+    httpGet:
+      path: /health
+      port: http
+    initialDelaySeconds: 60
+    periodSeconds: 30
+    timeoutSeconds: 10
+    failureThreshold: 3
+  
+  readinessProbe:
+    httpGet:
+      path: /ready
+      port: http
+    initialDelaySeconds: 30
+    periodSeconds: 10
+    timeoutSeconds: 5
+    failureThreshold: 3
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 2
+    maxReplicas: 20
+    targetCPUUtilizationPercentage: 70
+    targetMemoryUtilizationPercentage: 80
+  
+  nodeSelector:
+    workload-type: "compute"
+  
+  tolerations:
+  - key: "ai-simulation"
+    operator: "Equal"
+    value: "true"
+    effect: "NoSchedule"
+  
+  affinity:
+    podAntiAffinity:
+      preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+            - key: app
+              operator: In
+              values:
+              - ai-simulation-api
+          topologyKey: kubernetes.io/hostname
+
+# UI Service Configuration
+ui:
+  enabled: true
+  replicaCount: 2
+  
+  image:
+    registry: ghcr.io
+    repository: company/ai-simulation-ui
+    tag: "latest"
+    pullPolicy: IfNotPresent
+  
+  service:
+    type: ClusterIP
+    port: 80
+    targetPort: 8501
+  
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 2Gi
+    requests:
+      cpu: 200m
+      memory: 512Mi
+  
+  autoscaling:
+    enabled: true
+    minReplicas: 1
+    maxReplicas: 10
+    targetCPUUtilizationPercentage: 70
+
+# Database Configuration
+postgresql:
+  enabled: true
+  auth:
+    postgresPassword: ""
+    database: "ai_simulation"
+    username: "postgres"
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 2000m
+        memory: 4Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  readReplicas:
+    replicaCount: 1
+
+# Redis Configuration
+redis:
+  enabled: true
+  auth:
+    enabled: true
+    password: ""
+  master:
+    persistence:
+      enabled: true
+      size: 20Gi
+  replica:
+    replicaCount: 1
+
+# Ingress Configuration
+ingress:
+  enabled: true
+  className: ""
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+  hosts:
+    - host: ai-simulation.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+        - path: /api
+          pathType: Prefix
+        - path: /ws
+          pathType: Prefix
+  tls:
+    - secretName: ai-simulation-tls
+      hosts:
+        - ai-simulation.example.com
+
+# Monitoring Configuration
+monitoring:
+  enabled: true
+  prometheus:
+    enabled: true
+  grafana:
+    enabled: true
+    adminPassword: ""
+
+# Certificate Management
+cert-manager:
+  enabled: true
+  installCRDs: true
+
+# External DNS
+external-dns:
+  enabled: false
+
+# Application Configuration
+config:
+  environment: "production"
+  logLevel: "info"
+  maxAgents: 1000
+  simulationSteps: 1000
+  deployment:
+    strategy: "RollingUpdate"
+
+# Secrets Management
+secrets:
+  create: true
+  jwtSecret: ""
+  encryptionKey: ""
+
+# Storage Configuration
+storage:
+  storageClass: "gp3"
+  logStorageClass: "gp3"
+  backupStorageClass: "gp3"
+
+# Network Policy
+networkPolicy:
+  enabled: true
+
+# Service Monitor for Prometheus
+serviceMonitor:
+  enabled: true
+  interval: 30s
+  path: /metrics
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+  maxUnavailable: ""
+
+# Priority Class
+priorityClassName: ""
+
+# RBAC
+rbac:
+  create: true
+  clusterRole: true
+
+# Service Mesh
+istio:
+  enabled: false
+
+# Backup Configuration
+backup:
+  enabled: true
+  schedule: "0 2 * * *"
+  retention: "30d"
+
+# Health Checks
+healthcheck:
+  enabled: true
+  path: "/health"
+
+# Environment Variables
+extraEnvVars: []
+extraEnvVarsSecret: ""
+extraVolumes: []
+extraVolumeMounts: []

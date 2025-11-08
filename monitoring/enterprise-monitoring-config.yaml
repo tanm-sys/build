@@ -1,0 +1,280 @@
+# Enterprise Monitoring Configuration for AI Simulation Platform
+# Comprehensive multi-layer monitoring with advanced alerting and observability
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: 'ai-simulation-enterprise'
+    environment: 'production'
+    datacenter: 'primary'
+    team: 'platform-sre'
+    version: 'v2.1.0'
+
+# Storage configuration for long-term retention
+storage:
+  tsdb:
+    path: /prometheus/data
+    retention.time: 90d
+    retention.size: 50GB
+
+# Rule files for alerting and recording
+rule_files:
+  - "alert_rules.yml"
+  - "recording_rules.yml"
+  - "ai_simulation_rules.yml"
+  - "security_rules.yml"
+  - "performance_rules.yml"
+
+# Scrape configurations with advanced discovery
+scrape_configs:
+  # Kubernetes API Server with enhanced monitoring
+  - job_name: 'kubernetes-apiserver'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - default
+            - kube-system
+            - monitoring
+    scheme: https
+    tls_config:
+      ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+      insecure_skip_verify: false
+    bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_namespace, __meta_kubernetes_service_name, __meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: default;kubernetes;https
+      - target_label: __metrics_path__
+        replacement: /api/v1/nodes
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metrics_path: /metrics
+
+  # Enhanced Kubernetes Pods monitoring
+  - job_name: 'kubernetes-pods-enhanced'
+    kubernetes_sd_configs:
+      - role: pod
+        namespaces:
+          names:
+            - ai-simulation
+            - monitoring
+            - security
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+        action: keep
+        regex: true
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+      - action: labelmap
+        regex: __meta_kubernetes_pod_label_(.+)
+      - source_labels: [__meta_kubernetes_pod_name]
+        action: replace
+        target_label: pod_name
+      - source_labels: [__meta_kubernetes_namespace]
+        action: replace
+        target_label: namespace
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # AI Simulation API Enhanced Monitoring
+  - job_name: 'ai-simulation-api-enhanced'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - ai-simulation
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: ai-simulation-api
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: http
+    scheme: http
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    metrics_path: /metrics
+    params:
+      format: ['prometheus']
+
+  # AI Simulation Frontend Monitoring
+  - job_name: 'ai-simulation-frontend'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - ai-simulation
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: ai-simulation-ui
+      - source_labels: [__meta_kubernetes_endpoint_port_name]
+        action: keep
+        regex: ui
+    scheme: http
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metrics_path: /api/metrics
+
+  # Redis Enhanced Monitoring
+  - job_name: 'redis-enhanced'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - ai-simulation
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: ai-simulation-redis
+    scheme: redis
+    scrape_interval: 30s
+    scrape_timeout: 15s
+
+  # PostgreSQL Enhanced Monitoring
+  - job_name: 'postgresql-enhanced'
+    kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names:
+            - ai-simulation
+    relabel_configs:
+      - source_labels: [__meta_kubernetes_service_name]
+        action: keep
+        regex: ai-simulation-postgresql
+    scheme: postgresql
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    params:
+      sslmode: 'require'
+
+  # Node Exporter with advanced system metrics
+  - job_name: 'node-exporter-enhanced'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics
+    scrape_interval: 15s
+    scrape_timeout: 10s
+    metrics_path: /metrics
+
+  # cAdvisor with container metrics
+  - job_name: 'cadvisor-enhanced'
+    kubernetes_sd_configs:
+      - role: node
+    relabel_configs:
+      - action: labelmap
+        regex: __meta_kubernetes_node_label_(.+)
+      - target_label: __address__
+        replacement: kubernetes.default.svc:443
+      - source_labels: [__meta_kubernetes_node_name]
+        regex: (.+)
+        target_label: __metrics_path__
+        replacement: /api/v1/nodes/${1}/proxy/metrics/cadvisor
+    scrape_interval: 15s
+    scrape_timeout: 10s
+
+  # Blackbox Exporter for synthetic monitoring
+  - job_name: 'blackbox-exporter'
+    static_configs:
+      - targets:
+          - 'http://ai-simulation-ui:8080/health'
+          - 'http://ai-simulation-api:8000/health'
+          - 'http://ai-simulation-api:8000/api/v1/agents'
+    metrics_path: /probe
+    params:
+      module: [http_2xx]
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115
+    scrape_interval: 60s
+    scrape_timeout: 30s
+
+  # Jaeger for distributed tracing
+  - job_name: 'jaeger-collector'
+    static_configs:
+      - targets: ['jaeger-collector:14269']
+    scrape_interval: 30s
+    scrape_timeout: 15s
+    metrics_path: /metrics
+
+  # Alertmanager
+  - job_name: 'alertmanager'
+    static_configs:
+      - targets: ['alertmanager:9093']
+    scrape_interval: 30s
+    scrape_timeout: 15s
+
+  # Custom application metrics
+  - job_name: 'custom-metrics'
+    static_configs:
+      - targets: ['localhost:9091']
+    scrape_interval: 10s
+    scrape_timeout: 5s
+
+# Remote write configuration for multi-region setup
+remote_write:
+  - url: "https://prometheus-remote-storage.s3.amazonaws.com/api/v1/write"
+    queue_config:
+      max_samples_per_send: 1000
+      max_shards: 200
+      capacity: 2500
+      batch_send_deadline: 5s
+      min_shards: 10
+      max_shards_per_node: 5
+    write_relabel_configs:
+      - source_labels: [__name__]
+        regex: "ai_simulation_.*"
+        action: keep
+    name: "primary-remote-storage"
+
+# Remote read configuration for cross-region queries
+remote_read:
+  - url: "https://prometheus-remote-storage.s3.amazonaws.com/api/v1/read"
+    read_recent: true
+    name: "primary-remote-read"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+          - alertmanager:9093
+      timeout: 30s
+      api_version: v2
+
+# Query configuration for optimized performance
+query:
+  timeout: 60s
+  max-samples: 50000000
+  max-concurrency: 20
+  max-samples-per-query: 500000000
+
+# Web configuration
+web:
+  enable-lifecycle: true
+  enable-admin-api: true
+  page-title: 'AI Simulation Platform - Enterprise Monitoring'
+  cors.origin: '.*'
+  console.templates: /prometheus/consoles
+  console.libraries: /prometheus/console_libraries

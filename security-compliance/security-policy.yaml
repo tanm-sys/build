@@ -1,0 +1,413 @@
+# Security & Compliance Framework for AI Simulation Platform
+# Enterprise-grade security policies and compliance controls
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: security-policy
+  labels:
+    policy: security
+    compliance: enterprise
+---
+# Network Security Policy
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-simulation-network-policy
+  namespace: ai-simulation
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-simulation
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    - namespaceSelector:
+        matchLabels:
+          name: monitoring
+    - podSelector:
+        matchLabels:
+          app: ai-simulation
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8501
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: security
+    ports:
+    - protocol: TCP
+      port: 8000
+  egress:
+  - to:
+    - namespaceSelector:
+        matchLabels:
+          name: kube-system
+    ports:
+    - protocol: TCP
+      port: 53
+    - protocol: UDP
+      port: 53
+  - to:
+    - podSelector:
+        matchLabels:
+          app: postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+  - to:
+    - podSelector:
+        matchLabels:
+          app: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80
+---
+# Pod Security Policy
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: ai-simulation-psp
+spec:
+  privileged: false
+  allowPrivilegeEscalation: false
+  requiredDropCapabilities:
+    - ALL
+  volumes:
+    - 'configMap'
+    - 'emptyDir'
+    - 'projected'
+    - 'secret'
+    - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+    rule: 'MustRunAsNonRoot'
+  seLinux:
+    rule: 'RunAsAny'
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: 1
+        max: 65535
+  readOnlyRootFilesystem: true
+---
+# RBAC Configuration
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  namespace: ai-simulation
+  name: ai-simulation-role
+rules:
+- apiGroups: [""]
+  resources: ["configmaps", "secrets", "services"]
+  verbs: ["get", "list", "watch"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: ai-simulation-rolebinding
+  namespace: ai-simulation
+subjects:
+- kind: ServiceAccount
+  name: ai-simulation-sa
+  namespace: ai-simulation
+roleRef:
+  kind: Role
+  name: ai-simulation-role
+  apiGroup: rbac.authorization.k8s.io
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: ai-simulation-sa
+  namespace: ai-simulation
+automountServiceAccountToken: true
+---
+# Security Context Configuration
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ai-simulation-api
+  namespace: ai-simulation
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: ai-simulation-api
+  template:
+    metadata:
+      labels:
+        app: ai-simulation-api
+    spec:
+      serviceAccountName: ai-simulation-sa
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+      - name: ai-simulation-api
+        image: ai-simulation:latest
+        securityContext:
+          allowPrivilegeEscalation: false
+          readOnlyRootFilesystem: true
+          runAsNonRoot: true
+          runAsUser: 1000
+          capabilities:
+            drop:
+            - ALL
+            add:
+            - NET_BIND_SERVICE
+        ports:
+        - containerPort: 8000
+        env:
+        - name: USER
+          value: "1000"
+        - name: GROUP
+          value: "1000"
+        volumeMounts:
+        - name: tmp
+          mountPath: /tmp
+        - name: logs
+          mountPath: /app/logs
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 5
+          periodSeconds: 5
+      volumes:
+      - name: tmp
+        emptyDir: {}
+      - name: logs
+        emptyDir: {}
+
+---
+# Security Scanning Configuration
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scan
+  namespace: ai-simulation
+spec:
+  schedule: "0 6 * * 1"  # Weekly on Monday at 6 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: security-scanner
+            image: aquasec/trivy:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Scan container images
+              trivy image --security-checks vuln,config ai-simulation:latest
+              trivy image --security-checks vuln,config ai-simulation-ui:latest
+              
+              # Scan Kubernetes manifests
+              trivy fs --security-checks vuln /app
+              
+              # Generate security report
+              trivy image --format json --output security-report.json ai-simulation:latest
+              
+              # Upload to security dashboard
+              aws s3 cp security-report.json s3://ai-simulation-security-reports/
+            volumeMounts:
+            - name: kubeconfig
+              mountPath: /root/.kube
+              readOnly: true
+            - name: security-storage
+              mountPath: /app
+          volumes:
+          - name: kubeconfig
+            secret:
+              secretName: kubeconfig-secret
+          - name: security-storage
+            emptyDir: {}
+          restartPolicy: OnFailure
+
+---
+# Compliance Monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: security-compliance-rules
+  namespace: ai-simulation
+spec:
+  groups:
+  - name: security.rules
+    rules:
+    - alert: SecurityPolicyViolation
+      expr: kube_pod_security_policy_violation_total > 0
+      for: 1m
+      labels:
+        severity: critical
+        service: security
+      annotations:
+        summary: "Security policy violation detected"
+        description: "Pod {{ $labels.pod }} has violated security policy"
+        
+    - alert: UnusualNetworkActivity
+      expr: rate(container_network_receive_bytes_total[5m]) > 100000000
+      for: 5m
+      labels:
+        severity: warning
+        service: security
+      annotations:
+        summary: "Unusual network activity detected"
+        
+    - alert: SecurityScanFailed
+      expr: kube_job_status_failed{job_name="security-scan"} > 0
+      for: 1m
+      labels:
+        severity: warning
+        service: security
+      annotations:
+        summary: "Security scan failed"
+        description: "Security scan job {{ $labels.job_name }} has failed"
+
+---
+# Secret Rotation Policy
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: secret-rotation-policy
+  namespace: ai-simulation
+data:
+  rotation-policy.yaml: |
+    # Secret Rotation Policy
+    rotation_schedule:
+      jwt_secrets: "90d"
+      database_passwords: "180d"
+      api_keys: "30d"
+      encryption_keys: "365d"
+    
+    enforcement:
+      require_rotation: true
+      max_age_days:
+        jwt_secrets: 95
+        database_passwords: 185
+        api_keys: 35
+        encryption_keys: 370
+    
+    notification:
+      notify_days_before:
+        - 7
+        - 3
+        - 1
+      escalation_hours:
+        - 24
+        - 48
+
+---
+# Vulnerability Management
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vulnerability-scan
+  namespace: ai-simulation
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: vulnerability-scanner
+            image: owasp/zap2docker-stable:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Run OWASP ZAP security scan
+              zap-baseline.py -t https://ai-simulation.example.com
+              
+              # Generate vulnerability report
+              zap-cli report -o vulnerability-report.html -f html
+              
+              # Upload report
+              aws s3 cp vulnerability-report.html s3://ai-simulation-security-reports/
+            env:
+            - name: TARGET_URL
+              value: "https://ai-simulation.example.com"
+          restartPolicy: OnFailure
+
+---
+# Security Incident Response
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: security-incident-response
+  namespace: ai-simulation
+data:
+  incident-response.md: |
+    # Security Incident Response Playbook
+    
+    ## Incident Severity Levels
+    - **Critical**: Data breach, system compromise, service outage
+    - **High**: Security policy violations, failed intrusion attempts
+    - **Medium**: Suspicious activity, security scan failures
+    - **Low**: Security recommendations, policy updates
+    
+    ## Response Procedures
+    
+    ### Immediate Actions (0-15 minutes)
+    1. Acknowledge alert and assess severity
+    2. Isolate affected systems if necessary
+    3. Notify incident response team
+    4. Document initial findings
+    
+    ### Investigation (15-60 minutes)
+    1. Gather evidence and logs
+    2. Determine scope of impact
+    3. Identify root cause
+    4. Implement temporary fixes
+    
+    ### Resolution (1-4 hours)
+    1. Implement permanent fixes
+    2. Update security policies
+    3. Restore services
+    4. Verify system integrity
+    
+    ### Post-Incident (4-24 hours)
+    1. Conduct post-incident review
+    2. Update security documentation
+    3. Implement preventive measures
+    4. Report to stakeholders
+    
+    ## Contact Information
+    - **Security Team**: security@company.com
+    - **Incident Response**: incident@company.com
+    - **Emergency Hotline**: +1-555-SECURE

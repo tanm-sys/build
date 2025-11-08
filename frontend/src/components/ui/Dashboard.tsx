@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes, css } from 'styled-components';
 import { useSimulation } from '../../contexts/SimulationContext';
 
 const DashboardContainer = styled.div`
@@ -83,7 +83,7 @@ const ConnectionStatus = styled.div<{ connected: boolean }>`
   border-radius: 50%;
   background: ${props => props.connected ? '#4CAF50' : '#f44336'};
   margin-right: 0.5rem;
-  animation: ${props => props.connected ? 'none' : `${pulse} 2s infinite`};
+  ${props => props.connected ? 'animation: none;' : css`animation: ${pulse} 2s infinite;`}
 `;
 
 const Dashboard: React.FC = () => {

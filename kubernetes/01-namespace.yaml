@@ -1,0 +1,30 @@
+# Kubernetes Namespace for AI Simulation Platform
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-simulation
+  labels:
+    name: ai-simulation
+    environment: production
+    tier: critical
+    version: "{{ .Values.image.tag }}"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-simulation-staging
+  labels:
+    name: ai-simulation-staging
+    environment: staging
+    tier: critical
+    version: "{{ .Values.image.tag }}"
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ai-simulation-monitoring
+  labels:
+    name: ai-simulation-monitoring
+    environment: production
+    tier: observability
+    managed-by: prometheus-operator

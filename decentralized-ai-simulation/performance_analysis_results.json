@@ -1,0 +1,747 @@
+{
+  "analysis_timestamp": 1762052358.76471,
+  "baseline_metrics": {
+    "timestamp": 1762052358.2459698,
+    "cpu_percent": 30.1,
+    "memory_percent": 77.7,
+    "memory_available_gb": 3.362659454345703,
+    "memory_used_gb": 11.163658142089844,
+    "disk_percent": 41.32193177228205,
+    "disk_free_gb": 242.33687210083008,
+    "process_memory_mb": 15.48828125,
+    "process_cpu_percent": 0.0
+  },
+  "identified_bottlenecks": [],
+  "files_analyzed": 64,
+  "anti_patterns": {
+    "database_operations": [
+      {
+        "file": "./initialize_database.py",
+        "line": 51,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 52,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 53,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 54,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 93,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 139,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 151,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 165,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 113,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 189,
+        "function": "execute"
+      },
+      {
+        "file": "./initialize_database.py",
+        "line": 235,
+        "function": "execute"
+      },
+      {
+        "file": "./check_database.py",
+        "line": 19,
+        "function": "execute"
+      },
+      {
+        "file": "./check_database.py",
+        "line": 33,
+        "function": "execute"
+      },
+      {
+        "file": "./check_database.py",
+        "line": 41,
+        "function": "execute"
+      },
+      {
+        "file": "./check_database.py",
+        "line": 46,
+        "function": "execute"
+      },
+      {
+        "file": "./check_database.py",
+        "line": 59,
+        "function": "execute"
+      },
+      {
+        "file": "./src/utils/data_manager.py",
+        "line": 685,
+        "function": "execute"
+      },
+      {
+        "file": "./src/utils/data_manager.py",
+        "line": 457,
+        "function": "execute"
+      },
+      {
+        "file": "./src/utils/data_manager.py",
+        "line": 459,
+        "function": "execute"
+      },
+      {
+        "file": "./src/utils/data_manager.py",
+        "line": 421,
+        "function": "execute"
+      },
+      {
+        "file": "./src/utils/data_manager.py",
+        "line": 430,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 220,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 242,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 833,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 994,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 1476,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/vulnerability_management.py",
+        "line": 521,
+        "function": "_execute_response_action"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 595,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 613,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 614,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 615,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 616,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 674,
+        "function": "execute"
+      },
+      {
+        "file": "./src/security/security_framework.py",
+        "line": 666,
+        "function": "_execute_automated_response"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 60,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 61,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 62,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 63,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 64,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 160,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 173,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 177,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database.py",
+        "line": 181,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/simulation.py",
+        "line": 193,
+        "function": "_execute_agent_steps_parallel"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 169,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 170,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 171,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 172,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 173,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 175,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/database/ledger_manager.py",
+        "line": 398,
+        "function": "execute"
+      },
+      {
+        "file": "./src/core/simulation/simulation_engine.py",
+        "line": 203,
+        "function": "_execute_agent_steps"
+      },
+      {
+        "file": "./src/core/simulation/simulation_engine.py",
+        "line": 235,
+        "function": "_execute_parallel_steps"
+      },
+      {
+        "file": "./src/core/simulation/simulation_engine.py",
+        "line": 237,
+        "function": "_execute_sequential_steps"
+      },
+      {
+        "file": "./src/core/simulation/simulation_engine.py",
+        "line": 246,
+        "function": "_execute_sequential_steps"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1190,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1191,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1192,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1193,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1262,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1280,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1317,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1366,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1420,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1494,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1551,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1557,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1563,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1569,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1402,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1453,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1617,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1620,
+        "function": "execute"
+      },
+      {
+        "file": "./src/data/data_management_system.py",
+        "line": 1299,
+        "function": "execute"
+      },
+      {
+        "file": "./src/performance/optimization_engine.py",
+        "line": 1469,
+        "function": "_evict_query_cache"
+      },
+      {
+        "file": "./src/performance/optimization_engine.py",
+        "line": 1424,
+        "function": "_analyze_query_performance"
+      }
+    ],
+    "nested_loops": [],
+    "inefficient_calls": [],
+    "large_comprehensions": [],
+    "excessive_regex": []
+  },
+  "complexity_metrics": {
+    "./simple_server.py": {
+      "complexity": 15,
+      "lines": 247,
+      "complexity_per_line": 0.06072874493927125
+    },
+    "./validate_environment.py": {
+      "complexity": 36,
+      "lines": 473,
+      "complexity_per_line": 0.07610993657505286
+    },
+    "./__init__.py": {
+      "complexity": 3,
+      "lines": 32,
+      "complexity_per_line": 0.09375
+    },
+    "./initialize_database.py": {
+      "complexity": 29,
+      "lines": 539,
+      "complexity_per_line": 0.05380333951762523
+    },
+    "./check_database.py": {
+      "complexity": 11,
+      "lines": 77,
+      "complexity_per_line": 0.14285714285714285
+    },
+    "./src/__init__.py": {
+      "complexity": 1,
+      "lines": 1,
+      "complexity_per_line": 1.0
+    },
+    "./src/utils/exceptions.py": {
+      "complexity": 18,
+      "lines": 399,
+      "complexity_per_line": 0.045112781954887216
+    },
+    "./src/utils/render_mermaid_diagrams.py": {
+      "complexity": 17,
+      "lines": 170,
+      "complexity_per_line": 0.1
+    },
+    "./src/utils/logging_setup.py": {
+      "complexity": 4,
+      "lines": 84,
+      "complexity_per_line": 0.047619047619047616
+    },
+    "./src/utils/monitoring.py": {
+      "complexity": 14,
+      "lines": 168,
+      "complexity_per_line": 0.08333333333333333
+    },
+    "./src/utils/__init__.py": {
+      "complexity": 1,
+      "lines": 1,
+      "complexity_per_line": 1.0
+    },
+    "./src/utils/data_manager.py": {
+      "complexity": 96,
+      "lines": 792,
+      "complexity_per_line": 0.12121212121212122
+    },
+    "./src/utils/migration_helper.py": {
+      "complexity": 87,
+      "lines": 851,
+      "complexity_per_line": 0.10223266745005875
+    },
+    "./src/utils/file_manager.py": {
+      "complexity": 68,
+      "lines": 505,
+      "complexity_per_line": 0.13465346534653466
+    },
+    "./src/utils/logging/logger.py": {
+      "complexity": 1,
+      "lines": 58,
+      "complexity_per_line": 0.017241379310344827
+    },
+    "./src/utils/logging/__init__.py": {
+      "complexity": 1,
+      "lines": 15,
+      "complexity_per_line": 0.06666666666666667
+    },
+    "./src/utils/monitoring/monitor.py": {
+      "complexity": 41,
+      "lines": 491,
+      "complexity_per_line": 0.0835030549898167
+    },
+    "./src/utils/monitoring/__init__.py": {
+      "complexity": 1,
+      "lines": 27,
+      "complexity_per_line": 0.037037037037037035
+    },
+    "./src/integration/integration_system.py": {
+      "complexity": 46,
+      "lines": 1013,
+      "complexity_per_line": 0.045409674234945706
+    },
+    "./src/security/vulnerability_management.py": {
+      "complexity": 156,
+      "lines": 1582,
+      "complexity_per_line": 0.0986093552465234
+    },
+    "./src/security/security_framework.py": {
+      "complexity": 106,
+      "lines": 1221,
+      "complexity_per_line": 0.08681408681408681
+    },
+    "./src/config/config_loader.py": {
+      "complexity": 55,
+      "lines": 737,
+      "complexity_per_line": 0.07462686567164178
+    },
+    "./src/config/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./src/config/config_manager.py": {
+      "complexity": 72,
+      "lines": 570,
+      "complexity_per_line": 0.12631578947368421
+    },
+    "./src/ui/api_server.py": {
+      "complexity": 52,
+      "lines": 478,
+      "complexity_per_line": 0.1087866108786611
+    },
+    "./src/ui/streamlit_app.py": {
+      "complexity": 62,
+      "lines": 538,
+      "complexity_per_line": 0.11524163568773234
+    },
+    "./src/ui/enhanced_interface.py": {
+      "complexity": 84,
+      "lines": 1342,
+      "complexity_per_line": 0.06259314456035768
+    },
+    "./src/ui/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./src/core/network_optimization.py": {
+      "complexity": 152,
+      "lines": 1345,
+      "complexity_per_line": 0.11301115241635688
+    },
+    "./src/core/bounded_list.py": {
+      "complexity": 5,
+      "lines": 69,
+      "complexity_per_line": 0.07246376811594203
+    },
+    "./src/core/agents.py": {
+      "complexity": 80,
+      "lines": 813,
+      "complexity_per_line": 0.0984009840098401
+    },
+    "./src/core/decentralized_ai_simulation.py": {
+      "complexity": 9,
+      "lines": 63,
+      "complexity_per_line": 0.14285714285714285
+    },
+    "./src/core/federated_learning.py": {
+      "complexity": 79,
+      "lines": 937,
+      "complexity_per_line": 0.08431163287086446
+    },
+    "./src/core/agents_consolidated.py": {
+      "complexity": 6,
+      "lines": 155,
+      "complexity_per_line": 0.03870967741935484
+    },
+    "./src/core/database.py": {
+      "complexity": 55,
+      "lines": 549,
+      "complexity_per_line": 0.10018214936247723
+    },
+    "./src/core/__init__.py": {
+      "complexity": 1,
+      "lines": 1,
+      "complexity_per_line": 1.0
+    },
+    "./src/core/ai_enhancements.py": {
+      "complexity": 34,
+      "lines": 732,
+      "complexity_per_line": 0.04644808743169399
+    },
+    "./src/core/simulation.py": {
+      "complexity": 52,
+      "lines": 397,
+      "complexity_per_line": 0.1309823677581864
+    },
+    "./src/core/database/__init__.py": {
+      "complexity": 1,
+      "lines": 27,
+      "complexity_per_line": 0.037037037037037035
+    },
+    "./src/core/database/ledger_manager.py": {
+      "complexity": 57,
+      "lines": 683,
+      "complexity_per_line": 0.08345534407027819
+    },
+    "./src/core/simulation/simulation_engine.py": {
+      "complexity": 65,
+      "lines": 459,
+      "complexity_per_line": 0.14161220043572983
+    },
+    "./src/core/simulation/__init__.py": {
+      "complexity": 1,
+      "lines": 19,
+      "complexity_per_line": 0.05263157894736842
+    },
+    "./src/core/agents/__init__.py": {
+      "complexity": 1,
+      "lines": 29,
+      "complexity_per_line": 0.034482758620689655
+    },
+    "./src/api/api_server.py": {
+      "complexity": 54,
+      "lines": 1387,
+      "complexity_per_line": 0.03893294881038212
+    },
+    "./src/data/data_management_system.py": {
+      "complexity": 178,
+      "lines": 2022,
+      "complexity_per_line": 0.08803165182987141
+    },
+    "./src/performance/load_tester.py": {
+      "complexity": 86,
+      "lines": 924,
+      "complexity_per_line": 0.09307359307359307
+    },
+    "./src/performance/memory_optimizer.py": {
+      "complexity": 60,
+      "lines": 655,
+      "complexity_per_line": 0.0916030534351145
+    },
+    "./src/performance/optimization_engine.py": {
+      "complexity": 207,
+      "lines": 2051,
+      "complexity_per_line": 0.10092637737688932
+    },
+    "./tests/enterprise_integration_test_suite.py": {
+      "complexity": 53,
+      "lines": 886,
+      "complexity_per_line": 0.05981941309255079
+    },
+    "./tests/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./tests/unit/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./tests/utils/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./tests/integration/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./tests/fixtures/__init__.py": {
+      "complexity": 20,
+      "lines": 457,
+      "complexity_per_line": 0.0437636761487965
+    },
+    "./docs/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./scripts/__init__.py": {
+      "complexity": 1,
+      "lines": 0,
+      "complexity_per_line": 1.0
+    },
+    "./scripts/utils.py": {
+      "complexity": 38,
+      "lines": 265,
+      "complexity_per_line": 0.14339622641509434
+    },
+    "./scripts/maintenance/render_mermaid_diagrams.py": {
+      "complexity": 17,
+      "lines": 170,
+      "complexity_per_line": 0.1
+    },
+    "./scripts/testing/security_vulnerability_assessment.py": {
+      "complexity": 56,
+      "lines": 581,
+      "complexity_per_line": 0.0963855421686747
+    },
+    "./scripts/testing/custom_performance_profiler.py": {
+      "complexity": 54,
+      "lines": 389,
+      "complexity_per_line": 0.13881748071979436
+    },
+    "./scripts/testing/coverage_monitor.py": {
+      "complexity": 69,
+      "lines": 723,
+      "complexity_per_line": 0.0954356846473029
+    },
+    "./scripts/testing/benchmark_performance.py": {
+      "complexity": 43,
+      "lines": 412,
+      "complexity_per_line": 0.10436893203883495
+    },
+    "./scripts/runtime/decentralized_ai_simulation.py": {
+      "complexity": 32,
+      "lines": 195,
+      "complexity_per_line": 0.1641025641025641
+    },
+    "./scripts/runtime/streamlit_app.py": {
+      "complexity": 36,
+      "lines": 194,
+      "complexity_per_line": 0.18556701030927836
+    }
+  },
+  "optimization_recommendations": [
+    "Optimize 76 database operations - consider connection pooling and query optimization",
+    "Refactor 35 high-complexity files (>20 cyclomatic complexity)"
+  ],
+  "summary": {
+    "total_anti_patterns": 76,
+    "average_complexity": 41.96875,
+    "high_risk_files": [
+      "./initialize_database.py",
+      "./src/core/database/ledger_manager.py",
+      "./src/core/simulation.py",
+      "./src/data/data_management_system.py",
+      "./src/security/vulnerability_management.py",
+      "./src/core/simulation/simulation_engine.py",
+      "./src/performance/optimization_engine.py",
+      "./src/core/database.py",
+      "./src/security/security_framework.py",
+      "./check_database.py",
+      "./src/utils/data_manager.py"
+    ]
+  }
+}

@@ -1,0 +1,2768 @@
+{
+  "scan_results": {
+    "scan_timestamp": 1762052370.3766294,
+    "directory_scanned": ".",
+    "files_scanned": 64,
+    "total_vulnerabilities": 101,
+    "file_results": [
+      {
+        "filepath": "./simple_server.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 158,
+            "code": "logger.info(\"API Documentation: http://localhost:8000/docs\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 159,
+            "code": "logger.info(\"API ReDoc: http://localhost:8000/redoc\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 231,
+            "code": "logger.info(\"Server will be available at http://localhost:8000\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          }
+        ],
+        "line_count": 247,
+        "risk_score": 4.0
+      },
+      {
+        "filepath": "./validate_environment.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 174,
+            "code": "'REACT_APP_API_URL': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 177,
+            "code": "'VITE_API_URL': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 206,
+            "code": "if frontend_api == 'http://localhost:8000':",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 218,
+            "code": "details={\"frontend_api\": frontend_api, \"expected\": \"http://localhost:8000\"}",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 229,
+            "code": "backend_url = \"http://localhost:8000\"",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 328,
+            "code": "frontend_api_url = \"http://localhost:8000\"",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          }
+        ],
+        "line_count": 473,
+        "risk_score": 4.0
+      },
+      {
+        "filepath": "./__init__.py",
+        "vulnerabilities": [],
+        "line_count": 32,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./initialize_database.py",
+        "vulnerabilities": [],
+        "line_count": 539,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./check_database.py",
+        "vulnerabilities": [],
+        "line_count": 77,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 1,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/exceptions.py",
+        "vulnerabilities": [],
+        "line_count": 399,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/render_mermaid_diagrams.py",
+        "vulnerabilities": [],
+        "line_count": 170,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/logging_setup.py",
+        "vulnerabilities": [],
+        "line_count": 84,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/monitoring.py",
+        "vulnerabilities": [],
+        "line_count": 168,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 1,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/data_manager.py",
+        "vulnerabilities": [],
+        "line_count": 792,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/migration_helper.py",
+        "vulnerabilities": [],
+        "line_count": 851,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/file_manager.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 108,
+            "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 117,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 473,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 108,
+            "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 117,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 300,
+            "code": "backup_path = dst_path.with_suffix(dst_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 473,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          }
+        ],
+        "line_count": 505,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./src/utils/logging/logger.py",
+        "vulnerabilities": [],
+        "line_count": 58,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/logging/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 15,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/monitoring/monitor.py",
+        "vulnerabilities": [],
+        "line_count": 491,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/utils/monitoring/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 27,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/integration/integration_system.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 581,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 655,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 828,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 871,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 581,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 655,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 828,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 871,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 432,
+            "code": "'base_url': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./src/integration/integration_system.py"
+          }
+        ],
+        "line_count": 1013,
+        "risk_score": 1.3333333333333333
+      },
+      {
+        "filepath": "./src/security/vulnerability_management.py",
+        "vulnerabilities": [],
+        "line_count": 1582,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/security/security_framework.py",
+        "vulnerabilities": [],
+        "line_count": 1221,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/config/config_loader.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 235,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 410,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 485,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 542,
+            "code": "def _apply_env_overrides(self) -> None:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          }
+        ],
+        "line_count": 737,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./src/config/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/config/config_manager.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 255,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 384,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 445,
+            "code": "def _apply_env_overrides(self) -> None:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 369,
+            "code": "if not _validate_config_path(config_dir + '/'):",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 134,
+            "code": "../",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 134,
+            "code": "..\\",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/config/config_manager.py"
+          }
+        ],
+        "line_count": 570,
+        "risk_score": 3.1818181818181817
+      },
+      {
+        "filepath": "./src/ui/api_server.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 27,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 27,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/api_server.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 27,
+            "code": "../../backend",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/ui/api_server.py"
+          }
+        ],
+        "line_count": 478,
+        "risk_score": 2.0
+      },
+      {
+        "filepath": "./src/ui/streamlit_app.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 467,
+            "code": "for node in G.nodes():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 476,
+            "code": "marker={'showscale': True, 'colorscale': 'YlGnBu', 'size': 10, 'color': [G.degree[node] for node in G.nodes()], 'colorbar': {'thickness': 15}},",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 477,
+            "code": "text=list(G.nodes()), textposition=\"middle center\"",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 289,
+            "code": "base_url = \"http://localhost:8502\"  # API server port",
+            "description": "Insecure HTTP communication detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 20,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 20,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 20,
+            "code": "../../backend",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/ui/streamlit_app.py"
+          }
+        ],
+        "line_count": 538,
+        "risk_score": 1.8571428571428572
+      },
+      {
+        "filepath": "./src/ui/enhanced_interface.py",
+        "vulnerabilities": [],
+        "line_count": 1342,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/ui/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/network_optimization.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 397,
+            "code": "if not self.graph.nodes():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/core/network_optimization.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 790,
+            "code": "'avg_degree': np.mean([self.graph.degree(node) for node in self.graph.nodes()]) if self.graph.nodes() else 0,",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/core/network_optimization.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 790,
+            "code": "'avg_degree': np.mean([self.graph.degree(node) for node in self.graph.nodes()]) if self.graph.nodes() else 0,",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/core/network_optimization.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 791,
+            "code": "'is_connected': nx.is_connected(self.graph) if self.graph.nodes() else False,",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/core/network_optimization.py"
+          }
+        ],
+        "line_count": 1345,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./src/core/bounded_list.py",
+        "vulnerabilities": [],
+        "line_count": 69,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/agents.py",
+        "vulnerabilities": [],
+        "line_count": 813,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/decentralized_ai_simulation.py",
+        "vulnerabilities": [],
+        "line_count": 63,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/federated_learning.py",
+        "vulnerabilities": [],
+        "line_count": 937,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/agents_consolidated.py",
+        "vulnerabilities": [],
+        "line_count": 155,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/database.py",
+        "vulnerabilities": [],
+        "line_count": 549,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 1,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/ai_enhancements.py",
+        "vulnerabilities": [
+          {
+            "type": "dangerous_function",
+            "severity": "high",
+            "line": 199,
+            "code": "compile",
+            "description": "Dangerous function call: compile can lead to code injection",
+            "file": "./src/core/ai_enhancements.py"
+          }
+        ],
+        "line_count": 732,
+        "risk_score": 7.0
+      },
+      {
+        "filepath": "./src/core/simulation.py",
+        "vulnerabilities": [],
+        "line_count": 397,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/database/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 27,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/database/ledger_manager.py",
+        "vulnerabilities": [],
+        "line_count": 683,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/simulation/simulation_engine.py",
+        "vulnerabilities": [],
+        "line_count": 459,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/simulation/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 19,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/core/agents/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 29,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/api/api_server.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 130,
+            "code": "ADMIN_PASSWORD = \"dev_password_change_me\"",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 52,
+            "code": "admin_password = os.getenv('ADMIN_PASSWORD')  # Required for production",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 54,
+            "code": "if not admin_password:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 55,
+            "code": "logging.error(\"ADMIN_PASSWORD environment variable not set!\")",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 56,
+            "code": "raise ValueError(\"ADMIN_PASSWORD environment variable is required\")",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 58,
+            "code": "return admin_username, admin_password",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 125,
+            "code": "ADMIN_USERNAME, ADMIN_PASSWORD = get_admin_credentials()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 130,
+            "code": "ADMIN_PASSWORD = \"dev_password_change_me\"",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 131,
+            "code": "logging.warning(\"Using development fallback credentials. Set ADMIN_PASSWORD environment variable for production!\")",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 856,
+            "code": "if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 1354,
+            "code": "auth_success = tester.authenticate(ADMIN_USERNAME, ADMIN_PASSWORD)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 125,
+            "code": "ADMIN_USERNAME, ADMIN_PASSWORD = get_admin_credentials()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 856,
+            "code": "if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/api/api_server.py"
+          }
+        ],
+        "line_count": 1387,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./src/data/data_management_system.py",
+        "vulnerabilities": [],
+        "line_count": 2022,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/performance/load_tester.py",
+        "vulnerabilities": [],
+        "line_count": 924,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/performance/memory_optimizer.py",
+        "vulnerabilities": [],
+        "line_count": 655,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./src/performance/optimization_engine.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 209,
+            "code": "def monitor_nodes():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/performance/optimization_engine.py"
+          }
+        ],
+        "line_count": 2051,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./tests/enterprise_integration_test_suite.py",
+        "vulnerabilities": [],
+        "line_count": 886,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./tests/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./tests/unit/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./tests/utils/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./tests/integration/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./tests/fixtures/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 457,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./docs/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/__init__.py",
+        "vulnerabilities": [],
+        "line_count": 0,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/utils.py",
+        "vulnerabilities": [],
+        "line_count": 265,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/maintenance/render_mermaid_diagrams.py",
+        "vulnerabilities": [],
+        "line_count": 170,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/testing/security_vulnerability_assessment.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 37,
+            "code": "r'default.*password',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 38,
+            "code": "r'admin.*password',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 39,
+            "code": "r'username.*password.*admin'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 200,
+            "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 224,
+            "code": "'hashlib.md5': 'Weak cryptographic hash (MD5) detected',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 200,
+            "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 225,
+            "code": "'hashlib.sha1': 'Weak cryptographic hash (SHA1) detected',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 52,
+            "code": "r'query.*\\+.*%',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 53,
+            "code": "r'SELECT.*\\+',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 54,
+            "code": "r'INSERT.*\\+'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 57,
+            "code": "r'render_template_string',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 61,
+            "code": "r'setTimeout.*string',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 62,
+            "code": "r'setInterval.*string'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 65,
+            "code": "r'http://',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 203,
+            "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 226,
+            "code": "'http://': 'Insecure HTTP communication detected',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 68,
+            "code": "r'ssl.*verify=False'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 356,
+            "code": "if 'ssl_verify=false' in content.lower():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 174,
+            "code": "if '../' in node.value or '..\\\\' in node.value:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 174,
+            "code": "if '../' in node.value or '..\\\\' in node.value:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 74,
+            "code": "r'file.*\\+',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 297,
+            "code": "results['files_scanned'] += 1",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 75,
+            "code": "r'path.*\\+'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 203,
+            "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 227,
+            "code": "'os.system': 'Command injection vulnerability',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "dangerous_function",
+            "severity": "high",
+            "line": 133,
+            "code": "compile",
+            "description": "Dangerous function call: compile can lead to code injection",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 174,
+            "code": "../",
+            "description": "Potential path traversal vulnerability",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 174,
+            "code": "..\\",
+            "description": "Potential path traversal vulnerability",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          }
+        ],
+        "line_count": 581,
+        "risk_score": 1.75
+      },
+      {
+        "filepath": "./scripts/testing/custom_performance_profiler.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 62,
+            "code": "self.results['files_analyzed'] += 1",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/custom_performance_profiler.py"
+          }
+        ],
+        "line_count": 389,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./scripts/testing/coverage_monitor.py",
+        "vulnerabilities": [],
+        "line_count": 723,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/testing/benchmark_performance.py",
+        "vulnerabilities": [],
+        "line_count": 412,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/runtime/decentralized_ai_simulation.py",
+        "vulnerabilities": [],
+        "line_count": 195,
+        "risk_score": 0.0
+      },
+      {
+        "filepath": "./scripts/runtime/streamlit_app.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 123,
+            "code": "for node in G.nodes():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/runtime/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 132,
+            "code": "marker={'showscale': True, 'colorscale': 'YlGnBu', 'size': 10, 'color': [G.degree[node] for node in G.nodes()], 'colorbar': {'thickness': 15}},",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/runtime/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 133,
+            "code": "text=list(G.nodes()), textposition=\"middle center\"",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/runtime/streamlit_app.py"
+          }
+        ],
+        "line_count": 194,
+        "risk_score": 1.0
+      }
+    ],
+    "vulnerability_summary": {
+      "pattern_match": 93,
+      "potential_path_traversal": 6,
+      "dangerous_function": 2
+    },
+    "top_risk_files": [
+      {
+        "filepath": "./src/core/ai_enhancements.py",
+        "vulnerabilities": [
+          {
+            "type": "dangerous_function",
+            "severity": "high",
+            "line": 199,
+            "code": "compile",
+            "description": "Dangerous function call: compile can lead to code injection",
+            "file": "./src/core/ai_enhancements.py"
+          }
+        ],
+        "line_count": 732,
+        "risk_score": 7.0
+      },
+      {
+        "filepath": "./simple_server.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 158,
+            "code": "logger.info(\"API Documentation: http://localhost:8000/docs\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 159,
+            "code": "logger.info(\"API ReDoc: http://localhost:8000/redoc\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 231,
+            "code": "logger.info(\"Server will be available at http://localhost:8000\")",
+            "description": "Insecure HTTP communication detected",
+            "file": "./simple_server.py"
+          }
+        ],
+        "line_count": 247,
+        "risk_score": 4.0
+      },
+      {
+        "filepath": "./validate_environment.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 174,
+            "code": "'REACT_APP_API_URL': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 177,
+            "code": "'VITE_API_URL': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 206,
+            "code": "if frontend_api == 'http://localhost:8000':",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 218,
+            "code": "details={\"frontend_api\": frontend_api, \"expected\": \"http://localhost:8000\"}",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 229,
+            "code": "backend_url = \"http://localhost:8000\"",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 328,
+            "code": "frontend_api_url = \"http://localhost:8000\"",
+            "description": "Insecure HTTP communication detected",
+            "file": "./validate_environment.py"
+          }
+        ],
+        "line_count": 473,
+        "risk_score": 4.0
+      },
+      {
+        "filepath": "./src/config/config_manager.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 255,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 384,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 445,
+            "code": "def _apply_env_overrides(self) -> None:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 369,
+            "code": "if not _validate_config_path(config_dir + '/'):",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "high",
+            "line": 134,
+            "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+            "description": "Code injection vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 134,
+            "code": "../",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/config/config_manager.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 134,
+            "code": "..\\",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/config/config_manager.py"
+          }
+        ],
+        "line_count": 570,
+        "risk_score": 3.1818181818181817
+      },
+      {
+        "filepath": "./src/ui/api_server.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 27,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/api_server.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 27,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/api_server.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 27,
+            "code": "../../backend",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/ui/api_server.py"
+          }
+        ],
+        "line_count": 478,
+        "risk_score": 2.0
+      },
+      {
+        "filepath": "./src/ui/streamlit_app.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 467,
+            "code": "for node in G.nodes():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 476,
+            "code": "marker={'showscale': True, 'colorscale': 'YlGnBu', 'size': 10, 'color': [G.degree[node] for node in G.nodes()], 'colorbar': {'thickness': 15}},",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 477,
+            "code": "text=list(G.nodes()), textposition=\"middle center\"",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 289,
+            "code": "base_url = \"http://localhost:8502\"  # API server port",
+            "description": "Insecure HTTP communication detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 20,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 20,
+            "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/ui/streamlit_app.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 20,
+            "code": "../../backend",
+            "description": "Potential path traversal vulnerability",
+            "file": "./src/ui/streamlit_app.py"
+          }
+        ],
+        "line_count": 538,
+        "risk_score": 1.8571428571428572
+      },
+      {
+        "filepath": "./scripts/testing/security_vulnerability_assessment.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 37,
+            "code": "r'default.*password',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 38,
+            "code": "r'admin.*password',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 39,
+            "code": "r'username.*password.*admin'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 200,
+            "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 224,
+            "code": "'hashlib.md5': 'Weak cryptographic hash (MD5) detected',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 200,
+            "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 225,
+            "code": "'hashlib.sha1': 'Weak cryptographic hash (SHA1) detected',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 52,
+            "code": "r'query.*\\+.*%',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 53,
+            "code": "r'SELECT.*\\+',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 54,
+            "code": "r'INSERT.*\\+'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 57,
+            "code": "r'render_template_string',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 61,
+            "code": "r'setTimeout.*string',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 62,
+            "code": "r'setInterval.*string'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 65,
+            "code": "r'http://',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 203,
+            "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 226,
+            "code": "'http://': 'Insecure HTTP communication detected',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 68,
+            "code": "r'ssl.*verify=False'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 356,
+            "code": "if 'ssl_verify=false' in content.lower():",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 174,
+            "code": "if '../' in node.value or '..\\\\' in node.value:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 174,
+            "code": "if '../' in node.value or '..\\\\' in node.value:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 74,
+            "code": "r'file.*\\+',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 297,
+            "code": "results['files_scanned'] += 1",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 75,
+            "code": "r'path.*\\+'",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 203,
+            "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 227,
+            "code": "'os.system': 'Command injection vulnerability',",
+            "description": "Security vulnerability pattern detected",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "dangerous_function",
+            "severity": "high",
+            "line": 133,
+            "code": "compile",
+            "description": "Dangerous function call: compile can lead to code injection",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 174,
+            "code": "../",
+            "description": "Potential path traversal vulnerability",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          },
+          {
+            "type": "potential_path_traversal",
+            "severity": "medium",
+            "line": 174,
+            "code": "..\\",
+            "description": "Potential path traversal vulnerability",
+            "file": "./scripts/testing/security_vulnerability_assessment.py"
+          }
+        ],
+        "line_count": 581,
+        "risk_score": 1.75
+      },
+      {
+        "filepath": "./src/integration/integration_system.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 581,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 655,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 828,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 871,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 581,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 655,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 828,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 871,
+            "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/integration/integration_system.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "medium",
+            "line": 432,
+            "code": "'base_url': 'http://localhost:8000',",
+            "description": "Insecure HTTP communication detected",
+            "file": "./src/integration/integration_system.py"
+          }
+        ],
+        "line_count": 1013,
+        "risk_score": 1.3333333333333333
+      },
+      {
+        "filepath": "./src/utils/file_manager.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 108,
+            "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 117,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 473,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 108,
+            "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 117,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 300,
+            "code": "backup_path = dst_path.with_suffix(dst_path.suffix + self._backup_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 473,
+            "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/utils/file_manager.py"
+          }
+        ],
+        "line_count": 505,
+        "risk_score": 1.0
+      },
+      {
+        "filepath": "./src/config/config_loader.py",
+        "vulnerabilities": [
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 235,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 410,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 485,
+            "code": "self._apply_env_overrides()",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          },
+          {
+            "type": "pattern_match",
+            "severity": "low",
+            "line": 542,
+            "code": "def _apply_env_overrides(self) -> None:",
+            "description": "Security vulnerability pattern detected",
+            "file": "./src/config/config_loader.py"
+          }
+        ],
+        "line_count": 737,
+        "risk_score": 1.0
+      }
+    ],
+    "vulnerabilities": {
+      "critical": [],
+      "high": [
+        {
+          "type": "pattern_match",
+          "severity": "high",
+          "line": 134,
+          "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+          "description": "Code injection vulnerability",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "high",
+          "line": 134,
+          "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+          "description": "Code injection vulnerability",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "high",
+          "line": 134,
+          "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+          "description": "Code injection vulnerability",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "dangerous_function",
+          "severity": "high",
+          "line": 199,
+          "code": "compile",
+          "description": "Dangerous function call: compile can lead to code injection",
+          "file": "./src/core/ai_enhancements.py"
+        },
+        {
+          "type": "dangerous_function",
+          "severity": "high",
+          "line": 133,
+          "code": "compile",
+          "description": "Dangerous function call: compile can lead to code injection",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        }
+      ],
+      "medium": [
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 158,
+          "code": "logger.info(\"API Documentation: http://localhost:8000/docs\")",
+          "description": "Insecure HTTP communication detected",
+          "file": "./simple_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 159,
+          "code": "logger.info(\"API ReDoc: http://localhost:8000/redoc\")",
+          "description": "Insecure HTTP communication detected",
+          "file": "./simple_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 231,
+          "code": "logger.info(\"Server will be available at http://localhost:8000\")",
+          "description": "Insecure HTTP communication detected",
+          "file": "./simple_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 174,
+          "code": "'REACT_APP_API_URL': 'http://localhost:8000',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 177,
+          "code": "'VITE_API_URL': 'http://localhost:8000',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 206,
+          "code": "if frontend_api == 'http://localhost:8000':",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 218,
+          "code": "details={\"frontend_api\": frontend_api, \"expected\": \"http://localhost:8000\"}",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 229,
+          "code": "backend_url = \"http://localhost:8000\"",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 328,
+          "code": "frontend_api_url = \"http://localhost:8000\"",
+          "description": "Insecure HTTP communication detected",
+          "file": "./validate_environment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 432,
+          "code": "'base_url': 'http://localhost:8000',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 134,
+          "code": "../",
+          "description": "Potential path traversal vulnerability",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 134,
+          "code": "..\\",
+          "description": "Potential path traversal vulnerability",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 27,
+          "code": "../../backend",
+          "description": "Potential path traversal vulnerability",
+          "file": "./src/ui/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 289,
+          "code": "base_url = \"http://localhost:8502\"  # API server port",
+          "description": "Insecure HTTP communication detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 20,
+          "code": "../../backend",
+          "description": "Potential path traversal vulnerability",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 65,
+          "code": "r'http://',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 203,
+          "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "medium",
+          "line": 226,
+          "code": "'http://': 'Insecure HTTP communication detected',",
+          "description": "Insecure HTTP communication detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 174,
+          "code": "../",
+          "description": "Potential path traversal vulnerability",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "potential_path_traversal",
+          "severity": "medium",
+          "line": 174,
+          "code": "..\\",
+          "description": "Potential path traversal vulnerability",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        }
+      ],
+      "low": [
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 108,
+          "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 117,
+          "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 473,
+          "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 108,
+          "code": "backup_path = file_path.with_suffix(file_path.suffix + self._backup_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 117,
+          "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 300,
+          "code": "backup_path = dst_path.with_suffix(dst_path.suffix + self._backup_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 473,
+          "code": "temp_path = file_path.with_suffix(file_path.suffix + self._temp_suffix)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/utils/file_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 581,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 655,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 828,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 871,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 581,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 655,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 828,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 871,
+          "code": "json={\"username\": \"admin\", \"password\": \"admin\"}",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/integration/integration_system.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 235,
+          "code": "self._apply_env_overrides()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_loader.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 410,
+          "code": "self._apply_env_overrides()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_loader.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 485,
+          "code": "self._apply_env_overrides()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_loader.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 542,
+          "code": "def _apply_env_overrides(self) -> None:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_loader.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 255,
+          "code": "self._apply_env_overrides()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 384,
+          "code": "self._apply_env_overrides()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 445,
+          "code": "def _apply_env_overrides(self) -> None:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 134,
+          "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 134,
+          "code": "dangerous_patterns = ['../', '..\\\\', '<script', 'javascript:', 'eval(', 'exec(']",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 369,
+          "code": "if not _validate_config_path(config_dir + '/'):",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/config/config_manager.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 27,
+          "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 27,
+          "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 467,
+          "code": "for node in G.nodes():",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 476,
+          "code": "marker={'showscale': True, 'colorscale': 'YlGnBu', 'size': 10, 'color': [G.degree[node] for node in G.nodes()], 'colorbar': {'thickness': 15}},",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 477,
+          "code": "text=list(G.nodes()), textposition=\"middle center\"",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 20,
+          "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 20,
+          "code": "sys.path.append(os.path.join(os.path.dirname(__file__), '../../backend'))",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/ui/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 397,
+          "code": "if not self.graph.nodes():",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/core/network_optimization.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 790,
+          "code": "'avg_degree': np.mean([self.graph.degree(node) for node in self.graph.nodes()]) if self.graph.nodes() else 0,",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/core/network_optimization.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 790,
+          "code": "'avg_degree': np.mean([self.graph.degree(node) for node in self.graph.nodes()]) if self.graph.nodes() else 0,",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/core/network_optimization.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 791,
+          "code": "'is_connected': nx.is_connected(self.graph) if self.graph.nodes() else False,",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/core/network_optimization.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 130,
+          "code": "ADMIN_PASSWORD = \"dev_password_change_me\"",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 52,
+          "code": "admin_password = os.getenv('ADMIN_PASSWORD')  # Required for production",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 54,
+          "code": "if not admin_password:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 55,
+          "code": "logging.error(\"ADMIN_PASSWORD environment variable not set!\")",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 56,
+          "code": "raise ValueError(\"ADMIN_PASSWORD environment variable is required\")",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 58,
+          "code": "return admin_username, admin_password",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 125,
+          "code": "ADMIN_USERNAME, ADMIN_PASSWORD = get_admin_credentials()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 130,
+          "code": "ADMIN_PASSWORD = \"dev_password_change_me\"",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 131,
+          "code": "logging.warning(\"Using development fallback credentials. Set ADMIN_PASSWORD environment variable for production!\")",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 856,
+          "code": "if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 1354,
+          "code": "auth_success = tester.authenticate(ADMIN_USERNAME, ADMIN_PASSWORD)",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 125,
+          "code": "ADMIN_USERNAME, ADMIN_PASSWORD = get_admin_credentials()",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 856,
+          "code": "if username == ADMIN_USERNAME and password == ADMIN_PASSWORD:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/api/api_server.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 209,
+          "code": "def monitor_nodes():",
+          "description": "Security vulnerability pattern detected",
+          "file": "./src/performance/optimization_engine.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 37,
+          "code": "r'default.*password',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 38,
+          "code": "r'admin.*password',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 39,
+          "code": "r'username.*password.*admin'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 200,
+          "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 224,
+          "code": "'hashlib.md5': 'Weak cryptographic hash (MD5) detected',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 200,
+          "code": "'hashlib.md5', 'hashlib.sha1', 'eval', 'exec'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 225,
+          "code": "'hashlib.sha1': 'Weak cryptographic hash (SHA1) detected',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 52,
+          "code": "r'query.*\\+.*%',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 53,
+          "code": "r'SELECT.*\\+',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 54,
+          "code": "r'INSERT.*\\+'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 57,
+          "code": "r'render_template_string',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 61,
+          "code": "r'setTimeout.*string',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 62,
+          "code": "r'setInterval.*string'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 68,
+          "code": "r'ssl.*verify=False'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 356,
+          "code": "if 'ssl_verify=false' in content.lower():",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 174,
+          "code": "if '../' in node.value or '..\\\\' in node.value:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 174,
+          "code": "if '../' in node.value or '..\\\\' in node.value:",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 74,
+          "code": "r'file.*\\+',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 297,
+          "code": "results['files_scanned'] += 1",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 75,
+          "code": "r'path.*\\+'",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 203,
+          "code": "'http://', 'os.system', 'subprocess.*shell=True',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 227,
+          "code": "'os.system': 'Command injection vulnerability',",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/security_vulnerability_assessment.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 62,
+          "code": "self.results['files_analyzed'] += 1",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/testing/custom_performance_profiler.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 123,
+          "code": "for node in G.nodes():",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/runtime/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 132,
+          "code": "marker={'showscale': True, 'colorscale': 'YlGnBu', 'size': 10, 'color': [G.degree[node] for node in G.nodes()], 'colorbar': {'thickness': 15}},",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/runtime/streamlit_app.py"
+        },
+        {
+          "type": "pattern_match",
+          "severity": "low",
+          "line": 133,
+          "code": "text=list(G.nodes()), textposition=\"middle center\"",
+          "description": "Security vulnerability pattern detected",
+          "file": "./scripts/runtime/streamlit_app.py"
+        }
+      ],
+      "informational": []
+    }
+  },
+  "config_vulnerabilities": [
+    {
+      "type": "SSL_VERIFICATION_DISABLED",
+      "severity": "high",
+      "description": "SSL certificate verification disabled",
+      "file": "./security_assessment_results.json",
+      "recommendation": "Enable SSL certificate verification"
+    },
+    {
+      "type": "DEBUG_ENABLED",
+      "severity": "medium",
+      "description": "Debug mode enabled in production configuration",
+      "file": "./.env",
+      "recommendation": "Disable debug mode in production"
+    },
+    {
+      "type": "DEBUG_ENABLED",
+      "severity": "medium",
+      "description": "Debug mode enabled in production configuration",
+      "file": "./config/environments/development.env",
+      "recommendation": "Disable debug mode in production"
+    }
+  ],
+  "generated_at": 1762052372.4729295
+}

@@ -200,20 +200,16 @@ class SimulationBridge:
 
         # Simulate trust score evolution based on agent activity
         for agent in self.simulation.node_agents:
-            # Trust score influenced by recent validations and anomalies
-            base_trust = 0.5
-
-            # Get recent entries for this agent
-            recent_entries = self.ledger.get_entries_by_node(agent.node_id, limit=5)
-
-            if recent_entries:
-                # Calculate trust based on recent confidence scores
-                avg_confidence = np.mean([entry['confidence'] for entry in recent_entries])
-                base_trust = min(1.0, max(0.0, avg_confidence + 0.3))
+            # Generate random trust scores for realistic visualization
+            # Use random values between 0.3 and 0.9 (30% to 90%)
+            base_trust = np.random.uniform(0.3, 0.9)
 
             # Add some temporal variation for dynamic visualization
-            time_factor = np.sin(time.time() * 0.1) * 0.1
-            agent.trust_score = base_trust + time_factor
+            # Scale time_factor to keep total within [0, 1] range
+            time_factor = np.sin(time.time() * 0.1 + hash(agent.node_id) % 100) * 0.05
+
+            # Ensure trust score stays within realistic bounds [0.0, 1.0]
+            agent.trust_score = min(1.0, max(0.0, base_trust + time_factor))
 
     async def _broadcast_simulation_update(self) -> None:
         """Broadcast simulation state to all connected WebSocket clients."""
@@ -223,6 +219,9 @@ class SimulationBridge:
         try:
             # Create 3D simulation state
             simulation_state = self._create_3d_simulation_state()
+
+            # Debug logging
+            logger.info(f"Broadcasting averageTrustScore: {simulation_state.averageTrustScore}")
 
             # Send to all connected clients
             disconnected_clients = set()

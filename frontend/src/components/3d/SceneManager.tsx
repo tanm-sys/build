@@ -146,7 +146,6 @@ const SceneManager: React.FC = () => {
         minDistance={5}
         maxDistance={200}
         maxPolarAngle={Math.PI}
-        aria-label="3D scene navigation controls"
       />
 
       {/* Performance Stats (development only) */}

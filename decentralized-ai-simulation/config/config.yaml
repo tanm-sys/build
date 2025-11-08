@@ -56,10 +56,10 @@ simulation:
 # Agent Configuration
 agent:
   initial_wealth: 1
-  initial_trust_score: 100
-  trust_increment: 10
-  trust_decrement: 20
-  blacklist_threshold: 50
+  initial_trust_score: 0.75  # Trust score in 0-1 range (0.75 = 75%)
+  trust_increment: 0.1  # Increment in 0-1 range
+  trust_decrement: 0.2  # Decrement in 0-1 range
+  blacklist_threshold: 0.5  # Threshold in 0-1 range
   trade_probability: 0.1
   move_probability: 0.5
   max_wealth: 1000

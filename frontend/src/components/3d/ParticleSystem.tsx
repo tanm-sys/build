@@ -54,7 +54,7 @@ const ParticleSystem: React.FC<ParticleSystemProps> = ({
   }, [positions, velocities]);
 
   // Particle animation based on simulation state
-  useFrame((state, delta) => {
+  useFrame((state, _delta) => {
     if (!pointsRef.current || !velocitiesRef.current) return;
 
     const positions = pointsRef.current.geometry.attributes.position.array as Float32Array;

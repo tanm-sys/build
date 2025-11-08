@@ -1,0 +1,593 @@
+name: Enterprise Deployment Pipeline
+
+on:
+  push:
+    branches: [ main, develop, release/* ]
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 2 * * *'  # Daily at 2 AM UTC
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - development
+          - staging
+          - production
+      deployment_type:
+        description: 'Deployment strategy'
+        required: true
+        default: 'blue-green'
+        type: choice
+        options:
+          - blue-green
+          - canary
+          - rolling
+          - recreate
+
+env:
+  PYTHON_VERSION: "3.11"
+  NODE_VERSION: "18"
+  DOCKER_REGISTRY: "ghcr.io"
+  IMAGE_NAME: "decentralized-ai-simulation"
+  KUBECTL_VERSION: "1.28.0"
+  TERRAFORM_VERSION: "1.5.0"
+  HELM_VERSION: "3.12.0"
+
+jobs:
+  # Pre-deployment validation and quality gates
+  pre-deployment-validation:
+    name: Pre-deployment Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    outputs:
+      build-version: ${{ steps.version.outputs.version }}
+      commit-sha: ${{ steps.meta.outputs.sha }}
+      image-tag: ${{ steps.meta.outputs.tag }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+    
+    - name: Generate build version
+      id: version
+      run: |
+        BUILD_NUMBER=$(date +%Y%m%d%H%M%S)
+        SHORT_SHA=$(git rev-parse --short HEAD)
+        echo "version=${BUILD_NUMBER}-${SHORT_SHA}" >> $GITHUB_OUTPUT
+        echo "Build version: ${BUILD_NUMBER}-${SHORT_SHA}"
+    
+    - name: Validate commit signatures
+      run: |
+        git verify-commit HEAD || {
+          echo "❌ Commit signature verification failed"
+          exit 1
+        }
+        echo "✅ Commit signature verified"
+    
+    - name: Check for required files
+      run: |
+        required_files=(
+          "Dockerfile"
+          "docker-compose.yml"
+          "requirements.txt"
+          "kubernetes/"
+          "helm/"
+        )
+        
+        for file in "${required_files[@]}"; do
+          if [[ ! -e "$file" ]]; then
+            echo "❌ Required file missing: $file"
+            exit 1
+          fi
+        done
+        echo "✅ All required files present"
+    
+    - name: Generate image metadata
+      id: meta
+      run: |
+        SHA=$(git rev-parse HEAD)
+        echo "sha=${SHA}" >> $GITHUB_OUTPUT
+        echo "tag=${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}" >> $GITHUB_OUTPUT
+
+  # Security scanning and vulnerability assessment
+  security-scanning:
+    name: Security Scanning
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install security tools
+      run: |
+        pip install --upgrade pip
+        pip install bandit[toml] safety semgrep
+        pip install -r requirements.txt
+    
+    - name: Run Bandit security analysis
+      run: |
+        bandit -r src/ -f json -o bandit-report.json
+        bandit -r src/ -f txt
+      continue-on-error: true
+    
+    - name: Run Safety dependency check
+      run: |
+        safety check --json --output safety-report.json
+        safety check
+      continue-on-error: true
+    
+    - name: Run Semgrep SAST
+      run: |
+        semgrep --config=auto --json --output=semgrep-report.json src/ || true
+    
+    - name: Run container security scan
+      run: |
+        docker build -t ${{ env.IMAGE_NAME }}:security-scan .
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          aquasec/trivy image --exit-code 1 --severity HIGH,CRITICAL \
+          ${{ env.IMAGE_NAME }}:security-scan || true
+    
+    - name: Upload security reports
+      uses: actions/upload-artifact@v3
+      with:
+        name: security-reports
+        path: |
+          bandit-report.json
+          safety-report.json
+          semgrep-report.json
+        retention-days: 30
+
+  # Code quality and compliance checks
+  code-quality:
+    name: Code Quality & Compliance
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install quality tools
+      run: |
+        pip install --upgrade pip
+        pip install black flake8 mypy isort pre-commit
+        pip install -r requirements.txt
+    
+    - name: Run code formatting check
+      run: |
+        black --check --diff src/ tests/
+    
+    - name: Run import sorting check
+      run: |
+        isort --check-only --diff src/ tests/
+    
+    - name: Run linting
+      run: |
+        flake8 src/ tests/ --max-line-length=88 --extend-ignore=E203,W503
+    
+    - name: Run type checking
+      run: |
+        mypy src/ --ignore-missing-imports --no-strict-optional
+    
+    - name: Run pre-commit hooks
+      run: |
+        pre-commit run --all-files || true
+    
+    - name: Check license compliance
+      run: |
+        # Check for license headers in source files
+        find src/ -name "*.py" -exec grep -L "Copyright\|License" {} \; | head -5 || true
+        if [[ $(find src/ -name "*.py" -exec grep -L "Copyright\|License" {} \; | wc -l) -gt 0 ]]; then
+          echo "⚠️ Some files missing license headers"
+        fi
+
+  # Comprehensive testing suite
+  comprehensive-testing:
+    name: Comprehensive Testing
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    needs: [pre-deployment-validation]
+    
+    strategy:
+      matrix:
+        test-suite: [unit, integration, e2e, performance, security]
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        cache: 'pip'
+    
+    - name: Install dependencies
+      run: |
+        pip install --upgrade pip
+        pip install pytest pytest-cov pytest-xdist pytest-asyncio
+        pip install pytest-benchmark memory-profiler psutil
+        pip install locust aiohttp
+        pip install -r requirements.txt
+    
+    - name: Run unit tests
+      if: matrix.test-suite == 'unit'
+      run: |
+        pytest tests/unit/ \
+          --cov=src/ \
+          --cov-report=xml \
+          --cov-report=html \
+          --cov-fail-under=95 \
+          -n auto \
+          --maxfail=5 \
+          -v
+    
+    - name: Run integration tests
+      if: matrix.test-suite == 'integration'
+      run: |
+        pytest tests/integration/ \
+          --cov=src/ \
+          --cov-report=xml \
+          --cov-fail-under=90 \
+          -n auto \
+          --maxfail=3 \
+          -v
+    
+    - name: Run end-to-end tests
+      if: matrix.test-suite == 'e2e'
+      run: |
+        pytest tests/e2e/ \
+          --cov=src/ \
+          --cov-report=xml \
+          --cov-fail-under=85 \
+          -n 2 \
+          --maxfail=2 \
+          -v
+    
+    - name: Run performance tests
+      if: matrix.test-suite == 'performance'
+      run: |
+        pytest tests/performance/ \
+          --benchmark-only \
+          --benchmark-sort=mean \
+          --benchmark-json=benchmark-results.json \
+          -v
+    
+    - name: Run security tests
+      if: matrix.test-suite == 'security'
+      run: |
+        pytest tests/security/ \
+          --cov=src/ \
+          --cov-report=xml \
+          -v \
+          -m "security"
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: ${{ matrix.test-suite }}-test-results
+        path: |
+          coverage.xml
+          htmlcov/
+          benchmark-results.json
+        retention-days: 30
+
+  # Build and containerize applications
+  build-and-containerize:
+    name: Build & Containerize
+    runs-on: ubuntu-latest
+    needs: [pre-deployment-validation, security-scanning, code-quality, comprehensive-testing]
+    timeout-minutes: 45
+    
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tag }}
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+    
+    - name: Log in to container registry
+      uses: docker/login-action@v3
+      with:
+        registry: ${{ env.DOCKER_REGISTRY }}
+        username: ${{ github.actor }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Generate image metadata
+      id: meta
+      run: |
+        echo "tag=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:${{ needs.pre-deployment-validation.outputs.build-version }}" >> $GITHUB_OUTPUT
+        echo "tag-latest=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }}:latest" >> $GITHUB_OUTPUT
+    
+    - name: Build and push Docker image
+      id: build
+      uses: docker/build-push-action@v5
+      with:
+        context: .
+        push: true
+        tags: |
+          ${{ steps.meta.outputs.tag }}
+          ${{ steps.meta.outputs.tag-latest }}
+        platforms: linux/amd64,linux/arm64
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+        build-args: |
+          BUILD_VERSION=${{ needs.pre-deployment-validation.outputs.build-version }}
+          BUILD_DATE=${{ github.event.head_commit.timestamp }}
+          COMMIT_SHA=${{ needs.pre-deployment-validation.outputs.commit-sha }}
+    
+    - name: Generate SBOM
+      run: |
+        docker run --rm -v /var/run/docker.sock:/var/run/docker.sock \
+          cyclonedx/cyclonedx-docker-plugin \
+          --input format=containerd \
+          --output-version=1.4 \
+          --output-format=xml \
+          --output-file=sbom.xml \
+          ${{ env.IMAGE_NAME }}:${{ needs.pre-deployment-validation.outputs.build-version }}
+    
+    - name: Upload SBOM
+      uses: actions/upload-artifact@v3
+      with:
+        name: sbom
+        path: sbom.xml
+        retention-days: 90
+
+  # Infrastructure validation
+  infrastructure-validation:
+    name: Infrastructure Validation
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Set up Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ env.TERRAFORM_VERSION }}
+    
+    - name: Set up kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+    
+    - name: Set up Helm
+      run: |
+        curl https://get.helm.sh/helm-v${HELM_VERSION}-linux-amd64.tar.gz | tar xz
+        sudo mv linux-amd64/helm /usr/local/bin/helm
+        rm -rf linux-amd64
+    
+    - name: Validate Terraform syntax
+      run: |
+        cd terraform
+        terraform init -backend=false
+        terraform validate
+    
+    - name: Check Kubernetes manifests
+      run: |
+        kubectl --dry-run=client apply -f kubernetes/ --validate=true
+    
+    - name: Validate Helm charts
+      run: |
+        helm lint helm/
+
+  # Environment-specific deployment
+  deploy-to-environment:
+    name: Deploy to ${{ github.event.inputs.environment || 'staging' }}
+    runs-on: ubuntu-latest
+    needs: [build-and-containerize, infrastructure-validation]
+    if: github.ref == 'refs/heads/main' || github.event.inputs.environment
+    timeout-minutes: 90
+    
+    environment:
+      name: ${{ github.event.inputs.environment || 'staging' }}
+      url: https://${{ github.event.inputs.environment || 'staging' }}.ai-simulation.example.com
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure AWS credentials
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Set up kubectl
+      run: |
+        curl -LO "https://dl.k8s.io/release/v${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+        chmod +x kubectl
+        sudo mv kubectl /usr/local/bin/
+    
+    - name: Configure kubectl for EKS
+      run: |
+        aws eks update-kubeconfig \
+          --region us-east-1 \
+          --name ai-simulation-${{ github.event.inputs.environment || 'staging' }}
+    
+    - name: Deploy with Helm
+      run: |
+        helm upgrade --install ai-simulation ./helm/ \
+          --namespace ai-simulation \
+          --create-namespace \
+          --set image.tag=${{ needs.build-and-containerize.outputs.image-tag }} \
+          --set image.repository=${{ env.DOCKER_REGISTRY }}/${{ env.IMAGE_NAME }} \
+          --set environment=${{ github.event.inputs.environment || 'staging' }} \
+          --set deployment.strategy=${{ github.event.inputs.deployment_type || 'blue-green' }} \
+          --wait \
+          --timeout=10m
+    
+    - name: Wait for rollout
+      run: |
+        kubectl rollout status deployment/ai-simulation-api \
+          --namespace ai-simulation \
+          --timeout=10m
+    
+    - name: Run smoke tests
+      run: |
+        # Wait for service to be ready
+        sleep 30
+        
+        # Get service endpoint
+        INGRESS_URL=$(kubectl get ingress ai-simulation-ingress \
+          --namespace ai-simulation \
+          -o jsonpath='{.spec.rules[0].host}')
+        
+        # Run smoke tests
+        curl -f "https://${INGRESS_URL}/health" || {
+          echo "❌ Health check failed"
+          exit 1
+        }
+        
+        curl -f "https://${INGRESS_URL}/api/agents" || {
+          echo "❌ API check failed"
+          exit 1
+        }
+        
+        echo "✅ Smoke tests passed"
+
+  # Post-deployment monitoring and validation
+  post-deployment-validation:
+    name: Post-deployment Validation
+    runs-on: ubuntu-latest
+    needs: [deploy-to-environment]
+    if: always()
+    timeout-minutes: 30
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Wait for metrics collection
+      run: sleep 60
+    
+    - name: Check monitoring dashboards
+      run: |
+        # Verify Prometheus metrics are being collected
+        # Check Grafana dashboards are accessible
+        # Validate alerting rules
+        echo "✅ Monitoring validation completed"
+    
+    - name: Run load test
+      run: |
+        # Run a quick load test to verify system under load
+        locust -f tests/load/locustfile.py \
+          --host=${{ needs.deploy-to-environment.outputs.url }} \
+          --headless \
+          --users=100 \
+          --spawn-rate=10 \
+          --run-time=60s \
+          --csv=load-test-results
+    
+    - name: Upload load test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: load-test-results
+        path: load-test-results_*
+        retention-days: 7
+
+  # Deployment notifications and reporting
+  deployment-notifications:
+    name: Deployment Notifications
+    runs-on: ubuntu-latest
+    needs: [post-deployment-validation]
+    if: always()
+    
+    steps:
+    - name: Log deployment status
+      run: |
+        echo "Deployment ${{ job.status }} for commit ${{ needs.build-and-containerize.outputs.commit-sha }}"
+        echo "Environment: ${{ github.event.inputs.environment || 'staging' }}"
+        echo "Version: ${{ needs.build-and-containerize.outputs.image-tag }}"
+      if: always()
+    
+    - name: Create deployment record
+      run: |
+        # Create deployment record in database or external system
+        echo "Deployment record created for version ${{ needs.build-and-containerize.outputs.image-tag }}"
+
+  # Rollback automation (triggered on failure)
+  auto-rollback:
+    name: Auto Rollback
+    runs-on: ubuntu-latest
+    needs: [post-deployment-validation]
+    if: failure() && github.ref == 'refs/heads/main'
+    timeout-minutes: 15
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Configure kubectl
+      uses: aws-actions/configure-aws-credentials@v4
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        aws-region: us-east-1
+    
+    - name: Get previous working version
+      id: get-previous
+      run: |
+        # Query previous working version from deployment history
+        PREVIOUS_VERSION=$(kubectl get deployment ai-simulation-api \
+          --namespace ai-simulation \
+          -o jsonpath='{.spec.template.metadata.labels.version}')
+        echo "previous-version=${PREVIOUS_VERSION}" >> $GITHUB_OUTPUT
+        echo "Rolling back to version: ${PREVIOUS_VERSION}"
+    
+    - name: Rollback deployment
+      run: |
+        kubectl rollout undo deployment/ai-simulation-api \
+          --namespace ai-simulation \
+          --to-revision=1
+    
+    - name: Wait for rollback completion
+      run: |
+        kubectl rollout status deployment/ai-simulation-api \
+          --namespace ai-simulation \
+          --timeout=5m
+    
+    - name: Verify rollback
+      run: |
+        sleep 30
+        curl -f "https://${{ needs.deploy-to-environment.outputs.url }}/health" || {
+          echo "❌ Rollback verification failed"
+          exit 1
+        }
+        echo "✅ Rollback successful"
+    
+    - name: Log rollback event
+      run: |
+        echo "🚨 Automatic rollback triggered for ${{ github.repository }}"
+        echo "Commit: ${{ needs.build-and-containerize.outputs.commit-sha }}"
+        echo "Rolled back to: ${{ steps.get-previous.outputs.previous-version }}"

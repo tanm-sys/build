@@ -1,0 +1,278 @@
+# Prometheus Alert Rules for AI Simulation Platform
+# Enterprise-grade alerting for production monitoring
+
+groups:
+- name: ai-simulation.rules
+  rules:
+  
+  # Critical Infrastructure Alerts
+  - alert: ClusterDown
+    expr: up{job="kubernetes-apiserver"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: infrastructure
+    annotations:
+      summary: "Kubernetes API server is down"
+      description: "Kubernetes API server has been down for more than 1 minute."
+      
+  - alert: NodeNotReady
+    expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+    for: 1m
+    labels:
+      severity: warning
+      service: infrastructure
+    annotations:
+      summary: "Node {{ $labels.node }} is not ready"
+      description: "Node {{ $labels.node }} has been not ready for more than 1 minute."
+      
+  - alert: PodCrashLooping
+    expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+    for: 2m
+    labels:
+      severity: warning
+      service: application
+    annotations:
+      summary: "Pod {{ $labels.pod }} is crash looping"
+      description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping."
+      
+  # Application Performance Alerts
+  - alert: HighCPUUsage
+    expr: 100 * (1 - avg(rate(container_cpu_usage_seconds_total{name!="",container!="POD",container!="pause"}[5m])) by (instance)) > 80
+    for: 5m
+    labels:
+      severity: warning
+      service: performance
+    annotations:
+      summary: "High CPU usage detected"
+      description: "CPU usage is above 80% for more than 5 minutes on {{ $labels.instance }}."
+      
+  - alert: HighMemoryUsage
+    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+    for: 5m
+    labels:
+      severity: warning
+      service: performance
+    annotations:
+      summary: "High memory usage detected"
+      description: "Memory usage is above 85% for more than 5 minutes on {{ $labels.instance }}."
+      
+  - alert: DiskSpaceLow
+    expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 90
+    for: 2m
+    labels:
+      severity: critical
+      service: infrastructure
+    annotations:
+      summary: "Disk space is running low"
+      description: "Disk space usage is above 90% on {{ $labels.instance }} for {{ $labels.mountpoint }}."
+      
+  # AI Simulation Specific Alerts
+  - alert: AISimulationHighLatency
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="ai-simulation-api"}[5m])) > 1.0
+    for: 3m
+    labels:
+      severity: warning
+      service: ai-simulation
+    annotations:
+      summary: "High API latency detected"
+      description: "95th percentile latency is above 1 second for more than 3 minutes."
+      
+  - alert: AISimulationHighErrorRate
+    expr: rate(http_requests_total{service="ai-simulation-api",status=~"5.."}[5m]) / rate(http_requests_total{service="ai-simulation-api"}[5m]) > 0.05
+    for: 2m
+    labels:
+      severity: warning
+      service: ai-simulation
+    annotations:
+      summary: "High error rate detected"
+      description: "Error rate is above 5% for more than 2 minutes."
+      
+  - alert: AISimulationSimulationStalled
+    expr: time() - ai_simulation_last_update_timestamp > 300
+    for: 2m
+    labels:
+      severity: critical
+      service: ai-simulation
+    annotations:
+      summary: "AI Simulation appears to be stalled"
+      description: "No simulation updates for more than 5 minutes."
+      
+  # Database Performance Alerts
+  - alert: DatabaseConnectionHigh
+    expr: pg_stat_activity_count > 180
+    for: 2m
+    labels:
+      severity: warning
+      service: database
+    annotations:
+      summary: "High number of database connections"
+      description: "Database has {{ $value }} active connections."
+      
+  - alert: DatabaseSlowQueries
+    expr: rate(pg_stat_statements_mean_time[5m]) > 1000
+    for: 3m
+    labels:
+      severity: warning
+      service: database
+    annotations:
+      summary: "Slow database queries detected"
+      description: "Average query execution time is above 1 second."
+      
+  - alert: DatabaseReplicationLag
+    expr: pg_replication_lag > 30
+    for: 2m
+    labels:
+      severity: warning
+      service: database
+    annotations:
+      summary: "Database replication lag detected"
+      description: "Replication lag is {{ $value }} seconds."
+      
+  # Redis Performance Alerts
+  - alert: RedisMemoryUsage
+    expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+    for: 2m
+    labels:
+      severity: warning
+      service: redis
+    annotations:
+      summary: "Redis memory usage is high"
+      description: "Redis memory usage is at {{ $value }}%."
+      
+  - alert: RedisConnectionRefused
+    expr: rate(redis_net_clients_connections_disconnected_total[5m]) / rate(redis_net_clients_connections_total[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      service: redis
+    annotations:
+      summary: "High Redis connection failures"
+      description: "Redis connection failure rate is above 10%."
+      
+  # Security Alerts
+  - alert: UnusualNetworkTraffic
+    expr: rate(container_network_receive_bytes_total[5m]) > 100000000 or rate(container_network_transmit_bytes_total[5m]) > 100000000
+    for: 5m
+    labels:
+      severity: warning
+      service: security
+    annotations:
+      summary: "Unusual network traffic detected"
+      description: "Unusual network traffic patterns detected on {{ $labels.instance }}."
+      
+  - alert: KubernetesSecurityEvents
+    expr: rate(kube_pod_security_policy_violation_total[5m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+      service: security
+    annotations:
+      summary: "Kubernetes security policy violations detected"
+      description: "Security policy violations detected in namespace {{ $labels.namespace }}."
+      
+  # Capacity Planning Alerts
+  - alert: PodAtCapacity
+    expr: kube_pod_status_phase{phase="Running"} == 1
+    for: 10m
+    labels:
+      severity: warning
+      service: capacity
+    annotations:
+      summary: "Pod approaching capacity limits"
+      description: "Pod {{ $labels.pod }} is at capacity and may need scaling."
+      
+  - alert: ClusterResourceExhaustion
+    expr: (kube_node_status_condition{condition="MemoryPressure",status="true"} == 1) or (kube_node_status_condition{condition="DiskPressure",status="true"} == 1)
+    for: 5m
+    labels:
+      severity: critical
+      service: capacity
+    annotations:
+      summary: "Cluster resource exhaustion detected"
+      description: "Node {{ $labels.node }} is experiencing resource pressure."
+      
+  # Business Logic Alerts
+  - alert: AISimulationAgentsDropped
+    expr: rate(ai_simulation_agent_terminations_total[5m]) > 5
+    for: 2m
+    labels:
+      severity: warning
+      service: ai-simulation
+    annotations:
+      summary: "High number of agent terminations"
+      description: "{{ $value }} agents terminated in the last 5 minutes."
+      
+  - alert: AISimulationLowThroughput
+    expr: rate(ai_simulation_iterations_total[5m]) < 10
+    for: 5m
+    labels:
+      severity: warning
+      service: ai-simulation
+    annotations:
+      summary: "Low simulation throughput"
+      description: "Simulation throughput is below 10 iterations per second."
+      
+  # Deployment Health Alerts
+  - alert: DeploymentFailed
+    expr: kube_deployment_status_replicas_unavailable > 0
+    for: 5m
+    labels:
+      severity: critical
+      service: deployment
+    annotations:
+      summary: "Deployment failure detected"
+      description: "Deployment {{ $labels.deployment }} has {{ $value }} unavailable replicas."
+      
+  - alert: RollingUpdateStuck
+    expr: kube_deployment_status_replicas_unavailable > 0
+    for: 10m
+    labels:
+      severity: critical
+      service: deployment
+    annotations:
+      summary: "Rolling update appears to be stuck"
+      description: "Deployment {{ $labels.deployment }} has been in a stuck state for more than 10 minutes."
+      
+  # Cost Optimization Alerts
+  - alert: HighCloudCosts
+    expr: cloudwatch_estimated_charges_maximum > 1000
+    for: 15m
+    labels:
+      severity: warning
+      service: cost-optimization
+    annotations:
+      summary: "High cloud infrastructure costs detected"
+      description: "Estimated cloud costs have exceeded $1000."
+      
+  - alert: UnderUtilizedResources
+    expr: (1 - avg(rate(container_cpu_usage_seconds_total[1h]))) > 0.7
+    for: 30m
+    labels:
+      severity: info
+      service: cost-optimization
+    annotations:
+      summary: "Underutilized resources detected"
+      description: "Resources are underutilized and could be scaled down to reduce costs."
+
+- name: ai-simulation-recording.rules
+  rules:
+  
+  # Recording Rules for Aggregations
+  - record: ai_simulation:api:rate_5m
+    expr: rate(http_requests_total{service="ai-simulation-api"}[5m])
+    
+  - record: ai_simulation:api:error_rate_5m
+    expr: rate(http_requests_total{service="ai-simulation-api",status=~"5.."}[5m]) / rate(http_requests_total{service="ai-simulation-api"}[5m])
+    
+  - record: ai_simulation:api:latency_p95_5m
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="ai-simulation-api"}[5m]))
+    
+  - record: ai_simulation:cluster:cpu_utilization
+    expr: 100 * (1 - avg(rate(container_cpu_usage_seconds_total[5m])) by (cluster))
+    
+  - record: ai_simulation:cluster:memory_utilization
+    expr: 100 * (1 - (sum(container_memory_usage_bytes) by (cluster) / sum(container_spec_memory_limit_bytes) by (cluster)))
+    
+  - record: ai_simulation:pods:ready_percentage
+    expr: (sum(kube_pod_status_ready{condition="true"}) by (namespace) / sum(kube_pod_status_phase{phase="Running"}) by (namespace)) * 100

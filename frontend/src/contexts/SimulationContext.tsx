@@ -377,7 +377,7 @@ function simulateDataUpdates(dispatch: React.Dispatch<SimulationAction>) {
     lastUpdate: Date.now()
   }));
 
-  // Generate mock trust scores
+  // Generate mock trust scores (values in 0-1 range for consistency with backend)
   const mockTrustScores: TrustScoreData[] = Array.from({ length: 15 }, (_, i) => ({
     id: `trust-${i + 1}`,
     position: {
@@ -385,7 +385,7 @@ function simulateDataUpdates(dispatch: React.Dispatch<SimulationAction>) {
       y: (Math.random() - 0.5) * 40,
       z: 0
     },
-    value: Math.floor(Math.random() * 100),
+    value: Math.random() * 100, // Keep 0-100 for terrain visualization
     timestamp: Date.now(),
     source: `sensor-${i + 1}`
   }));
@@ -401,7 +401,7 @@ function simulateDataUpdates(dispatch: React.Dispatch<SimulationAction>) {
     timestamp: Date.now(),
     activeAgents: mockAgents.filter(a => a.status === 'active').length,
     totalConnections: Math.floor(mockAgents.length * 0.7),
-    averageTrustScore: Math.floor(avgTrustScore),
+    averageTrustScore: avgTrustScore / 100, // Convert from 0-100 to 0-1 range
     anomalies: []
   };
 

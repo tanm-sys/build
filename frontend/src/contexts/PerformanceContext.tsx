@@ -128,9 +128,9 @@ export const PerformanceProvider: React.FC<PerformanceProviderProps> = ({ childr
     const context = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
     if (!context) return;
 
-    const debugInfo = context.getExtension('WEBGL_debug_renderer_info');
+    const debugInfo = (context as WebGL2RenderingContext).getExtension('WEBGL_debug_renderer_info');
     if (debugInfo) {
-      const renderer = context.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
+      const renderer = (context as WebGL2RenderingContext).getParameter(debugInfo.UNMASKED_RENDERER_WEBGL);
       console.log('WebGL Renderer:', renderer);
     }
   }, []);

@@ -4,12 +4,12 @@ import networkx as nx
 import pandas as pd
 import threading
 from typing import Optional, Dict, Any, Tuple, List
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, asdict, field
 import json
 from src.core.simulation import Simulation
 from src.core.database import DatabaseLedger
 import ray
-from src.utils.monitoring import get_monitoring
+from src.utils.monitoring import get_monitoring, Monitoring
 from src.config.config_loader import get_config
 import time
 import logging
@@ -39,7 +39,7 @@ class SimulationState:
     running: bool = False
     thread: Optional[threading.Thread] = None
     stop_event: threading.Event = field(default_factory=threading.Event)
-    monitoring = field(default_factory=get_monitoring)
+    monitoring: Monitoring = field(default_factory=get_monitoring)
     start_time: float = 0.0
     step_count: int = 0
 
@@ -385,10 +385,10 @@ render_main_dashboard(state, params)
 
 # Enhanced anomaly logs with better caching and error handling
 @st.cache_data(ttl=get_config('streamlit.cache_ttl', 5))
-def get_anomaly_logs(ledger: DatabaseLedger) -> pd.DataFrame:
+def get_anomaly_logs(_ledger: DatabaseLedger) -> pd.DataFrame:
     """Get anomaly logs with enhanced error handling and validation."""
     try:
-        entries = ledger.read_ledger()
+        entries = _ledger.read_ledger()
         if not entries:
             return pd.DataFrame()
 
@@ -451,8 +451,8 @@ render_anomaly_logs(state)
 
 # Network visualization (simple random graph for demo; enhance with agent connections)
 st.subheader("Agent Network Visualization")
-if st.session_state.sim is not None:
-    G = nx.erdos_renyi_graph(num_agents, 0.1)  # Random graph for visualization
+if state.simulation is not None:
+    G = nx.erdos_renyi_graph(params.num_agents, 0.1)  # Random graph for visualization
     pos = nx.spring_layout(G)
     edge_x, edge_y = [], []
     for edge in G.edges():
@@ -485,7 +485,7 @@ else:
 
 # Health checks and monitoring
 st.subheader("System Health")
-health_status = st.session_state.monitoring.get_system_health()
+health_status = state.monitoring.get_system_health()
 health_color = {
     'healthy': '🟢',
     'degraded': '🟡',
@@ -496,7 +496,7 @@ st.metric("Overall Status", f"{health_color} {health_status.status.upper()}", he
 
 # Detailed health checks
 with st.expander("Detailed Health Checks"):
-    all_checks = st.session_state.monitoring.perform_all_health_checks()
+    all_checks = state.monitoring.perform_all_health_checks()
     for check_name, check_status in all_checks.items():
         status_color = {
             'healthy': '🟢',
@@ -509,30 +509,32 @@ with st.expander("Detailed Health Checks"):
 
 # System metrics
 with st.expander("System Metrics"):
-    uptime = st.session_state.monitoring.get_uptime()
+    uptime = state.monitoring.get_uptime()
     st.metric("Uptime", f"{uptime:.2f} seconds")
     
     # Record some simulation metrics if running
-    if st.session_state.sim is not None and st.session_state.running:
-        st.session_state.monitoring.record_metric('agent_count', len(st.session_state.sim.node_agents))
-        st.session_state.monitoring.record_metric('steps_completed', steps)
+    if state.simulation is not None and state.running:
+        state.monitoring.record_metric('agent_count', len(state.simulation.node_agents))
+        state.monitoring.record_metric('steps_completed', state.step_count)
     
     # Display metric statistics
     metrics = ['agent_count', 'steps_completed']
     for metric in metrics:
-        stats = st.session_state.monitoring.get_metric_stats(metric)
+        stats = state.monitoring.get_metric_stats(metric)
         if stats:
             st.write(f"**{metric}**: {stats}")
 
 # Status info
 st.subheader("Simulation Status")
-if st.session_state.sim is not None:
-    agent_count = len(st.session_state.sim.node_agents)
+if state.simulation is not None:
+    agent_count = len(state.simulation.node_agents)
     st.metric("Agents", agent_count)
-    st.metric("Steps to Run", steps)
-    st.metric("Using Parallel", use_ray)
+    st.metric("Steps to Run", params.steps)
+    use_parallel = getattr(state.simulation, 'use_parallel', False)
+    st.metric("Using Parallel", use_parallel)
 
 # Cleanup on script end (Streamlit reruns, but handle Ray)
-if st.session_state.sim is not None and not st.session_state.running:
-    if use_ray and ray.is_initialized():
+if state.simulation is not None and not state.running:
+    use_parallel = getattr(state.simulation, 'use_parallel', False)
+    if use_parallel and ray.is_initialized():
         ray.shutdown()

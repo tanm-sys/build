@@ -30,7 +30,14 @@ class ErrorBoundary extends React.Component<
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('Application Error:', error, errorInfo)
+    console.error('='.repeat(80))
+    console.error('APPLICATION ERROR CAUGHT BY ERROR BOUNDARY')
+    console.error('='.repeat(80))
+    console.error('Error:', error)
+    console.error('Error Message:', error.message)
+    console.error('Error Stack:', error.stack)
+    console.error('Component Stack:', errorInfo.componentStack)
+    console.error('='.repeat(80))
   }
 
   render() {
@@ -43,20 +50,53 @@ class ErrorBoundary extends React.Component<
           height: '100vh',
           backgroundColor: '#0a0a0a',
           color: '#ff6b6b',
-          fontFamily: 'monospace'
+          fontFamily: 'monospace',
+          padding: '20px'
         }}>
-          <div>
+          <div style={{ maxWidth: '800px', width: '100%' }}>
             <h2>🚨 Application Error</h2>
-            <p>Something went wrong. Please refresh the page.</p>
+            <p>Something went wrong. Please check the console for details or refresh the page.</p>
+
+            {this.state.error && (
+              <div style={{
+                marginTop: '20px',
+                padding: '15px',
+                backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                border: '1px solid #ff6b6b',
+                borderRadius: '5px',
+                fontSize: '14px',
+                maxHeight: '300px',
+                overflow: 'auto'
+              }}>
+                <h3 style={{ marginTop: 0, fontSize: '16px' }}>Error Details:</h3>
+                <p><strong>Message:</strong> {this.state.error.message}</p>
+                <details>
+                  <summary style={{ cursor: 'pointer', marginTop: '10px' }}>Stack Trace</summary>
+                  <pre style={{
+                    marginTop: '10px',
+                    padding: '10px',
+                    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                    borderRadius: '3px',
+                    fontSize: '12px',
+                    overflow: 'auto'
+                  }}>
+                    {this.state.error.stack}
+                  </pre>
+                </details>
+              </div>
+            )}
+
             <button
               onClick={() => window.location.reload()}
               style={{
+                marginTop: '20px',
                 padding: '10px 20px',
                 backgroundColor: '#ff6b6b',
                 color: 'white',
                 border: 'none',
                 borderRadius: '5px',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: '16px'
               }}
             >
               Reload Page

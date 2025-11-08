@@ -1,0 +1,47 @@
+apiVersion: v2
+name: ai-simulation
+description: Enterprise-grade AI Simulation Platform Helm Chart
+type: application
+version: 1.0.0
+appVersion: "1.0.0"
+keywords:
+  - ai-simulation
+  - kubernetes
+  - machine-learning
+  - distributed-systems
+home: https://github.com/company/ai-simulation
+sources:
+  - https://github.com/company/ai-simulation
+maintainers:
+  - name: Platform Engineering Team
+    email: platform-engineering@company.com
+
+dependencies:
+  - name: postgresql
+    version: "12.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: postgresql.enabled
+  - name: redis
+    version: "18.x.x"
+    repository: "https://charts.bitnami.com/bitnami"
+    condition: redis.enabled
+  - name: nginx-ingress
+    version: "4.x.x"
+    repository: "https://kubernetes.github.io/ingress-nginx"
+    condition: nginx-ingress.enabled
+  - name: prometheus
+    version: "25.x.x"
+    repository: "https://prometheus-community.github.io/helm-charts"
+    condition: monitoring.enabled
+  - name: grafana
+    version: "6.x.x"
+    repository: "https://grafana.github.io/helm-charts"
+    condition: monitoring.enabled
+  - name: cert-manager
+    version: "1.x.x"
+    repository: "https://charts.jetstack.io"
+    condition: cert-manager.enabled
+  - name: external-dns
+    version: "1.x.x"
+    repository: "https://kubernetes-sigs.github.io/external-dns/"
+    condition: external-dns.enabled

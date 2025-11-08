@@ -1,0 +1,139 @@
+{{- /*
+AI Simulation API Deployment Template
+Enterprise-grade container orchestration with security and observability
+*/ -}}
+{{- if .Values.api.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "ai-simulation.fullname" . }}-api
+  namespace: {{ .Release.Namespace | default "default" }}
+  labels:
+    {{- include "ai-simulation.labels" . | nindent 4 }}
+    component: api
+spec:
+  {{- if not .Values.api.autoscaling.enabled }}
+  replicas: {{ .Values.api.replicaCount }}
+  {{- end }}
+  strategy:
+    type: {{ .Values.config.deployment.strategy }}
+    {{- if eq .Values.config.deployment.strategy "RollingUpdate" }}
+    rollingUpdate:
+      maxUnavailable: 1
+      maxSurge: 1
+    {{- end }}
+  selector:
+    matchLabels:
+      {{- include "ai-simulation.selectorLabels" . | nindent 6 }}
+      component: api
+  template:
+    metadata:
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+        checksum/secret: {{ include (print $.Template.BasePath "/secret.yaml") . | sha256sum }}
+        {{- with .Values.api.podAnnotations }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      labels:
+        {{- include "ai-simulation.selectorLabels" . | nindent 8 }}
+        component: api
+    spec:
+      {{- with .Values.api.image.pullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "ai-simulation.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      containers:
+      - name: ai-simulation-api
+        image: "{{ .Values.api.image.registry }}/{{ .Values.api.image.repository }}:{{ .Values.api.image.tag }}"
+        imagePullPolicy: {{ .Values.api.image.pullPolicy }}
+        ports:
+        - name: http
+          containerPort: 8000
+          protocol: TCP
+        - name: websocket
+          containerPort: 8503
+          protocol: TCP
+        env:
+        - name: PYTHONPATH
+          value: "/app"
+        - name: ENVIRONMENT
+          value: {{ .Values.config.environment | quote }}
+        - name: LOG_LEVEL
+          value: {{ .Values.config.logLevel | quote }}
+        - name: MAX_AGENTS
+          value: {{ .Values.config.maxAgents | quote }}
+        - name: SIMULATION_STEPS
+          value: {{ .Values.config.simulationSteps | quote }}
+        {{- if .Values.postgresql.enabled }}
+        - name: DATABASE_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ai-simulation.fullname" . }}-secrets
+              key: database-url
+        {{- end }}
+        {{- if .Values.redis.enabled }}
+        - name: REDIS_URL
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ai-simulation.fullname" . }}-secrets
+              key: redis-url
+        {{- end }}
+        {{- if .Values.secrets.jwtSecret }}
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: {{ include "ai-simulation.fullname" . }}-secrets
+              key: jwt-secret
+        {{- end }}
+        {{- with .Values.extraEnvVars }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        resources:
+          {{- toYaml .Values.api.resources | nindent 10 }}
+        {{- with .Values.api.livenessProbe }}
+        livenessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        {{- with .Values.api.readinessProbe }}
+        readinessProbe:
+          {{- toYaml . | nindent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: logs
+          mountPath: /app/logs
+        - name: data
+          mountPath: /data
+        {{- with .Values.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        securityContext:
+          {{- toYaml .Values.securityContext | nindent 10 }}
+      volumes:
+      - name: logs
+        emptyDir: {}
+      - name: data
+        {{- if .Values.persistence.enabled }}
+        persistentVolumeClaim:
+          claimName: {{ include "ai-simulation.fullname" . }}-data
+        {{- else }}
+        emptyDir: {}
+        {{- end }}
+      {{- with .Values.api.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.api.priorityClassName }}
+      priorityClassName: {{ . | quote }}
+      {{- end }}
+{{- end }}

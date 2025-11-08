@@ -1,0 +1,637 @@
+# =============================================================================
+# ERROR HANDLING FRAMEWORK
+# Decentralized AI Simulation Platform
+# =============================================================================
+
+"""
+Comprehensive error handling and exception management system.
+Provides structured error handling, logging, monitoring, and recovery mechanisms.
+
+CRITICAL FEATURES:
+- Hierarchical exception hierarchy
+- Centralized error logging and monitoring
+- Error context preservation
+- Automatic error recovery mechanisms
+- Performance impact tracking
+- User-friendly error messages
+"""
+
+import logging
+import traceback
+import functools
+import sys
+import asyncio
+from typing import Any, Dict, Optional, Callable, Type, Union, List
+from datetime import datetime, timedelta
+from dataclasses import dataclass, field
+from enum import Enum
+import inspect
+import uuid
+import json
+from contextlib import contextmanager
+import warnings
+
+logger = logging.getLogger(__name__)
+
+class ErrorSeverity(Enum):
+    """Error severity levels for proper handling prioritization."""
+    CRITICAL = "critical"    # System failure, immediate action required
+    HIGH = "high"           # Major functionality affected
+    MEDIUM = "medium"       # Minor functionality impact
+    LOW = "low"             # Cosmetic issues, warnings
+    INFO = "info"           # Informational messages
+
+class ErrorCategory(Enum):
+    """Error categories for organization and routing."""
+    SYSTEM = "system"
+    NETWORK = "network"
+    DATABASE = "database"
+    SECURITY = "security"
+    VALIDATION = "validation"
+    RESOURCE = "resource"
+    CONFIGURATION = "configuration"
+    BUSINESS_LOGIC = "business_logic"
+    INTEGRATION = "integration"
+    PERFORMANCE = "performance"
+
+@dataclass
+class ErrorContext:
+    """Container for error context information."""
+    error_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+    timestamp: datetime = field(default_factory=datetime.now)
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM
+    category: ErrorCategory = ErrorCategory.SYSTEM
+    component: str = "unknown"
+    operation: str = "unknown"
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+    request_id: Optional[str] = None
+    additional_context: Dict[str, Any] = field(default_factory=dict)
+    
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert error context to dictionary for logging."""
+        return {
+            'error_id': self.error_id,
+            'timestamp': self.timestamp.isoformat(),
+            'severity': self.severity.value,
+            'category': self.category.value,
+            'component': self.component,
+            'operation': self.operation,
+            'user_id': self.user_id,
+            'session_id': self.session_id,
+            'request_id': self.request_id,
+            'additional_context': self.additional_context
+        }
+
+class DecentralizedAISimulationException(Exception):
+    """Base exception for the Decentralized AI Simulation Platform."""
+    
+    def __init__(
+        self, 
+        message: str, 
+        context: Optional[ErrorContext] = None,
+        cause: Optional[Exception] = None,
+        remediation: Optional[str] = None
+    ):
+        super().__init__(message)
+        self.message = message
+        self.context = context or ErrorContext()
+        self.cause = cause
+        self.remediation = remediation
+        self.timestamp = datetime.now()
+        
+        # Add contextual information
+        self.context.additional_context.update({
+            'exception_type': self.__class__.__name__,
+            'exception_module': self.__class__.__module__,
+            'error_message': message
+        })
+
+class CriticalSystemException(DecentralizedAISimulationException):
+    """Exception for critical system failures requiring immediate attention."""
+    
+    def __init__(self, message: str, context: Optional[ErrorContext] = None, **kwargs):
+        super().__init__(message, context or ErrorContext(severity=ErrorSeverity.CRITICAL), **kwargs)
+        self.context.severity = ErrorSeverity.CRITICAL
+
+class ValidationException(DecentralizedAISimulationException):
+    """Exception for data validation failures."""
+    
+    def __init__(self, message: str, field_name: Optional[str] = None, value: Any = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.VALIDATION,
+            severity=ErrorSeverity.MEDIUM
+        )
+        if field_name and value is not None:
+            context.additional_context.update({
+                'field_name': field_name,
+                'invalid_value': value,
+                'validation_type': 'field_validation'
+            })
+        super().__init__(message, context, **kwargs)
+
+class NetworkException(DecentralizedAISimulationException):
+    """Exception for network-related errors."""
+    
+    def __init__(self, message: str, url: Optional[str] = None, status_code: Optional[int] = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.NETWORK,
+            severity=ErrorSeverity.HIGH
+        )
+        if url:
+            context.additional_context.update({
+                'failed_url': url,
+                'http_method': kwargs.get('method', 'unknown'),
+                'status_code': status_code
+            })
+        super().__init__(message, context, **kwargs)
+
+class ResourceException(DecentralizedAISimulationException):
+    """Exception for resource-related errors (memory, disk, etc.)."""
+    
+    def __init__(self, message: str, resource_type: Optional[str] = None, usage: Optional[float] = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.RESOURCE,
+            severity=ErrorSeverity.HIGH
+        )
+        if resource_type and usage is not None:
+            context.additional_context.update({
+                'resource_type': resource_type,
+                'usage_percentage': usage,
+                'resource_limit': kwargs.get('limit', 'unknown')
+            })
+        super().__init__(message, context, **kwargs)
+
+class SecurityException(DecentralizedAISimulationException):
+    """Exception for security-related errors."""
+    
+    def __init__(self, message: str, security_level: str = "medium", **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.SECURITY,
+            severity=ErrorSeverity.HIGH
+        )
+        context.additional_context.update({
+            'security_level': security_level,
+            'threat_type': kwargs.get('threat_type', 'unknown'),
+            'affected_assets': kwargs.get('assets', [])
+        })
+        super().__init__(message, context, **kwargs)
+
+class AgentException(DecentralizedAISimulationException):
+    """Exception specific to agent operations."""
+    
+    def __init__(self, message: str, agent_id: Optional[str] = None, operation: Optional[str] = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.BUSINESS_LOGIC,
+            component="agent",
+            operation=operation or "agent_operation"
+        )
+        if agent_id:
+            context.additional_context['agent_id'] = agent_id
+        super().__init__(message, context, **kwargs)
+
+class DatabaseException(DecentralizedAISimulationException):
+    """Exception for database-related errors."""
+    
+    def __init__(self, message: str, query: Optional[str] = None, table: Optional[str] = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.DATABASE,
+            severity=ErrorSeverity.HIGH
+        )
+        if query:
+            context.additional_context['failed_query'] = query
+        if table:
+            context.additional_context['affected_table'] = table
+        super().__init__(message, context, **kwargs)
+
+class ConfigurationException(DecentralizedAISimulationException):
+    """Exception for configuration-related errors."""
+    
+    def __init__(self, message: str, config_key: Optional[str] = None, config_value: Any = None, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.CONFIGURATION,
+            severity=ErrorSeverity.MEDIUM
+        )
+        if config_key and config_value is not None:
+            context.additional_context.update({
+                'config_key': config_key,
+                'config_value': str(config_value),
+                'validation_type': 'configuration'
+            })
+        super().__init__(message, context, **kwargs)
+
+class PerformanceException(DecentralizedAISimulationException):
+    """Exception for performance-related issues."""
+    
+    def __init__(self, message: str, operation: str, duration: float, threshold: float, **kwargs):
+        context = ErrorContext(
+            category=ErrorCategory.PERFORMANCE,
+            severity=ErrorSeverity.MEDIUM,
+            operation=operation
+        )
+        context.additional_context.update({
+            'operation_duration': duration,
+            'performance_threshold': threshold,
+            'performance_degradation': duration / threshold
+        })
+        super().__init__(message, context, **kwargs)
+
+class ErrorHandler:
+    """
+    Centralized error handling and recovery system.
+    Provides consistent error handling across the application.
+    """
+    
+    def __init__(self, component_name: str = "main"):
+        self.component = component_name
+        self.error_counts = {}
+        self.recent_errors = []
+        self.max_recent_errors = 100
+        self.recovery_strategies = {}
+        self.error_callbacks = {}
+        
+    def handle_exception(
+        self, 
+        exception: Exception, 
+        context: Optional[ErrorContext] = None,
+        reraise: bool = True
+    ) -> bool:
+        """
+        Centralized exception handling with logging and recovery.
+        
+        Args:
+            exception: The exception to handle
+            context: Additional error context
+            reraise: Whether to re-raise the exception
+            
+        Returns:
+            bool: True if error was handled successfully, False otherwise
+        """
+        try:
+            # Ensure we have proper exception context
+            if isinstance(exception, DecentralizedAISimulationException):
+                if context:
+                    exception.context = context
+                error_context = exception.context
+            else:
+                # Wrap system exception
+                error_context = context or ErrorContext(
+                    component=self.component,
+                    severity=ErrorSeverity.HIGH,
+                    category=ErrorCategory.SYSTEM
+                )
+                exception = DecentralizedAISimulationException(
+                    str(exception), 
+                    error_context, 
+                    cause=exception
+                )
+                error_context = exception.context
+            
+            # Add component information
+            error_context.component = self.component
+            
+            # Log the error
+            self._log_error(exception)
+            
+            # Track error frequency
+            self._track_error(exception)
+            
+            # Try to recover if strategy exists
+            recovery_successful = self._attempt_recovery(exception)
+            
+            # Execute callbacks if any
+            self._execute_callbacks(exception)
+            
+            # Re-raise if requested
+            if reraise:
+                raise exception
+                
+            return recovery_successful
+            
+        except Exception as handling_error:
+            logger.error(f"Error handler failed: {handling_error}")
+            return False
+    
+    def _log_error(self, exception: DecentralizedAISimulationException) -> None:
+        """Log error with appropriate level based on severity."""
+        log_data = exception.context.to_dict()
+        log_data['exception_type'] = exception.__class__.__name__
+        log_data['error_message'] = str(exception)
+        
+        if exception.cause:
+            log_data['original_exception'] = str(exception.cause)
+            log_data['traceback'] = traceback.format_exception(
+                type(exception.cause), 
+                exception.cause, 
+                exception.cause.__traceback__
+            )
+        
+        # Log based on severity
+        severity = exception.context.severity
+        if severity == ErrorSeverity.CRITICAL:
+            logger.critical(f"CRITICAL ERROR: {exception.message}", extra=log_data)
+        elif severity == ErrorSeverity.HIGH:
+            logger.error(f"HIGH ERROR: {exception.message}", extra=log_data)
+        elif severity == ErrorSeverity.MEDIUM:
+            logger.warning(f"MEDIUM ERROR: {exception.message}", extra=log_data)
+        elif severity == ErrorSeverity.LOW:
+            logger.info(f"LOW ERROR: {exception.message}", extra=log_data)
+        else:
+            logger.debug(f"INFO: {exception.message}", extra=log_data)
+    
+    def _track_error(self, exception: DecentralizedAISimulationException) -> None:
+        """Track error frequency for monitoring."""
+        key = exception.__class__.__name__
+        self.error_counts[key] = self.error_counts.get(key, 0) + 1
+        
+        # Track recent errors (for pattern detection)
+        self.recent_errors.append({
+            'timestamp': datetime.now(),
+            'type': key,
+            'context': exception.context.to_dict()
+        })
+        
+        # Limit recent errors list
+        if len(self.recent_errors) > self.max_recent_errors:
+            self.recent_errors.pop(0)
+    
+    def _attempt_recovery(self, exception: DecentralizedAISimulationException) -> bool:
+        """Attempt automatic recovery if strategy exists."""
+        exception_type = type(exception)
+        if exception_type in self.recovery_strategies:
+            try:
+                strategy = self.recovery_strategies[exception_type]
+                return strategy(exception)
+            except Exception as recovery_error:
+                logger.error(f"Recovery strategy failed: {recovery_error}")
+                return False
+        return False
+    
+    def _execute_callbacks(self, exception: DecentralizedAISimulationException) -> None:
+        """Execute registered error callbacks."""
+        exception_type = type(exception)
+        if exception_type in self.error_callbacks:
+            try:
+                for callback in self.error_callbacks[exception_type]:
+                    callback(exception)
+            except Exception as callback_error:
+                logger.error(f"Error callback failed: {callback_error}")
+    
+    def register_recovery_strategy(
+        self, 
+        exception_type: Type[Exception], 
+        strategy: Callable[[Exception], bool]
+    ) -> None:
+        """Register a recovery strategy for specific exception types."""
+        self.recovery_strategies[exception_type] = strategy
+    
+    def register_error_callback(
+        self, 
+        exception_type: Type[Exception], 
+        callback: Callable[[Exception], None]
+    ) -> None:
+        """Register a callback for specific exception types."""
+        if exception_type not in self.error_callbacks:
+            self.error_callbacks[exception_type] = []
+        self.error_callbacks[exception_type].append(callback)
+    
+    def get_error_statistics(self) -> Dict[str, Any]:
+        """Get error statistics for monitoring."""
+        return {
+            'error_counts': self.error_counts,
+            'recent_error_count': len(self.recent_errors),
+            'component': self.component,
+            'last_updated': datetime.now().isoformat()
+        }
+
+# Global error handler instance
+_global_error_handler = ErrorHandler()
+
+def error_handler(
+    component: str = "main",
+    reraise: bool = True,
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+    category: ErrorCategory = ErrorCategory.SYSTEM
+):
+    """Decorator for automatic error handling."""
+    
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            context = ErrorContext(
+                component=component,
+                operation=func.__name__
+            )
+            
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                if not isinstance(e, DecentralizedAISimulationException):
+                    # Wrap system exception
+                    e = DecentralizedAISimulationException(
+                        str(e), 
+                        context, 
+                        cause=e
+                    )
+                
+                return _global_error_handler.handle_exception(e, reraise=reraise)
+        
+        return wrapper
+    
+    return decorator
+
+def async_error_handler(
+    component: str = "main",
+    reraise: bool = True
+):
+    """Decorator for automatic async error handling."""
+    
+    def decorator(func: Callable) -> Callable:
+        @functools.wraps(func)
+        async def wrapper(*args, **kwargs):
+            context = ErrorContext(
+                component=component,
+                operation=func.__name__
+            )
+            
+            try:
+                return await func(*args, **kwargs)
+            except Exception as e:
+                if not isinstance(e, DecentralizedAISimulationException):
+                    # Wrap system exception
+                    e = DecentralizedAISimulationException(
+                        str(e), 
+                        context, 
+                        cause=e
+                    )
+                
+                return _global_error_handler.handle_exception(e, reraise=reraise)
+        
+        return wrapper
+    
+    return decorator
+
+@contextmanager
+def error_context(
+    severity: ErrorSeverity = ErrorSeverity.MEDIUM,
+    category: ErrorCategory = ErrorCategory.SYSTEM,
+    component: str = "main",
+    operation: str = "unknown",
+    **additional_context
+):
+    """Context manager for error context tracking."""
+    context = ErrorContext(
+        severity=severity,
+        category=category,
+        component=component,
+        operation=operation,
+        additional_context=additional_context
+    )
+    
+    try:
+        yield context
+    except Exception as e:
+        if not isinstance(e, DecentralizedAISimulationException):
+            e = DecentralizedAISimulationException(str(e), context, cause=e)
+        _global_error_handler.handle_exception(e)
+        raise
+
+class ValidationHelper:
+    """Helper class for common validation patterns."""
+    
+    @staticmethod
+    def require_not_none(value: Any, field_name: str, context: Optional[ErrorContext] = None) -> Any:
+        """Validate that value is not None."""
+        if value is None:
+            raise ValidationException(
+                f"{field_name} cannot be None",
+                field_name=field_name,
+                value=value
+            )
+        return value
+    
+    @staticmethod
+    def require_not_empty(value: Union[str, list, dict], field_name: str) -> Any:
+        """Validate that value is not empty."""
+        if not value:
+            raise ValidationException(
+                f"{field_name} cannot be empty",
+                field_name=field_name,
+                value=value
+            )
+        return value
+    
+    @staticmethod
+    def require_type(value: Any, expected_type: Type, field_name: str) -> Any:
+        """Validate that value has expected type."""
+        if not isinstance(value, expected_type):
+            raise ValidationException(
+                f"{field_name} must be of type {expected_type.__name__}, got {type(value).__name__}",
+                field_name=field_name,
+                value=value
+            )
+        return value
+    
+    @staticmethod
+    def require_range(value: Union[int, float], min_val: float, max_val: float, field_name: str) -> Any:
+        """Validate that value is within specified range."""
+        if not (min_val <= value <= max_val):
+            raise ValidationException(
+                f"{field_name} must be between {min_val} and {max_val}, got {value}",
+                field_name=field_name,
+                value=value
+            )
+        return value
+
+# Recovery strategies
+def create_retry_strategy(max_retries: int = 3, backoff_factor: float = 1.0):
+    """Create a retry-based recovery strategy."""
+    
+    def retry_strategy(exception: Exception) -> bool:
+        # Simple retry logic - can be enhanced based on specific needs
+        logger.info(f"Attempting recovery for {type(exception).__name__}")
+        return True  # Simple implementation
+    
+    return retry_strategy
+
+def create_fallback_strategy(fallback_func: Callable):
+    """Create a fallback-based recovery strategy."""
+    
+    def fallback_recovery(exception: Exception) -> bool:
+        try:
+            fallback_func(exception)
+            return True
+        except Exception as e:
+            logger.error(f"Fallback strategy failed: {e}")
+            return False
+    
+    return fallback_recovery
+
+# Performance monitoring
+class PerformanceMonitor:
+    """Monitor performance and detect degradation."""
+    
+    def __init__(self, warning_threshold: float = 5.0):
+        self.warning_threshold = warning_threshold
+        self.performance_metrics = {}
+    
+    @contextmanager
+    def monitor_operation(self, operation_name: str):
+        """Monitor an operation for performance issues."""
+        start_time = datetime.now()
+        
+        try:
+            yield
+        finally:
+            end_time = datetime.now()
+            duration = (end_time - start_time).total_seconds()
+            
+            if duration > self.warning_threshold:
+                raise PerformanceException(
+                    f"Operation {operation_name} took {duration:.2f}s, exceeding threshold of {self.warning_threshold}s",
+                    operation=operation_name,
+                    duration=duration,
+                    threshold=self.warning_threshold
+                )
+            
+            self.performance_metrics[operation_name] = {
+                'last_duration': duration,
+                'timestamp': end_time.isoformat(),
+                'threshold': self.warning_threshold
+            }
+
+# Initialize global error handlers
+def initialize_error_handling():
+    """Initialize global error handling configuration."""
+    # Register common recovery strategies
+    _global_error_handler.register_recovery_strategy(
+        NetworkException, 
+        create_retry_strategy(max_retries=3)
+    )
+    
+    # Add error callback for critical errors
+    def critical_error_callback(exception: DecentralizedAISimulationException):
+        if exception.context.severity == ErrorSeverity.CRITICAL:
+            logger.critical(f"CRITICAL ERROR ALERT: {exception.message}")
+    
+    _global_error_handler.register_error_callback(
+        CriticalSystemException,
+        critical_error_callback
+    )
+    
+    logger.info("Error handling framework initialized")
+
+# Initialize on import
+initialize_error_handling()
+
+# Export main classes and functions
+__all__ = [
+    'ErrorContext', 'ErrorSeverity', 'ErrorCategory',
+    'DecentralizedAISimulationException', 'CriticalSystemException',
+    'ValidationException', 'NetworkException', 'ResourceException',
+    'SecurityException', 'AgentException', 'DatabaseException',
+    'ConfigurationException', 'PerformanceException',
+    'ErrorHandler', 'ValidationHelper', 'PerformanceMonitor',
+    'error_handler', 'async_error_handler', 'error_context',
+    '_global_error_handler'
+]

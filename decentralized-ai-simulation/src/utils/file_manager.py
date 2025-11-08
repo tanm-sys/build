@@ -441,11 +441,11 @@ class FileManager:
                         # Text file checksum
                         content = self.safe_read_file(file_path, default='')
                         if content:
-                            info['checksum'] = hashlib.md5(content.encode('utf-8')).hexdigest()
+                            info['checksum'] = hashlib.sha256(content.encode('utf-8')).hexdigest()
                     else:
                         # Binary file checksum
                         with open(file_path, 'rb') as f:
-                            info['checksum'] = hashlib.md5(f.read()).hexdigest()
+                            info['checksum'] = hashlib.sha256(f.read()).hexdigest()
                 except Exception as e:
                     logger.warning(f"Failed to calculate checksum for {file_path}: {e}")
 

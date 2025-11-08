@@ -215,23 +215,24 @@ const AgentNetwork3D: React.FC<AgentNetwork3DProps> = ({
       <group ref={linesRef} />
 
       {/* Agent labels (only for high quality or when focused) */}
-      {qualitySettings.geometryDetail === 'high' && agentPositions.map((agent) => (
-        <Text
-          key={`label-${agent.id}`}
-          position={[
-            agent.position.x,
-            agent.position.y + 1,
-            agent.position.z
-          ]}
-          fontSize={0.5}
-          color={0xffffff}
-          anchorX="center"
-          anchorY="middle"
-          visible={agent.trustScore > 80} // Only show labels for high-trust agents
-        >
-          {`Agent ${agent.id.slice(-4)}`}
-        </Text>
-      ))}
+      {qualitySettings.geometryDetail === 'high' && agentPositions
+        .filter(agent => agent && agent.id && agent.position)
+        .map((agent) => {
+          const pos = agent.position;
+          return (
+            <Text
+              key={`label-${agent.id}`}
+              position={[pos.x, pos.y + 1, pos.z]}
+              fontSize={0.5}
+              color="#ffffff"
+              anchorX="center"
+              anchorY="middle"
+            >
+              {`Agent ${agent.id.slice(-4)}`}
+            </Text>
+          );
+        })
+      }
     </group>
   );
 };

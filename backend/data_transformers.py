@@ -478,6 +478,13 @@ class AgentTransformer:
             # Get trust score (with fallback)
             trust_score = getattr(agent, 'trust_score', 0.5)
 
+            # Normalize trust score to 0-1 range if it's in 0-100 range
+            if trust_score > 1.0:
+                trust_score = trust_score / 100.0
+
+            # Ensure it's within bounds
+            trust_score = min(1.0, max(0.0, trust_score))
+
             # Get connections from position mapper
             connections = position_mapper.connection_cache.get(agent.node_id, [])
 
@@ -557,7 +564,19 @@ class SimulationStateTransformer:
 
             # Calculate aggregate statistics
             total_connections = sum(len(conns) for conns in connections.values())
-            avg_trust_score = np.mean([getattr(agent, 'trust_score', 0.5) for agent in agents]) if agents else 0.0
+
+            # Get trust scores and normalize to 0-1 range
+            trust_scores = []
+            for agent in agents:
+                trust = getattr(agent, 'trust_score', 0.5)
+                # Normalize if trust score is in 0-100 range
+                if trust > 1.0:
+                    trust = trust / 100.0
+                trust_scores.append(trust)
+
+            avg_trust_score = np.mean(trust_scores) if trust_scores else 0.0
+            # Ensure it's in 0-1 range
+            avg_trust_score = min(1.0, max(0.0, avg_trust_score))
 
             return SimulationState3D(
                 status='running' if running else 'paused',

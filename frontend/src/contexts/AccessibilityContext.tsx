@@ -245,7 +245,7 @@ function handleKeyboardNavigation(
 }
 
 // Handle tab navigation
-function handleTabNavigation(event: KeyboardEvent, dispatch: React.Dispatch<AccessibilityAction>) {
+function handleTabNavigation(event: KeyboardEvent, _dispatch: React.Dispatch<AccessibilityAction>) {
   const focusableElements = document.querySelectorAll(
     'button, [role="button"], a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
   );
@@ -268,7 +268,7 @@ function handleTabNavigation(event: KeyboardEvent, dispatch: React.Dispatch<Acce
 // Handle element activation
 function handleActivation(
   event: KeyboardEvent,
-  state: AccessibilityContextType,
+  _state: AccessibilityContextType,
   dispatch: React.Dispatch<AccessibilityAction>
 ) {
   const target = event.target as HTMLElement;

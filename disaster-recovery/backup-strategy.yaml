@@ -1,0 +1,370 @@
+# Disaster Recovery & Business Continuity Strategy for AI Simulation Platform
+# Enterprise-grade backup and recovery procedures
+
+# Database Backup Strategy
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: postgresql-backup
+  namespace: ai-simulation
+spec:
+  schedule: "0 2 * * *"  # Daily at 2 AM
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: postgresql-backup
+            image: postgres:15
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Database backup with encryption
+              BACKUP_FILE="ai-simulation-$(date +%Y%m%d-%H%M%S).sql.gz"
+              
+              # Encrypt backup
+              pg_dump -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB | \
+              gzip | \
+              openssl enc -aes-256-cbc -salt -k $BACKUP_ENCRYPTION_KEY | \
+              aws s3 cp - s3://ai-simulation-backups/database/$BACKUP_FILE
+              
+              # Verify backup
+              aws s3 ls s3://ai-simulation-backups/database/ | tail -1
+            env:
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: host
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: username
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: database
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgresql-secret
+                  key: password
+            - name: BACKUP_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-secrets
+                  key: encryption-key
+            volumeMounts:
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+          restartPolicy: OnFailure
+
+---
+# Application Data Backup
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: application-data-backup
+  namespace: ai-simulation
+spec:
+  schedule: "0 3 * * *"  # Daily at 3 AM
+  successfulJobsHistoryLimit: 7
+  failedJobsHistoryLimit: 3
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: application-backup
+            image: alpine:latest
+            command:
+            - /bin/sh
+            - -c
+            - |
+              # Backup application data
+              DATE=$(date +%Y%m%d-%H%M%S)
+              BACKUP_DIR="/backup/app-data-$DATE"
+              
+              # Create backup directory
+              mkdir -p $BACKUP_DIR
+              
+              # Backup Kubernetes configs
+              kubectl get all,configmaps,secrets,pvc -n ai-simulation -o yaml > $BACKUP_DIR/k8s-resources.yaml
+              
+              # Backup persistent volumes
+              for pvc in $(kubectl get pvc -n ai-simulation -o name); do
+                kubectl exec -n ai-simulation deployment/ai-simulation-api -- tar czf - ${pvc} > $BACKUP_DIR/$(basename $pvc).tar.gz
+              done
+              
+              # Encrypt and upload backup
+              tar czf - $BACKUP_DIR | \
+              openssl enc -aes-256-cbc -salt -k $BACKUP_ENCRYPTION_KEY | \
+              aws s3 cp - s3://ai-simulation-backups/application/$DATE.tar.gz.enc
+              
+              # Cleanup local backup
+              rm -rf $BACKUP_DIR
+            env:
+            - name: BACKUP_ENCRYPTION_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: backup-secrets
+                  key: encryption-key
+            volumeMounts:
+            - name: kubeconfig
+              mountPath: /root/.kube
+              readOnly: true
+            - name: backup-storage
+              mountPath: /backup
+          volumes:
+          - name: kubeconfig
+            secret:
+              secretName: kubeconfig-secret
+          - name: backup-storage
+            persistentVolumeClaim:
+              claimName: backup-pvc
+          restartPolicy: OnFailure
+
+---
+# Cross-Region Replication
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: cross-region-replication
+  namespace: ai-simulation
+spec:
+  schedule: "0 4 * * *"  # Daily at 4 AM
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: cross-region-replication
+            image: aws-cli:latest
+            command:
+            - /bin/bash
+            - -c
+            - |
+              # Sync backups to disaster recovery region
+              aws s3 sync s3://ai-simulation-backups/database/ s3://ai-simulation-backups-dr/database/ --region us-west-2
+              aws s3 sync s3://ai-simulation-backups/application/ s3://ai-simulation-backups-dr/application/ --region us-west-2
+              
+              # Verify replication
+              echo "Cross-region replication completed"
+              aws s3 ls s3://ai-simulation-backups-dr/database/ --region us-west-2 | wc -l
+            env:
+            - name: AWS_DEFAULT_REGION
+              value: us-east-1
+            - name: AWS_ACCESS_KEY_ID
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: access-key-id
+            - name: AWS_SECRET_ACCESS_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: aws-credentials
+                  key: secret-access-key
+          restartPolicy: OnFailure
+
+---
+# Backup Storage Configuration
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: backup-pvc
+  namespace: ai-simulation
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: gp3
+
+---
+# Backup Secrets
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backup-secrets
+  namespace: ai-simulation
+type: Opaque
+stringData:
+  encryption-key: "your-32-character-encryption-key"
+
+---
+# Backup Restoration Job
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: postgresql-restore
+  namespace: ai-simulation
+spec:
+  template:
+    spec:
+      containers:
+      - name: postgresql-restore
+        image: postgres:15
+        command:
+        - /bin/bash
+        - -c
+        - |
+          # Restore database from backup
+          BACKUP_FILE=$1
+          if [ -z "$BACKUP_FILE" ]; then
+            echo "Usage: kubectl apply -f restore-job.yaml -p BACKUP_FILE=<backup-file>"
+            exit 1
+          fi
+          
+          # Download and decrypt backup
+          aws s3 cp s3://ai-simulation-backups/database/$BACKUP_FILE - | \
+          openssl enc -aes-256-cbc -d -salt -k $BACKUP_ENCRYPTION_KEY | \
+          gunzip | \
+          psql -h $POSTGRES_HOST -U $POSTGRES_USER -d $POSTGRES_DB
+          
+          echo "Database restore completed"
+        env:
+        - name: POSTGRES_HOST
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: host
+        - name: POSTGRES_USER
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: username
+        - name: POSTGRES_DB
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: database
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgresql-secret
+              key: password
+        - name: BACKUP_ENCRYPTION_KEY
+          valueFrom:
+            secretKeyRef:
+              name: backup-secrets
+              key: encryption-key
+      restartPolicy: OnFailure
+
+---
+# Backup Monitoring and Alerts
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: backup-monitor
+  namespace: ai-simulation
+spec:
+  selector:
+    matchLabels:
+      app: backup-cronjob
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+
+---
+# Backup Health Check
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: backup-health-check
+  namespace: ai-simulation
+data:
+  health-check.sh: |
+    #!/bin/bash
+    # Backup health check script
+    
+    # Check if recent backups exist
+    RECENT_BACKUP=$(aws s3 ls s3://ai-simulation-backups/database/ | head -1 | awk '{print $1" "$2}')
+    if [ -z "$RECENT_BACKUP" ]; then
+      echo "ALERT: No recent database backups found"
+      exit 1
+    fi
+    
+    # Check backup size
+    BACKUP_SIZE=$(aws s3 ls s3://ai-simulation-backups/database/ | head -1 | awk '{print $3}')
+    if [ "$BACKUP_SIZE" -lt 1000000 ]; then
+      echo "ALERT: Backup size seems unusually small"
+      exit 1
+    fi
+    
+    # Check cross-region replication
+    DR_BACKUP_COUNT=$(aws s3 ls s3://ai-simulation-backups-dr/database/ --region us-west-2 | wc -l)
+    if [ "$DR_BACKUP_COUNT" -eq 0 ]; then
+      echo "ALERT: Cross-region replication not working"
+      exit 1
+    fi
+    
+    echo "Backup health check passed"
+    exit 0
+
+---
+# Disaster Recovery Runbook
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: disaster-recovery-runbook
+  namespace: ai-simulation
+data:
+  runbook.md: |
+    # AI Simulation Platform Disaster Recovery Runbook
+    
+    ## Overview
+    This runbook provides step-by-step procedures for disaster recovery scenarios.
+    
+    ## RTO/RPO Targets
+    - **RTO (Recovery Time Objective)**: 4 hours
+    - **RPO (Recovery Point Objective)**: 1 hour
+    
+    ## Backup Locations
+    - **Primary**: us-east-1 (S3: ai-simulation-backups)
+    - **Secondary**: us-west-2 (S3: ai-simulation-backups-dr)
+    
+    ## Disaster Recovery Scenarios
+    
+    ### Scenario 1: Complete Region Failure
+    1. Activate secondary region (us-west-2)
+    2. Update DNS records to point to secondary region
+    3. Restore databases from backup
+    4. Scale up applications in secondary region
+    5. Notify stakeholders
+    
+    ### Scenario 2: Database Corruption
+    1. Stop all application pods
+    2. Restore database from latest clean backup
+    3. Verify data integrity
+    4. Scale up application pods
+    5. Monitor system health
+    
+    ### Scenario 3: Kubernetes Cluster Failure
+    1. Provision new EKS cluster in secondary region
+    2. Apply all Kubernetes manifests
+    3. Restore persistent volumes
+    4. Restore application data
+    5. Update ingress configuration
+    6. Verify all services are running
+    
+    ## Contact Information
+    - **Primary On-Call**: +1-555-0101
+    - **Secondary On-Call**: +1-555-0102
+    - **Platform Team**: platform@company.com
+    
+    ## Escalation Matrix
+    1. Platform Team (0-30 minutes)
+    2. Engineering Manager (30-60 minutes)
+    3. CTO (60+ minutes)
+    4. Executive Team (2+ hours)

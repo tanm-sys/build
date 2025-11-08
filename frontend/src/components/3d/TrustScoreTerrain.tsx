@@ -20,6 +20,30 @@ const TrustScoreTerrain: React.FC<TrustScoreTerrainProps> = ({
   const terrainRef = useRef<THREE.Mesh>(null);
   const wireframeRef = useRef<THREE.LineSegments>(null);
 
+  // Generate height value at specific position based on trust scores
+  const generateHeightAtPosition = (
+    x: number,
+    y: number,
+    trustScores: TrustScoreData[]
+  ): number => {
+    let height = 0;
+    let totalWeight = 0;
+
+    trustScores.forEach(score => {
+      const distance = Math.sqrt(
+        Math.pow(x - score.position.x, 2) +
+        Math.pow(y - score.position.y, 2)
+      );
+
+      // Inverse distance weighting for smooth interpolation
+      const weight = 1 / (1 + distance * 0.1);
+      height += score.value * weight;
+      totalWeight += weight;
+    });
+
+    return totalWeight > 0 ? height / totalWeight : 0;
+  };
+
   // Generate terrain geometry based on trust scores
   const { geometry, wireframeGeometry } = useMemo(() => {
     const segments = detailLevel === 'low' ? 32 :
@@ -47,30 +71,6 @@ const TrustScoreTerrain: React.FC<TrustScoreTerrainProps> = ({
 
     return { geometry, wireframeGeometry };
   }, [trustScores, detailLevel]);
-
-  // Generate height value at specific position based on trust scores
-  const generateHeightAtPosition = (
-    x: number,
-    y: number,
-    trustScores: TrustScoreData[]
-  ): number => {
-    let height = 0;
-    let totalWeight = 0;
-
-    trustScores.forEach(score => {
-      const distance = Math.sqrt(
-        Math.pow(x - score.position.x, 2) +
-        Math.pow(y - score.position.y, 2)
-      );
-
-      // Inverse distance weighting for smooth interpolation
-      const weight = 1 / (1 + distance * 0.1);
-      height += score.value * weight;
-      totalWeight += weight;
-    });
-
-    return totalWeight > 0 ? height / totalWeight : 0;
-  };
 
   // Animate terrain colors based on trust levels
   useFrame((state) => {

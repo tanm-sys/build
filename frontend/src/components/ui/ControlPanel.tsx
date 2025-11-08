@@ -31,8 +31,6 @@ const ControlButton: React.FC<ControlButtonProps> = ({
   size = 'medium',
   shortcut
 }) => {
-  const { settings } = useAccessibility();
-
   const [isPressed, setIsPressed] = useState(false);
 
   const { scale, opacity } = useSpring({
@@ -108,9 +106,9 @@ const ControlPanel: React.FC = () => {
   }, [simulationState, dispatch]);
 
   const handleReset = useCallback(() => {
-    dispatch({ type: 'RESET_METRICS' });
+    dispatch({ type: 'SET_SIMULATION_STATE', payload: { ...simulationState, status: 'stopped' } });
     // Reset simulation to initial state
-  }, [dispatch]);
+  }, [dispatch, simulationState]);
 
   const handleExport = useCallback(() => {
     // Export current simulation state
@@ -222,7 +220,7 @@ const ControlPanel: React.FC = () => {
             </span>
             <span className="metric">
               <span className="metric__label">Trust:</span>
-              <span className="metric__value">{simulationState.averageTrustScore}%</span>
+              <span className="metric__value">{(simulationState.averageTrustScore * 100).toFixed(1)}%</span>
             </span>
           </div>
         </div>

@@ -1,0 +1,277 @@
+# AI Simulation API Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-api
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: api
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8000"
+spec:
+  type: ClusterIP
+  ports:
+  - name: http
+    port: 8000
+    targetPort: http
+    protocol: TCP
+  - name: websocket
+    port: 8503
+    targetPort: websocket
+    protocol: TCP
+  selector:
+    app: ai-simulation
+    component: api
+
+---
+# AI Simulation UI Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-ui
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: ui
+  annotations:
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
+    service.beta.kubernetes.io/aws-load-balancer-backend-protocol: http
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "8502"
+spec:
+  type: ClusterIP
+  ports:
+  - name: streamlit
+    port: 8501
+    targetPort: streamlit
+    protocol: TCP
+  - name: api
+    port: 8502
+    targetPort: api
+    protocol: TCP
+  selector:
+    app: ai-simulation
+    component: ui
+
+---
+# Redis Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-redis
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: redis
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "6379"
+spec:
+  type: ClusterIP
+  ports:
+  - name: redis
+    port: 6379
+    targetPort: redis
+    protocol: TCP
+  selector:
+    app: ai-simulation
+    component: redis
+
+---
+# PostgreSQL Service
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-postgresql
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: postgresql
+  annotations:
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "5432"
+spec:
+  type: ClusterIP
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+    protocol: TCP
+  selector:
+    app: ai-simulation
+    component: postgresql
+
+---
+# Headless service for PostgreSQL StatefulSet
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgresql
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: postgresql
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: postgresql
+    port: 5432
+    targetPort: postgresql
+    protocol: TCP
+  selector:
+    app: ai-simulation
+    component: postgresql
+
+---
+# Ingress Controller for External Access
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: ai-simulation-ingress
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
+    nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/proxy-body-size: "50m"
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+spec:
+  tls:
+  - hosts:
+    - ai-simulation.example.com
+    - api.ai-simulation.example.com
+    secretName: ai-simulation-tls
+  rules:
+  - host: ai-simulation.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-simulation-ui
+            port:
+              number: 8501
+      - path: /api
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-simulation-api
+            port:
+              number: 8000
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-simulation-api
+            port:
+              number: 8503
+  - host: api.ai-simulation.example.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-simulation-api
+            port:
+              number: 8000
+      - path: /ws
+        pathType: Prefix
+        backend:
+          service:
+            name: ai-simulation-api
+            port:
+              number: 8503
+
+---
+# Network Policy for security
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: ai-simulation-network-policy
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: security
+spec:
+  podSelector:
+    matchLabels:
+      app: ai-simulation
+  policyTypes:
+  - Ingress
+  - Egress
+  ingress:
+  # Allow ingress from nginx ingress controller
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-nginx
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8501
+    - protocol: TCP
+      port: 8502
+    - protocol: TCP
+      port: 8503
+  # Allow ingress between application components
+  - from:
+    - podSelector:
+        matchLabels:
+          app: ai-simulation
+    ports:
+    - protocol: TCP
+      port: 8000
+  # Allow ingress from monitoring namespace
+  - from:
+    - namespaceSelector:
+        matchLabels:
+          name: ai-simulation-monitoring
+    ports:
+    - protocol: TCP
+      port: 8000
+    - protocol: TCP
+      port: 8502
+  egress:
+  # Allow egress to PostgreSQL
+  - to:
+    - podSelector:
+        matchLabels:
+          component: postgresql
+    ports:
+    - protocol: TCP
+      port: 5432
+  # Allow egress to Redis
+  - to:
+    - podSelector:
+        matchLabels:
+          component: redis
+    ports:
+    - protocol: TCP
+      port: 6379
+  # Allow egress to external services
+  - to: []
+    ports:
+    - protocol: TCP
+      port: 443
+    - protocol: TCP
+      port: 80

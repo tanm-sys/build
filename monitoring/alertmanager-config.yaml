@@ -1,0 +1,364 @@
+# Alert Manager Configuration for AI Simulation Platform
+# Enterprise-grade alerting with intelligent routing, escalation, and notification management
+
+global:
+  # SMTP server configuration
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_from: 'alerts@ai-simulation.com'
+  smtp_auth_username: 'alerts@ai-simulation.com'
+  smtp_auth_password: '${SMTP_AUTH_PASSWORD}'
+  
+  # Slack API configuration
+  slack_api_url: '${SLACK_WEBHOOK_URL}'
+  
+  # PagerDuty API configuration
+  pagerduty_url: 'https://events.pagerduty.com/v2/enqueue'
+  
+  # HTTP configuration
+  http_config:
+    proxy_url: '${HTTP_PROXY_URL}'
+
+# Template configurations for notifications
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+# Route configuration for alert routing
+route:
+  # Default receiver for all alerts
+  receiver: 'default'
+  
+  # Group alerts by their labels
+  group_by: ['alertname', 'cluster', 'service', 'component', 'severity']
+  
+  # Wait 30 seconds before sending initial notification
+  group_wait: 30s
+  
+  # Send new notifications if alert changes (e.g., severity)
+  group_interval: 5m
+  
+  # Repeat alerts every 2 hours
+  repeat_interval: 2h
+  
+  # Child routes for different alert types
+  routes:
+    # Critical alerts - immediate escalation
+    - match:
+        severity: critical
+      receiver: 'critical-alerts'
+      group_wait: 10s
+      group_interval: 2m
+      repeat_interval: 15m
+      
+    # AI Simulation Core alerts
+    - match:
+        service: ai-simulation-core
+      receiver: 'ai-platform-team'
+      group_wait: 20s
+      group_interval: 5m
+      repeat_interval: 1h
+      
+    # Infrastructure alerts
+    - match:
+        service: infrastructure
+      receiver: 'platform-sre-team'
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 2h
+      
+    # Security alerts
+    - match:
+        service: security
+      receiver: 'security-ops-team'
+      group_wait: 10s
+      group_interval: 1m
+      repeat_interval: 30m
+      
+    # Database alerts
+    - match:
+        service: database
+      receiver: 'data-platform-team'
+      group_wait: 20s
+      group_interval: 5m
+      repeat_interval: 1h
+      
+    # Performance alerts
+    - match:
+        service: ai-simulation-performance
+      receiver: 'ai-platform-team'
+      group_wait: 30s
+      group_interval: 10m
+      repeat_interval: 2h
+      
+    # Business metrics alerts
+    - match:
+        service: business-metrics
+      receiver: 'ai-platform-team'
+      group_wait: 1m
+      group_interval: 15m
+      repeat_interval: 4h
+
+# Inhibition rules to reduce alert noise
+inhibit_rules:
+  # Inhibit warning alerts when critical alert for same service is firing
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'cluster', 'service', 'instance']
+    
+  # Inhibit low-priority alerts when high-priority alert for same service is firing
+  - source_match:
+      priority: 'high'
+    target_match:
+      priority: 'low'
+    equal: ['alertname', 'cluster', 'service']
+    
+  # Inhibit pod-level alerts when node-level alert is firing
+  - source_match:
+      component: 'kubernetes'
+    target_match:
+      component: 'pod'
+    equal: ['cluster', 'instance', 'namespace']
+
+# Receiver configurations
+receivers:
+  # Default receiver
+  - name: 'default'
+    email_configs:
+      - to: 'alerts@ai-simulation.com'
+        subject: '[AI Simulation] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#alerts-default'
+        title: '{{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        
+  # Critical alerts receiver
+  - name: 'critical-alerts'
+    email_configs:
+      - to: 'critical@ai-simulation.com'
+        subject: '[CRITICAL] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🚨 CRITICAL ALERT 🚨
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#alerts-critical'
+        title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}🚨 {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+    pagerduty_configs:
+      - routing_key: '${PAGERDUTY_CRITICAL_ROUTING_KEY}'
+        description: '{{ range .Alerts }}{{ .Annotations.summary }}{{ end }}'
+        severity: 'critical'
+        
+  # AI Platform Team receiver
+  - name: 'ai-platform-team'
+    email_configs:
+      - to: 'ai-platform@ai-simulation.com'
+        subject: '[AI Platform] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🤖 AI Platform Alert
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#ai-platform-alerts'
+        title: '🤖 AI Platform: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}🤖 {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+    webhook_configs:
+      - url: 'http://ai-simulation-api:8000/api/v1/alerts'
+        send_resolved: true
+        
+  # Platform SRE Team receiver
+  - name: 'platform-sre-team'
+    email_configs:
+      - to: 'platform-sre@ai-simulation.com'
+        subject: '[Platform SRE] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🛠️ Platform SRE Alert
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Node: {{ .Labels.node }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#platform-sre-alerts'
+        title: '🛠️ Platform SRE: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}🛠️ {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+        
+  # Security Operations Team receiver
+  - name: 'security-ops-team'
+    email_configs:
+      - to: 'security-ops@ai-simulation.com'
+        subject: '[SECURITY] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          🔒 Security Alert
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Instance: {{ .Labels.instance }}
+          Source IP: {{ .Labels.source_ip }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#security-alerts'
+        title: '🔒 Security Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}🔒 {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+        
+  # Data Platform Team receiver
+  - name: 'data-platform-team'
+    email_configs:
+      - to: 'data-platform@ai-simulation.com'
+        subject: '[Data Platform] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          💾 Data Platform Alert
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Severity: {{ .Labels.severity }}
+          Database: {{ .Labels.database }}
+          Instance: {{ .Labels.instance }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#data-platform-alerts'
+        title: '💾 Data Platform: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}💾 {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+        
+  # Finance Operations Team receiver
+  - name: 'finance-ops-team'
+    email_configs:
+      - to: 'finance-ops@ai-simulation.com'
+        subject: '[Cost Optimization] {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          💰 Cost Optimization Alert
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          Service: {{ .Labels.service }}
+          Component: {{ .Labels.component }}
+          Cost: {{ .Labels.cost }}
+          Region: {{ .Labels.region }}
+          Runbook: {{ .Annotations.runbook_url }}
+          Time: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+          {{ end }}
+    slack_configs:
+      - channel: '#cost-optimization-alerts'
+        title: '💰 Cost Alert: {{ .GroupLabels.alertname }}'
+        text: '{{ range .Alerts }}💰 {{ .Annotations.summary }}{{ end }}'
+        send_resolved: true
+
+# Silence configuration
+time_intervals:
+  - name: 'maintenance'
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '06:00'
+        weekdays: ['saturday', 'sunday']
+        
+  - name: 'business-hours'
+    time_intervals:
+      - times:
+          - start_time: '09:00'
+            end_time: '17:00'
+        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+        
+  - name: 'high-traffic'
+    time_intervals:
+      - times:
+          - start_time: '14:00'
+            end_time: '16:00'
+        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+
+# Mute time intervals for alert suppression
+mute_time_intervals:
+  - name: 'weekend-maintenance'
+    time_intervals:
+      - times:
+          - start_time: '00:00'
+            end_time: '06:00'
+        weekdays: ['saturday', 'sunday']
+        
+  - name: 'non-business-hours'
+    time_intervals:
+      - times:
+          - start_time: '18:00'
+            end_time: '09:00'
+        weekdays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday']
+
+# Notification policies for different time periods
+notification_configs:
+  - name: 'business-hours-policy'
+    time_intervals:
+      - business-hours
+    receiver: 'ai-platform-team'
+    
+  - name: 'weekend-policy'
+    time_intervals:
+      - weekend-maintenance
+    receiver: 'platform-sre-team'
+    
+  - name: 'maintenance-policy'
+    time_intervals:
+      - maintenance
+    receiver: 'platform-sre-team'
+
+# High availability configuration for AlertManager
+cluster:
+  listen-address: "0.0.0.0:9094"
+  
+# Storage configuration
+storage:
+  path: "/alertmanager"
+  retention: "120h"
+  
+# Web configuration
+web:
+  external-url: "https://alertmanager.ai-simulation.com"
+  enable-admin-api: true
+  page-title: "AI Simulation Platform - Alert Manager"
+  
+# Feature flags
+feature_flags:
+  - "prometheus/conversion"
+  - "prometheus/labels"
+  - "api/v2"

@@ -1,0 +1,179 @@
+# Blue-Green Deployment Strategy for AI Simulation Platform
+# Zero-downtime production deployment with automatic rollback
+
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ai-simulation-blue-green
+  namespace: ai-simulation
+spec:
+  replicas: 10
+  strategy:
+    blueGreen:
+      # PrePromotion Analysis
+      prePromotionAnalysis:
+        templates:
+        - templateName: success-rate
+        args:
+        - name: service-name
+          value: ai-simulation-api-blue
+      # Number of replicas to run in the green environment
+      scaleDownDelaySeconds: 30
+      # Maximum time before failing promotion
+      prePromotionEvaluationDeadline: 5m
+      # PostPromotion Analysis
+      postPromotionAnalysis:
+        templates:
+        - templateName: success-rate
+        args:
+        - name: service-name
+          value: ai-simulation-api-green
+      # Wait for this duration before considering the deployment successful
+      postPromotionEvaluationDeadline: 10m
+      
+  selector:
+    matchLabels:
+      app: ai-simulation-api
+  template:
+    metadata:
+      labels:
+        app: ai-simulation-api
+        version: v1
+    spec:
+      containers:
+      - name: ai-simulation-api
+        image: ai-simulation:latest
+        ports:
+        - containerPort: 8000
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        env:
+        - name: ENVIRONMENT
+          value: "production"
+        - name: LOG_LEVEL
+          value: "info"
+
+---
+# Analysis Templates for Blue-Green Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: AnalysisTemplate
+metadata:
+  name: success-rate
+  namespace: ai-simulation
+spec:
+  args:
+  - name: service-name
+  metrics:
+  - name: success-rate
+    interval: 2m
+    count: 10
+    successCondition: result[0] >= 0.95
+    provider:
+      prometheus:
+        address: http://prometheus.monitoring.svc.cluster.local:9090
+        query: |
+          sum(rate(http_requests_total{service="{{args.service-name}}",status!~"5.."}[2m])) /
+          sum(rate(http_requests_total{service="{{args.service-name}}"}[2m]))
+
+---
+# Service for Blue-Green Deployment
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-api
+  namespace: ai-simulation
+spec:
+  selector:
+    app: ai-simulation-api
+  ports:
+  - port: 8000
+    targetPort: 8000
+  type: LoadBalancer
+
+---
+# Blue Service (Production)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-api-blue
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation-api
+    color: blue
+spec:
+  selector:
+    app: ai-simulation-api
+    version: blue
+  ports:
+  - port: 8000
+    targetPort: 8000
+
+---
+# Green Service (Preview)
+apiVersion: v1
+kind: Service
+metadata:
+  name: ai-simulation-api-green
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation-api
+    color: green
+spec:
+  selector:
+    app: ai-simulation-api
+    version: green
+  ports:
+  - port: 8000
+    targetPort: 8000
+
+---
+# Deployment Configuration
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: ai-simulation-ui-blue-green
+  namespace: ai-simulation
+spec:
+  replicas: 5
+  strategy:
+    blueGreen:
+      scaleDownDelaySeconds: 60
+      prePromotionAnalysis:
+        templates:
+        - templateName: ui-availability
+        args:
+        - name: service-name
+          value: ai-simulation-ui-green
+      postPromotionAnalysis:
+        templates:
+        - templateName: ui-availability
+        args:
+        - name: service-name
+          value: ai-simulation-ui-blue
+      autoPromotionEnabled: false
+  selector:
+    matchLabels:
+      app: ai-simulation-ui
+  template:
+    metadata:
+      labels:
+        app: ai-simulation-ui
+        version: v1
+    spec:
+      containers:
+      - name: ai-simulation-ui
+        image: ai-simulation-ui:latest
+        ports:
+        - containerPort: 8501
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"

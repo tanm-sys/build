@@ -1,0 +1,625 @@
+# Enterprise Alert Rules for AI Simulation Platform
+# Comprehensive alerting with AI-specific, security, and performance monitoring
+
+groups:
+- name: ai-simulation-core.rules
+  rules:
+  
+  # Critical AI Simulation Alerts
+  - alert: AISimulationServiceDown
+    expr: up{job="ai-simulation-api-enhanced"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: ai-simulation-core
+      component: api
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation API service is completely down"
+      description: "AI Simulation API service has been down for more than 1 minute. All simulation operations are currently unavailable."
+      runbook_url: "https://runbooks.ai-simulation.com/service-down"
+      
+  - alert: AISimulationHighLatencyCritical
+    expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service="ai-simulation-api"}[5m])) > 5.0
+    for: 2m
+    labels:
+      severity: critical
+      service: ai-simulation-core
+      component: api-performance
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation API experiencing critical latency"
+      description: "99th percentile latency is above 5 seconds for more than 2 minutes."
+      runbook_url: "https://runbooks.ai-simulation.com/high-latency"
+      
+  - alert: AISimulationHighErrorRateCritical
+    expr: rate(http_requests_total{service="ai-simulation-api",status=~"5.."}[5m]) / rate(http_requests_total{service="ai-simulation-api"}[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: critical
+      service: ai-simulation-core
+      component: api-errors
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation API experiencing critical error rate"
+      description: "Error rate is above 10% for more than 2 minutes. Service degradation detected."
+      runbook_url: "https://runbooks.ai-simulation.com/error-rate"
+      
+  - alert: AISimulationAgentPoolDepletion
+    expr: ai_simulation_agent_pool_available / ai_simulation_agent_pool_total < 0.1
+    for: 3m
+    labels:
+      severity: warning
+      service: ai-simulation-core
+      component: agent-pool
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation agent pool critically low"
+      description: "Agent pool availability is below 10%. Simulation throughput may be impacted."
+      runbook_url: "https://runbooks.ai-simulation.com/agent-pool"
+      
+  - alert: AISimulationConsensusFailure
+    expr: rate(ai_simulation_consensus_failures_total[5m]) > 5
+    for: 2m
+    labels:
+      severity: critical
+      service: ai-simulation-core
+      component: consensus
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation BFT consensus failures detected"
+      description: "More than 5 consensus failures in the last 5 minutes. Network stability at risk."
+      runbook_url: "https://runbooks.ai-simulation.com/consensus-failure"
+
+- name: ai-simulation-performance.rules
+  rules:
+  
+  # Performance and Throughput Alerts
+  - alert: AISimulationLowThroughput
+    expr: rate(ai_simulation_iterations_total[5m]) < 5
+    for: 5m
+    labels:
+      severity: warning
+      service: ai-simulation-performance
+      component: simulation-throughput
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation throughput critically low"
+      description: "Simulation throughput is below 5 iterations per second."
+      runbook_url: "https://runbooks.ai-simulation.com/throughput"
+      
+  - alert: AISimulationMemoryUsageHigh
+    expr: (ai_simulation_process_memory_usage_bytes / ai_simulation_process_memory_limit_bytes) * 100 > 85
+    for: 3m
+    labels:
+      severity: warning
+      service: ai-simulation-performance
+      component: memory
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation memory usage high"
+      description: "Process memory usage is above 85% of limit."
+      runbook_url: "https://runbooks.ai-simulation.com/memory-usage"
+      
+  - alert: AISimulationCPUSaturation
+    expr: ai_simulation_process_cpu_usage_percent > 80
+    for: 5m
+    labels:
+      severity: warning
+      service: ai-simulation-performance
+      component: cpu
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation CPU usage high"
+      description: "Process CPU usage is above 80% for more than 5 minutes."
+      runbook_url: "https://runbooks.ai-simulation.com/cpu-usage"
+
+- name: ai-simulation-federated-learning.rules
+  rules:
+  
+  # Federated Learning Alerts
+  - alert: FederatedLearningModelDrift
+    expr: rate(ai_simulation_model_drift_total[10m]) > 0.1
+    for: 5m
+    labels:
+      severity: warning
+      service: ai-simulation-ml
+      component: federated-learning
+      team: ai-platform
+    annotations:
+      summary: "Significant model drift detected in federated learning"
+      description: "Model drift rate is above threshold, indicating potential data quality issues."
+      runbook_url: "https://runbooks.ai-simulation.com/model-drift"
+      
+  - alert: FederatedLearningAggregationFailure
+    expr: rate(ai_simulation_federated_aggregation_failures_total[5m]) > 3
+    for: 3m
+    labels:
+      severity: warning
+      service: ai-simulation-ml
+      component: federated-learning
+      team: ai-platform
+    annotations:
+      summary: "Federated learning aggregation failures"
+      description: "More than 3 aggregation failures in the last 5 minutes."
+      runbook_url: "https://runbooks.ai-simulation.com/aggregation-failure"
+      
+  - alert: FederatedLearningConvergenceSlow
+    expr: ai_simulation_federated_convergence_iterations > 100
+    for: 10m
+    labels:
+      severity: info
+      service: ai-simulation-ml
+      component: federated-learning
+      team: ai-platform
+    annotations:
+      summary: "Federated learning convergence is slow"
+      description: "Model convergence is taking more than 100 iterations."
+      runbook_url: "https://runbooks.ai-simulation.com/convergence-slow"
+
+- name: infrastructure.rules
+  rules:
+  
+  # Kubernetes Infrastructure Alerts
+  - alert: KubernetesClusterDown
+    expr: up{job="kubernetes-apiserver"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: infrastructure
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Kubernetes API server is down"
+      description: "Kubernetes API server has been down for more than 1 minute."
+      runbook_url: "https://runbooks.platform-sre.com/cluster-down"
+      
+  - alert: KubernetesNodeNotReady
+    expr: kube_node_status_condition{condition="Ready",status="true"} == 0
+    for: 2m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Kubernetes node {{ $labels.node }} is not ready"
+      description: "Node {{ $labels.node }} has been not ready for more than 2 minutes."
+      runbook_url: "https://runbooks.platform-sre.com/node-not-ready"
+      
+  - alert: KubernetesPodCrashLooping
+    expr: rate(kube_pod_container_status_restarts_total[15m]) > 0
+    for: 3m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is crash looping"
+      description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} is restarting repeatedly."
+      runbook_url: "https://runbooks.platform-sre.com/pod-crash-looping"
+      
+  - alert: KubernetesPodOOMKilled
+    expr: kube_pod_container_status_last_terminated_reason{reason="OOMKilled"} > 0
+    for: 1m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Pod {{ $labels.pod }} was killed due to out of memory"
+      description: "Pod {{ $labels.pod }} in namespace {{ $labels.namespace }} was terminated due to OOM."
+      runbook_url: "https://runbooks.platform-sre.com/pod-oom"
+
+- name: infrastructure-performance.rules
+  rules:
+  
+  # Infrastructure Performance Alerts
+  - alert: NodeHighCPUUsage
+    expr: 100 * (1 - avg(rate(container_cpu_usage_seconds_total{name!="",container!="POD",container!="pause"}[5m])) by (instance)) > 85
+    for: 5m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: cpu
+      team: platform-sre
+    annotations:
+      summary: "High CPU usage on {{ $labels.instance }}"
+      description: "CPU usage is above 85% for more than 5 minutes on {{ $labels.instance }}."
+      runbook_url: "https://runbooks.platform-sre.com/high-cpu"
+      
+  - alert: NodeHighMemoryUsage
+    expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 90
+    for: 5m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: memory
+      team: platform-sre
+    annotations:
+      summary: "High memory usage on {{ $labels.instance }}"
+      description: "Memory usage is above 90% for more than 5 minutes on {{ $labels.instance }}."
+      runbook_url: "https://runbooks.platform-sre.com/high-memory"
+      
+  - alert: NodeDiskSpaceLow
+    expr: (1 - (node_filesystem_avail_bytes / node_filesystem_size_bytes)) * 100 > 85
+    for: 3m
+    labels:
+      severity: warning
+      service: infrastructure
+      component: disk
+      team: platform-sre
+    annotations:
+      summary: "Low disk space on {{ $labels.instance }}"
+      description: "Disk space usage is above 85% on {{ $labels.instance }} for {{ $labels.mountpoint }}."
+      runbook_url: "https://runbooks.platform-sre.com/disk-space-low"
+
+- name: database.rules
+  rules:
+  
+  # Database Alerts
+  - alert: PostgreSQLDown
+    expr: up{job="postgresql-enhanced"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: database
+      component: postgresql
+      team: data-platform
+    annotations:
+      summary: "PostgreSQL database is down"
+      description: "PostgreSQL database has been down for more than 1 minute."
+      runbook_url: "https://runbooks.data-platform.com/postgresql-down"
+      
+  - alert: PostgreSQLHighConnections
+    expr: pg_stat_activity_count > 180
+    for: 2m
+    labels:
+      severity: warning
+      service: database
+      component: postgresql
+      team: data-platform
+    annotations:
+      summary: "PostgreSQL high connection count"
+      description: "Database has {{ $value }} active connections, approaching maximum."
+      runbook_url: "https://runbooks.data-platform.com/high-connections"
+      
+  - alert: PostgreSQLSlowQueries
+    expr: rate(pg_stat_statements_mean_time[5m]) > 2000
+    for: 3m
+    labels:
+      severity: warning
+      service: database
+      component: postgresql
+      team: data-platform
+    annotations:
+      summary: "PostgreSQL slow queries detected"
+      description: "Average query execution time is above 2 seconds."
+      runbook_url: "https://runbooks.data-platform.com/slow-queries"
+      
+  - alert: PostgreSQLReplicationLag
+    expr: pg_replication_lag > 60
+    for: 2m
+    labels:
+      severity: warning
+      service: database
+      component: postgresql
+      team: data-platform
+    annotations:
+      summary: "PostgreSQL replication lag detected"
+      description: "Replication lag is {{ $value }} seconds, which is above threshold."
+      runbook_url: "https://runbooks.data-platform.com/replication-lag"
+
+- name: redis.rules
+  rules:
+  
+  # Redis Alerts
+  - alert: RedisDown
+    expr: up{job="redis-enhanced"} == 0
+    for: 1m
+    labels:
+      severity: critical
+      service: cache
+      component: redis
+      team: data-platform
+    annotations:
+      summary: "Redis cache is down"
+      description: "Redis cache has been down for more than 1 minute."
+      runbook_url: "https://runbooks.data-platform.com/redis-down"
+      
+  - alert: RedisMemoryUsageHigh
+    expr: (redis_memory_used_bytes / redis_memory_max_bytes) * 100 > 90
+    for: 3m
+    labels:
+      severity: warning
+      service: cache
+      component: redis
+      team: data-platform
+    annotations:
+      summary: "Redis memory usage high"
+      description: "Redis memory usage is at {{ $value }}% of maximum."
+      runbook_url: "https://runbooks.data-platform.com/redis-memory"
+      
+  - alert: RedisConnectionFailures
+    expr: rate(redis_net_clients_connections_disconnected_total[5m]) / rate(redis_net_clients_connections_total[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+      service: cache
+      component: redis
+      team: data-platform
+    annotations:
+      summary: "Redis connection failures high"
+      description: "Redis connection failure rate is above 10%."
+      runbook_url: "https://runbooks.data-platform.com/redis-connections"
+
+- name: security.rules
+  rules:
+  
+  # Security Alerts
+  - alert: HighAuthenticationFailures
+    expr: rate(authentication_failures_total[5m]) > 10
+    for: 2m
+    labels:
+      severity: warning
+      service: security
+      component: authentication
+      team: security-ops
+    annotations:
+      summary: "High authentication failure rate"
+      description: "More than 10 authentication failures in the last 5 minutes."
+      runbook_url: "https://runbooks.security-ops.com/auth-failures"
+      
+  - alert: KubernetesSecurityPolicyViolations
+    expr: rate(kube_pod_security_policy_violation_total[5m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+      service: security
+      component: kubernetes
+      team: security-ops
+    annotations:
+      summary: "Kubernetes security policy violations detected"
+      description: "Security policy violations detected in namespace {{ $labels.namespace }}."
+      runbook_url: "https://runbooks.security-ops.com/policy-violations"
+      
+  - alert: UnusualNetworkTraffic
+    expr: rate(container_network_receive_bytes_total[5m]) > 100000000 or rate(container_network_transmit_bytes_total[5m]) > 100000000
+    for: 5m
+    labels:
+      severity: warning
+      service: security
+      component: network
+      team: security-ops
+    annotations:
+      summary: "Unusual network traffic detected"
+      description: "Unusual network traffic patterns detected on {{ $labels.instance }}."
+      runbook_url: "https://runbooks.security-ops.com/unusual-traffic"
+      
+  - alert: SuspiciousAPIAccess
+    expr: rate(api_requests_total{source="external",status="403"}[5m]) > 5
+    for: 3m
+    labels:
+      severity: warning
+      service: security
+      component: api-security
+      team: security-ops
+    annotations:
+      summary: "Suspicious API access attempts"
+      description: "Multiple unauthorized API access attempts detected."
+      runbook_url: "https://runbooks.security-ops.com/suspicious-api-access"
+
+- name: capacity-planning.rules
+  rules:
+  
+  # Capacity Planning Alerts
+  - alert: PodAtCapacity
+    expr: (kube_pod_resource_requests{resource="cpu"} / kube_pod_resource_limits{resource="cpu"}) > 0.8
+    for: 10m
+    labels:
+      severity: info
+      service: capacity-planning
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Pod {{ $labels.pod }} approaching CPU capacity"
+      description: "Pod {{ $labels.pod }} is consistently using more than 80% of its CPU limit."
+      runbook_url: "https://runbooks.platform-sre.com/pod-capacity"
+      
+  - alert: ClusterResourceExhaustion
+    expr: (kube_node_status_condition{condition="MemoryPressure",status="true"} == 1) or (kube_node_status_condition{condition="DiskPressure",status="true"} == 1)
+    for: 5m
+    labels:
+      severity: critical
+      service: capacity-planning
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Cluster resource exhaustion detected"
+      description: "Node {{ $labels.node }} is experiencing resource pressure."
+      runbook_url: "https://runbooks.platform-sre.com/resource-exhaustion"
+      
+  - alert: AutoscalingTriggered
+    expr: kube_horizontalpodautoscaler_status_desired_replicas > kube_horizontalpodautoscaler_status_current_replicas
+    for: 2m
+    labels:
+      severity: info
+      service: capacity-planning
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Autoscaling triggered for {{ $labels.hpa }}"
+      description: "Horizontal Pod Autoscaler has increased desired replicas to {{ $value }}."
+      runbook_url: "https://runbooks.platform-sre.com/autoscaling"
+
+- name: business-metrics.rules
+  rules:
+  
+  # Business Logic Alerts
+  - alert: AISimulationAgentsDropped
+    expr: rate(ai_simulation_agent_terminations_total[5m]) > 3
+    for: 2m
+    labels:
+      severity: warning
+      service: business-metrics
+      component: ai-simulation
+      team: ai-platform
+    annotations:
+      summary: "High number of agent terminations"
+      description: "{{ $value }} agents terminated in the last 5 minutes."
+      runbook_url: "https://runbooks.ai-simulation.com/agent-dropped"
+      
+  - alert: AISimulationSimulationStalled
+    expr: time() - ai_simulation_last_update_timestamp > 300
+    for: 2m
+    labels:
+      severity: critical
+      service: business-metrics
+      component: ai-simulation
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation appears to be stalled"
+      description: "No simulation updates for more than 5 minutes."
+      runbook_url: "https://runbooks.ai-simulation.com/simulation-stalled"
+      
+  - alert: AISimulationNetworkPartition
+    expr: rate(ai_simulation_network_partitions_detected_total[5m]) > 0
+    for: 1m
+    labels:
+      severity: critical
+      service: business-metrics
+      component: ai-simulation
+      team: ai-platform
+    annotations:
+      summary: "AI Simulation network partition detected"
+      description: "Network partition detected in the simulation network."
+      runbook_url: "https://runbooks.ai-simulation.com/network-partition"
+
+- name: deployment-health.rules
+  rules:
+  
+  # Deployment Health Alerts
+  - alert: DeploymentFailed
+    expr: kube_deployment_status_replicas_unavailable > 0
+    for: 5m
+    labels:
+      severity: critical
+      service: deployment
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Deployment {{ $labels.deployment }} failure detected"
+      description: "Deployment {{ $labels.deployment }} has {{ $value }} unavailable replicas."
+      runbook_url: "https://runbooks.platform-sre.com/deployment-failed"
+      
+  - alert: RollingUpdateStuck
+    expr: kube_deployment_status_conditions{condition="Progressing",status="False"} == 1
+    for: 10m
+    labels:
+      severity: critical
+      service: deployment
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Rolling update appears to be stuck for {{ $labels.deployment }}"
+      description: "Deployment {{ $labels.deployment }} rolling update has been stuck for more than 10 minutes."
+      runbook_url: "https://runbooks.platform-sre.com/rolling-update-stuck"
+      
+  - alert: DeploymentRollbackTriggered
+    expr: kube_deployment_status_conditions{condition="Available",status="False"} == 1
+    for: 5m
+    labels:
+      severity: warning
+      service: deployment
+      component: kubernetes
+      team: platform-sre
+    annotations:
+      summary: "Deployment rollback detected for {{ $labels.deployment }}"
+      description: "Deployment {{ $labels.deployment }} has rolled back due to health check failures."
+      runbook_url: "https://runbooks.platform-sre.com/deployment-rollback"
+
+- name: cost-optimization.rules
+  rules:
+  
+  # Cost Optimization Alerts
+  - alert: HighCloudCosts
+    expr: cloudwatch_estimated_charges_maximum > 2000
+    for: 15m
+    labels:
+      severity: warning
+      service: cost-optimization
+      component: billing
+      team: finance-ops
+    annotations:
+      summary: "High cloud infrastructure costs detected"
+      description: "Estimated cloud costs have exceeded $2000."
+      runbook_url: "https://runbooks.finance-ops.com/high-costs"
+      
+  - alert: UnderUtilizedResources
+    expr: (1 - avg(rate(container_cpu_usage_seconds_total[1h]))) > 0.7
+    for: 30m
+    labels:
+      severity: info
+      service: cost-optimization
+      component: resource-optimization
+      team: platform-sre
+    annotations:
+      summary: "Underutilized resources detected"
+      description: "Resources are underutilized and could be scaled down to reduce costs."
+      runbook_url: "https://runbooks.platform-sre.com/underutilized-resources"
+      
+  - alert: OrphanedVolumes
+    expr: aws_ebs_volumes_in_use < aws_ebs_volumes_total
+    for: 60m
+    labels:
+      severity: info
+      service: cost-optimization
+      component: storage
+      team: finance-ops
+    annotations:
+      summary: "Orphaned EBS volumes detected"
+      description: "There are {{ $value }} EBS volumes that are not attached to any running instances."
+      runbook_url: "https://runbooks.finance-ops.com/orphaned-volumes"
+
+# Recording Rules for Aggregations
+- name: ai-simulation-recording.rules
+  rules:
+  
+  # Recording Rules for Aggregations
+  - record: ai_simulation:api:rate_5m
+    expr: rate(http_requests_total{service="ai-simulation-api"}[5m])
+    
+  - record: ai_simulation:api:error_rate_5m
+    expr: rate(http_requests_total{service="ai-simulation-api",status=~"5.."}[5m]) / rate(http_requests_total{service="ai-simulation-api"}[5m])
+    
+  - record: ai_simulation:api:latency_p95_5m
+    expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket{service="ai-simulation-api"}[5m]))
+    
+  - record: ai_simulation:api:latency_p99_5m
+    expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket{service="ai-simulation-api"}[5m]))
+    
+  - record: ai_simulation:cluster:cpu_utilization
+    expr: 100 * (1 - avg(rate(container_cpu_usage_seconds_total[5m])) by (cluster))
+    
+  - record: ai_simulation:cluster:memory_utilization
+    expr: 100 * (1 - (sum(container_memory_usage_bytes) by (cluster) / sum(container_spec_memory_limit_bytes) by (cluster)))
+    
+  - record: ai_simulation:pods:ready_percentage
+    expr: (sum(kube_pod_status_ready{condition="true"}) by (namespace) / sum(kube_pod_status_phase{phase="Running"}) by (namespace)) * 100
+    
+  - record: ai_simulation:agents:active_count
+    expr: sum(ai_simulation_agent_active_count) by (simulation_id)
+    
+  - record: ai_simulation:agents:throughput_per_minute
+    expr: rate(ai_simulation_agent_interactions_total[1m])
+    
+  - record: ai_simulation:consensus:success_rate
+    expr: rate(ai_simulation_consensus_success_total[5m]) / (rate(ai_simulation_consensus_success_total[5m]) + rate(ai_simulation_consensus_failures_total[5m]))
+    
+  - record: ai_simulation:federated:model_accuracy
+    expr: avg(ai_simulation_federated_model_accuracy_score) by (model_version)
+    
+  - record: ai_simulation:performance:requests_per_second
+    expr: sum(rate(http_requests_total{service="ai-simulation-api"}[1m]))

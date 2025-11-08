@@ -1,0 +1,570 @@
+# =============================================================================
+# SECURITY VULNERABILITY SCANNING FRAMEWORK
+# Decentralized AI Simulation Platform
+# =============================================================================
+
+"""
+Comprehensive security vulnerability scanning and compliance management system.
+Implements automated security scanning, vulnerability management, and compliance
+monitoring for the entire platform.
+
+CRITICAL FEATURES:
+- Automated dependency vulnerability scanning
+- Code security analysis and linting
+- Real-time vulnerability monitoring
+- Compliance reporting and tracking
+- Security incident management
+"""
+
+import subprocess
+import json
+import logging
+import yaml
+from pathlib import Path
+from typing import Dict, List, Optional, Tuple
+from datetime import datetime
+import hashlib
+import requests
+import re
+from dataclasses import dataclass, field
+from collections import defaultdict
+import asyncio
+import aiohttp
+
+logger = logging.getLogger(__name__)
+
+@dataclass
+class VulnerabilityFinding:
+    """Data class representing a security vulnerability finding."""
+    id: str
+    severity: str  # critical, high, medium, low, info
+    package: str
+    version: str
+    fixed_version: Optional[str]
+    description: str
+    cve_id: Optional[str]
+    cvss_score: Optional[float]
+    file_path: Optional[str]
+    line_number: Optional[int]
+    detection_date: datetime = field(default_factory=datetime.now)
+    status: str = field(default="open")  # open, in_progress, resolved, false_positive
+    remediation_instructions: Optional[str] = None
+    source: str = "unknown"  # safety, bandit, npm_audit, etc.
+
+@dataclass
+class SecurityReport:
+    """Comprehensive security assessment report."""
+    scan_date: datetime
+    total_dependencies: int
+    vulnerable_dependencies: int
+    vulnerabilities_by_severity: Dict[str, int]
+    findings: List[VulnerabilityFinding]
+    compliance_score: float
+    recommendations: List[str]
+    executive_summary: str
+
+class SecurityScanner:
+    """
+    Main security scanner orchestrating multiple security tools.
+    Provides comprehensive vulnerability assessment across Python, Node.js,
+    and infrastructure components.
+    """
+    
+    def __init__(self, project_root: Path):
+        self.project_root = Path(project_root)
+        self.scan_results: Dict[str, SecurityReport] = {}
+        self.compliance_thresholds = {
+            'critical_vulnerabilities': 0,
+            'high_vulnerabilities': 5,
+            'medium_vulnerabilities': 20,
+            'security_score_minimum': 85.0
+        }
+        
+    async def run_comprehensive_scan(self) -> SecurityReport:
+        """Execute comprehensive security scan across all components."""
+        logger.info("Starting comprehensive security vulnerability scan...")
+        
+        all_findings = []
+        scan_metrics = {
+            'total_dependencies': 0,
+            'vulnerable_dependencies': 0,
+            'by_severity': defaultdict(int)
+        }
+        
+        try:
+            # Python dependency scanning
+            python_findings = await self._scan_python_dependencies()
+            all_findings.extend(python_findings)
+            
+            # Node.js dependency scanning
+            node_findings = await self._scan_nodejs_dependencies()
+            all_findings.extend(node_findings)
+            
+            # Static code analysis
+            code_findings = await self._run_static_code_analysis()
+            all_findings.extend(code_findings)
+            
+            # Infrastructure scanning
+            infra_findings = await self._scan_infrastructure()
+            all_findings.extend(infra_findings)
+            
+            # Calculate metrics
+            for finding in all_findings:
+                scan_metrics['by_severity'][finding.severity] += 1
+                if finding.fixed_version is None:
+                    scan_metrics['vulnerable_dependencies'] += 1
+            
+            scan_metrics['total_dependencies'] = len(set(f.package for f in all_findings))
+            
+            # Generate compliance score
+            compliance_score = self._calculate_compliance_score(all_findings)
+            
+            # Create comprehensive report
+            report = SecurityReport(
+                scan_date=datetime.now(),
+                total_dependencies=scan_metrics['total_dependencies'],
+                vulnerable_dependencies=scan_metrics['vulnerable_dependencies'],
+                vulnerabilities_by_severity=dict(scan_metrics['by_severity']),
+                findings=all_findings,
+                compliance_score=compliance_score,
+                recommendations=self._generate_recommendations(all_findings),
+                executive_summary=self._generate_executive_summary(compliance_score, all_findings)
+            )
+            
+            # Store results
+            self.scan_results['comprehensive'] = report
+            
+            # Generate detailed reports
+            await self._generate_detailed_reports(report)
+            
+            return report
+            
+        except Exception as e:
+            logger.error(f"Comprehensive security scan failed: {e}")
+            raise
+
+    async def _scan_python_dependencies(self) -> List[VulnerabilityFinding]:
+        """Scan Python dependencies for known vulnerabilities."""
+        logger.info("Scanning Python dependencies...")
+        findings = []
+        
+        try:
+            # Run safety check for Python packages
+            result = subprocess.run(
+                ['python', '-m', 'pip', 'install', 'safety'],
+                capture_output=True, text=True, cwd=self.project_root
+            )
+            
+            if result.returncode == 0:
+                # Run safety scan
+                safety_result = subprocess.run(
+                    ['safety', 'check', '--json'],
+                    capture_output=True, text=True, cwd=self.project_root
+                )
+                
+                if safety_result.returncode != 0:
+                    # Parse safety output
+                    try:
+                        safety_data = json.loads(safety_result.stdout)
+                        for vuln in safety_data:
+                            finding = VulnerabilityFinding(
+                                id=vuln.get('id', 'unknown'),
+                                severity=self._map_safety_severity(vuln.get('severity', 'unknown')),
+                                package=vuln.get('package_name', 'unknown'),
+                                version=vuln.get('installed_version', 'unknown'),
+                                fixed_version=vuln.get('spec', '').replace('==', ''),
+                                description=vuln.get('advisory', 'No description available'),
+                                cve_id=vuln.get('cve', 'unknown'),
+                                cvss_score=vuln.get('cvss_score'),
+                                source="safety"
+                            )
+                            findings.append(finding)
+                            
+                    except json.JSONDecodeError:
+                        logger.warning("Could not parse safety JSON output")
+            
+            # Run pip-audit for additional coverage
+            try:
+                pip_audit_result = subprocess.run(
+                    ['pip-audit', '--format=json'],
+                    capture_output=True, text=True, cwd=self.project_root
+                )
+                
+                if pip_audit_result.returncode == 0:
+                    audit_data = json.loads(pip_audit_result.stdout)
+                    for vuln in audit_data:
+                        finding = VulnerabilityFinding(
+                            id=vuln.get('id', 'unknown'),
+                            severity=vuln.get('severity', 'unknown'),
+                            package=vuln.get('name', 'unknown'),
+                            version=vuln.get('version', 'unknown'),
+                            fixed_version=vuln.get('fix_versions', [''])[0] if vuln.get('fix_versions') else None,
+                            description=vuln.get('description', 'No description'),
+                            cve_id=vuln.get('cve_id', 'unknown'),
+                            source="pip-audit"
+                        )
+                        findings.append(finding)
+                        
+            except (subprocess.SubprocessError, FileNotFoundError):
+                logger.info("pip-audit not available, skipping...")
+                
+        except Exception as e:
+            logger.error(f"Python dependency scanning failed: {e}")
+            
+        return findings
+
+    async def _scan_nodejs_dependencies(self) -> List[VulnerabilityFinding]:
+        """Scan Node.js dependencies for known vulnerabilities."""
+        logger.info("Scanning Node.js dependencies...")
+        findings = []
+        
+        frontend_path = self.project_root / 'frontend'
+        if not frontend_path.exists():
+            logger.warning("Frontend directory not found, skipping Node.js scan")
+            return findings
+            
+        try:
+            # Run npm audit
+            result = subprocess.run(
+                ['npm', 'audit', '--json'],
+                capture_output=True, text=True, cwd=frontend_path
+            )
+            
+            if result.returncode != 0:  # npm audit returns non-zero when vulnerabilities found
+                try:
+                    audit_data = json.loads(result.stdout)
+                    vulnerabilities = audit_data.get('vulnerabilities', {})
+                    
+                    for package, vuln_data in vulnerabilities.items():
+                        finding = VulnerabilityFinding(
+                            id=f"npm-{package}-{hashlib.md5(f"{package}{vuln_data}".encode()).hexdigest()[:8]}",
+                            severity=vuln_data.get('severity', 'unknown'),
+                            package=package,
+                            version=vuln_data.get('range', 'unknown'),
+                            fixed_version=vuln_data.get('via', [{}])[-1].get('name', None),
+                            description=f"Node.js package vulnerability: {package}",
+                            source="npm_audit"
+                        )
+                        findings.append(finding)
+                        
+                except json.JSONDecodeError:
+                    logger.warning("Could not parse npm audit JSON output")
+                    
+        except (subprocess.SubprocessError, FileNotFoundError):
+            logger.warning("npm audit failed, skipping Node.js scan")
+            
+        return findings
+
+    async def _run_static_code_analysis(self) -> List[VulnerabilityFinding]:
+        """Run static code analysis for security issues."""
+        logger.info("Running static code analysis...")
+        findings = []
+        
+        try:
+            # Install and run bandit for Python code
+            subprocess.run(
+                ['python', '-m', 'pip', 'install', 'bandit[toml]'],
+                capture_output=True, text=True, cwd=self.project_root
+            )
+            
+            result = subprocess.run(
+                ['bandit', '-r', str(self.project_root), '-f', 'json'],
+                capture_output=True, text=True, cwd=self.project_root
+            )
+            
+            if result.returncode == 0:
+                bandit_data = json.loads(result.stdout)
+                for issue in bandit_data.get('results', []):
+                    finding = VulnerabilityFinding(
+                        id=f"bandit-{issue.get('filename', 'unknown')}-{issue.get('line_number', 0)}",
+                        severity=self._map_bandit_severity(issue.get('issue_severity', 'MEDIUM')),
+                        package='source_code',
+                        version='unknown',
+                        fixed_version=None,
+                        description=issue.get('issue_text', 'No description'),
+                        file_path=issue.get('filename'),
+                        line_number=issue.get('line_number'),
+                        source="bandit"
+                    )
+                    findings.append(finding)
+                    
+        except (subprocess.SubprocessError, FileNotFoundError, json.JSONDecodeError) as e:
+            logger.warning(f"Static code analysis failed: {e}")
+            
+        return findings
+
+    async def _scan_infrastructure(self) -> List[VulnerabilityFinding]:
+        """Scan infrastructure configurations for security issues."""
+        logger.info("Scanning infrastructure configurations...")
+        findings = []
+        
+        # Check for common infrastructure security issues
+        docker_files = list(self.project_root.rglob('Dockerfile*'))
+        config_files = list(self.project_root.rglob('*.yaml')) + list(self.project_root.rglob('*.yml'))
+        
+        for file_path in docker_files:
+            if self._check_docker_security(file_path):
+                finding = VulnerabilityFinding(
+                    id=f"docker-{file_path.name}-{hash(str(file_path))}",
+                    severity="medium",
+                    package="docker",
+                    version="unknown",
+                    fixed_version=None,
+                    description=f"Docker security configuration issue in {file_path}",
+                    file_path=str(file_path),
+                    source="docker_lint"
+                )
+                findings.append(finding)
+                
+        for config_file in config_files:
+            if self._check_config_security(config_file):
+                finding = VulnerabilityFinding(
+                    id=f"config-{config_file.name}-{hash(str(config_file))}",
+                    severity="low",
+                    package="configuration",
+                    version="unknown",
+                    fixed_version=None,
+                    description=f"Configuration security issue in {config_file}",
+                    file_path=str(config_file),
+                    source="config_audit"
+                )
+                findings.append(finding)
+                
+        return findings
+
+    def _calculate_compliance_score(self, findings: List[VulnerabilityFinding]) -> float:
+        """Calculate security compliance score based on findings."""
+        if not findings:
+            return 100.0
+            
+        # Weight vulnerabilities by severity
+        severity_weights = {
+            'critical': 10.0,
+            'high': 5.0,
+            'medium': 2.0,
+            'low': 1.0,
+            'info': 0.5
+        }
+        
+        total_deduction = 0
+        for finding in findings:
+            total_deduction += severity_weights.get(finding.severity, 1.0)
+            
+        # Start with 100 and subtract deductions
+        score = max(0, 100.0 - total_deduction)
+        
+        # Apply thresholds
+        critical_count = len([f for f in findings if f.severity == 'critical'])
+        high_count = len([f for f in findings if f.severity == 'high'])
+        
+        if critical_count > 0:
+            score = min(score, 20.0)  # Critical findings severely impact score
+        elif high_count > 10:
+            score = min(score, 50.0)  # Too many high vulnerabilities
+            
+        return round(score, 2)
+
+    def _generate_recommendations(self, findings: List[VulnerabilityFinding]) -> List[str]:
+        """Generate security recommendations based on findings."""
+        recommendations = []
+        
+        critical_count = len([f for f in findings if f.severity == 'critical'])
+        high_count = len([f for f in findings if f.severity == 'high'])
+        medium_count = len([f for f in findings if f.severity == 'medium'])
+        
+        if critical_count > 0:
+            recommendations.append(f"CRITICAL: Address {critical_count} critical vulnerabilities immediately")
+            
+        if high_count > 5:
+            recommendations.append(f"HIGH: Address {high_count} high-severity vulnerabilities within 48 hours")
+            
+        if medium_count > 10:
+            recommendations.append(f"MEDIUM: Review and address {medium_count} medium-severity issues")
+            
+        # Package-specific recommendations
+        packages = set(f.package for f in findings if f.fixed_version)
+        for package in packages:
+            recommendations.append(f"Update {package} to the latest secure version")
+            
+        # Code analysis recommendations
+        code_issues = [f for f in findings if f.source in ['bandit', 'static_analysis']]
+        if code_issues:
+            recommendations.append(f"Review and fix {len(code_issues)} code security issues")
+            
+        return recommendations
+
+    def _generate_executive_summary(self, compliance_score: float, findings: List[VulnerabilityFinding]) -> str:
+        """Generate executive summary for security report."""
+        critical_count = len([f for f in findings if f.severity == 'critical'])
+        high_count = len([f for f in findings if f.severity == 'high'])
+        
+        if compliance_score >= 90:
+            status = "EXCELLENT"
+        elif compliance_score >= 75:
+            status = "GOOD"
+        elif compliance_score >= 60:
+            status = "ACCEPTABLE"
+        elif compliance_score >= 40:
+            status = "POOR"
+        else:
+            status = "CRITICAL"
+            
+        summary = f"""
+        Security Assessment Summary:
+        - Overall Security Score: {compliance_score}/100 ({status})
+        - Total Vulnerabilities: {len(findings)}
+        - Critical: {critical_count}, High: {high_count}
+        
+        {self._get_status_message(compliance_score)}
+        """
+        
+        return summary.strip()
+
+    def _get_status_message(self, score: float) -> str:
+        """Get status message based on security score."""
+        if score >= 90:
+            return "Security posture is excellent. Maintain current practices."
+        elif score >= 75:
+            return "Security posture is good. Address high-priority issues."
+        elif score >= 60:
+            return "Security posture needs improvement. Address critical issues."
+        else:
+            return "Critical security issues require immediate attention."
+
+    def _map_safety_severity(self, severity: str) -> str:
+        """Map safety severity to standard format."""
+        mapping = {
+            'low': 'low',
+            'medium': 'medium',
+            'high': 'high',
+            'unknown': 'info'
+        }
+        return mapping.get(severity.lower(), 'unknown')
+
+    def _map_bandit_severity(self, severity: str) -> str:
+        """Map bandit severity to standard format."""
+        mapping = {
+            'LOW': 'low',
+            'MEDIUM': 'medium',
+            'HIGH': 'high'
+        }
+        return mapping.get(severity, 'medium')
+
+    def _check_docker_security(self, docker_file: Path) -> bool:
+        """Check Docker file for security issues."""
+        try:
+            content = docker_file.read_text()
+            
+            # Check for common security issues
+            issues = [
+                'USER root',  # Running as root
+                'apt-get install',  # Unpinned packages
+                'pip install',  # Unpinned packages
+                'chmod 777'  # Excessive permissions
+            ]
+            
+            return any(issue in content for issue in issues)
+            
+        except Exception:
+            return False
+
+    def _check_config_security(self, config_file: Path) -> bool:
+        """Check configuration file for security issues."""
+        try:
+            if config_file.suffix in ['.yaml', '.yml']:
+                content = yaml.safe_load(config_file.read_text())
+                
+                # Check for security issues
+                if isinstance(content, dict):
+                    if content.get('debug', False):
+                        return True
+                    if content.get('logging', {}).get('level') == 'DEBUG':
+                        return True
+                        
+        except Exception:
+            return False
+            
+        return False
+
+    async def _generate_detailed_reports(self, report: SecurityReport) -> None:
+        """Generate detailed security reports."""
+        # Generate JSON report
+        json_report_path = self.project_root / 'security_reports' / f'vulnerability_report_{datetime.now().strftime("%Y%m%d_%H%M%S")}.json'
+        json_report_path.parent.mkdir(exist_ok=True)
+        
+        with open(json_report_path, 'w') as f:
+            json.dump({
+                'scan_date': report.scan_date.isoformat(),
+                'total_dependencies': report.total_dependencies,
+                'vulnerable_dependencies': report.vulnerable_dependencies,
+                'vulnerabilities_by_severity': report.vulnerabilities_by_severity,
+                'compliance_score': report.compliance_score,
+                'findings': [
+                    {
+                        'id': f.id,
+                        'severity': f.severity,
+                        'package': f.package,
+                        'version': f.version,
+                        'description': f.description,
+                        'source': f.source
+                    }
+                    for f in report.findings
+                ]
+            }, f, indent=2)
+            
+        logger.info(f"Generated security report: {json_report_path}")
+
+    def get_latest_report(self) -> Optional[SecurityReport]:
+        """Get the most recent security scan report."""
+        return self.scan_results.get('comprehensive')
+
+    def is_compliant(self) -> bool:
+        """Check if current security posture meets compliance thresholds."""
+        report = self.get_latest_report()
+        if not report:
+            return False
+            
+        # Check severity thresholds
+        for severity, max_count in [
+            ('critical', self.compliance_thresholds['critical_vulnerabilities']),
+            ('high', self.compliance_thresholds['high_vulnerabilities']),
+            ('medium', self.compliance_thresholds['medium_vulnerabilities'])
+        ]:
+            actual_count = report.vulnerabilities_by_severity.get(severity, 0)
+            if actual_count > max_count:
+                return False
+                
+        # Check minimum security score
+        return report.compliance_score >= self.compliance_thresholds['security_score_minimum']
+
+# Integration with CI/CD pipeline
+async def run_security_scan_pipeline(project_root: str) -> Tuple[bool, SecurityReport]:
+    """Run complete security scanning pipeline for CI/CD integration."""
+    try:
+        scanner = SecurityScanner(Path(project_root))
+        report = await scanner.run_comprehensive_scan()
+        
+        is_compliant = scanner.is_compliant()
+        
+        # Log results
+        logger.info(f"Security scan completed. Score: {report.compliance_score}/100")
+        logger.info(f"Compliance status: {'PASS' if is_compliant else 'FAIL'}")
+        
+        return is_compliant, report
+        
+    except Exception as e:
+        logger.error(f"Security scan pipeline failed: {e}")
+        return False, None
+
+if __name__ == "__main__":
+    # Example usage
+    import asyncio
+    
+    async def main():
+        is_compliant, report = await run_security_scan_pipeline("./")
+        print(f"Security compliance: {is_compliant}")
+        if report:
+            print(f"Score: {report.compliance_score}/100")
+            print(f"Vulnerabilities: {len(report.findings)}")
+    
+    asyncio.run(main())

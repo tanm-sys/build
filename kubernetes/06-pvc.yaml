@@ -1,0 +1,115 @@
+# Persistent Volume Claims for AI Simulation Platform
+
+# API Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-data
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: api
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: "{{ .Values.storage.storageClass }}"
+  dataSource:
+    name: ai-simulation-backup
+    kind: VolumeSnapshot
+    apiGroup: snapshot.storage.k8s.io
+
+---
+# UI Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-ui-data
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: ui
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  storageClassName: "{{ .Values.storage.storageClass }}"
+
+---
+# Redis Data PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-redis-data
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: redis
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 20Gi
+  storageClassName: "{{ .Values.storage.storageClass }}"
+
+---
+# PostgreSQL Data PVC (handled by StatefulSet in deployment.yaml)
+
+---
+# Logs PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-logs
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: logging
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 30Gi
+  storageClassName: "{{ .Values.storage.logStorageClass }}"
+
+---
+# Backups PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-backups
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: backup
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 100Gi
+  storageClassName: "{{ .Values.storage.backupStorageClass }}"
+
+---
+# Configuration Backup PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ai-simulation-config-backup
+  namespace: ai-simulation
+  labels:
+    app: ai-simulation
+    component: config
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 1Gi
+  storageClassName: "{{ .Values.storage.storageClass }}"
